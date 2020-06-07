@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="UTF-8">
+	    
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1"">
+
+        <!-- <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/popup.css">  -->
+		<link rel="stylesheet" href="css/examples.css">
+		<script src="js/libs/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+		<script src="js/epub.js"></script>
+		<script src="js/reader.js"></script>
+		
+        
+        <!-- File Storage -->
+        <script src="js/libs/fileStorage.min.js"></script>
+
+        <!-- Full Screen -->
+        <script src="js/libs/screenfull.min.js"></script>
+		
+        <script>
+            "use strict";
+
+            document.onreadystatechange = function () {
+              if (document.readyState == "complete") {
+			  EPUBJS.filePath = "js/libs/";
+                EPUBJS.cssPath = "css/";
+                fileStorage.filePath = EPUBJS.filePath;
+                window.reader = ePubReader(), {
+                   restore: true
+                 };
+              }
+            };
+
+        </script>
+		 </head>
+    <body ondrop="dropHandler(event);">
+	<div id="title"></div>
+	<label for="toc">Table of Contents: <select id="toc"></select></label>
+	  
+  <div id="viewer" class="spreads"></div>
+  <a id="prev" href="#prev" class="arrow">‹</a>
+  <a id="next" href="#next" class="arrow">›</a>
+   
+	  <div id="controls">
+			<input id="current-percent" size="3" value="0" /> %
+	</div>
+<script>
+let url = "";
+
+ 
+</script>
+<script>
+function dropHandler(event) {
+        console.log('File(s) dropped');
+        event.preventDefault();
+		if (event.dataTransfer.items) {
+          if (event.dataTransfer.items[0].kind === 'file') {
+            var file = event.dataTransfer.items[0].getAsFile();
+               
+                  var reader = new FileReader();
+                    reader.onload = e => {
+                      console.log(e.target.result);
+                    };
+
+                    reader.readAsText(file);
+                  }
+            
+        }
+      }</script>
+    </body>
+	<script>require('./renderer')</script>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Speech Synthesis</title>
+<style>
+body, html {
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1, p {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+.txt, select, form > div {
+  display: block;
+  margin: 0 auto;
+  font-family: sans-serif;
+  font-size: 16px;
+  padding: 5px;
+}
+
+.txt {
+  width: 80%;
+}
+
+select {
+  width: 83%;
+}
+
+form > div {
+  width: 81%;
+}
+
+.txt, form > div {
+  margin-bottom: 10px;
+  overflow: auto;
+}
+
+.clearfix {
+  clear: both;
+}
+
+label {
+  float: left;
+  width: 10%;
+  line-height: 1.5;
+}
+
+.rate-value, .pitch-value {
+  float: right;
+  width: 5%;
+  line-height: 1.5;
+}
+
+#rate, #pitch {
+  float: right;
+  width: 81%;
+}
+
+.controls {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.controls button {
+  padding: 10px;
+}
+
+#language {
+	display: none;
+}
+</style>
+
+  </head>
+  <body>
+<h6 id="language"></h6>
+    <form id="speechSynthesisForm">
+      
+      <label for="voiceSelect">Voice</label>
+      <select id="voiceSelect">
+        <option>No voices available</option>
+      </select>
+      <div>
+        <label for="textInput">Text to speak</label>
+        <textarea rows="10" cols="30" id="textInput"> </textarea>
+      </div>
+<div>
+      <label for="rate">Rate</label><input type="range" min="0.5" max="2" value="1" step="0.1" id="rate">
+      <div class="rate-value">1</div>
+      <div class="clearfix"></div>
+    </div>
+    <div>
+      <label for="pitch">Pitch</label><input type="range" min="0" max="2" value="1" step="0.1" id="pitch">
+      <div class="pitch-value">1</div>
+      <div class="clearfix"></div>
+    </div>
+   
+      <input type="submit" value="Speak" />
+    </form>
+
+    <script>
+      (function() {
+	require('electron').ipcRenderer.on('tts-data', (event, message) => {
+		document.getElementById('textInput').value =message;
+    	});
+	require('electron').ipcRenderer.on('language', (event, message) => {
+		var language = message.toString();
+		document.getElementById('language').textContent = language;
+		populateVoiceList();
+    	});
+        var synth = speechSynthesis;
+
+        var voiceSelect = document.getElementById("voiceSelect");
+        var textInput = document.getElementById("textInput");
+        var speechSynthesisForm = document.getElementById("speechSynthesisForm");
+
+        function populateVoiceList() {
+		  var language = document.getElementById('language').textContent;
+          var voices = synth.getVoices();
+
+          if (voices.length == 0) {
+            return;
+          }
+
+          voiceSelect.innerHTML = "";
+          for (var i = 0; i < voices.length; i++) {
+			var thislang = voices[i].lang.substring(0,2);
+		    if(thislang == language && !voices[i].name.includes('Bianca')) {
+				var voiceOption = document.createElement("option");
+				voiceOption.innerText = voices[i].name;
+				voiceOption.value = voices[i].voiceURI;
+				voiceSelect.appendChild(voiceOption);
+          } 
+        }
+		}
+        function speak() {
+          var voices = synth.getVoices();
+
+          if (voices.length == 0) {
+            return;
+          }
+
+          var selectedVoice = null;
+          for (var i = 0; i < voices.length; i++) {
+            if (voices[i].voiceURI === voiceSelect.value) {
+              selectedVoice = voices[i];
+              break;
+            }
+          }
+
+          var utterance = new SpeechSynthesisUtterance(textInput.value);
+          utterance.voice = selectedVoice;
+         utterance.pitch = pitch.value;
+         utterance.rate = rate.value;
+          synth.speak(utterance);
+        }
+
+        //populateVoiceList();
+        synth.onvoiceschanged = populateVoiceList;
+
+        speechSynthesisForm.onsubmit = function(e) {
+          e.preventDefault();
+          speak();
+        }
+pitch.onchange = function() {
+  pitchValue.textContent = pitch.value;
+}
+
+rate.onchange = function() {
+  rateValue.textContent = rate.value;
+}
+
+voiceSelect.onchange = function(){
+  speak();
+}
+      })();
+    </script>
+  </body>
+</html>
+
