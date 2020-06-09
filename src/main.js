@@ -515,8 +515,32 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'lingueeTM') {
 		term=term.replace(/ /g, "+");
 		var langname = getFullLanguageName(language);
+		console.log("langname is " + langname);
 		var url="http://www.linguee.com/" + langname.toLowerCase() + "-english/translation/" + term + ".html";
+		
 	}
+	
+	if(mode == 'glosbeTM') {
+		var lang=getISOLanguageCodeTrigraph(language);
+		var url="https://glosbe.com/gapi/tm?from=" + lang;
+		url += "&dest=eng&format=json&phrase=" + term + "&page=1&pretty=true";
+		console.log(url);
+		fetch(url) 
+			.then((resp) => resp.json())
+			.then(function(json) {
+				displayGlosbeTMResults(term, json);
+
+			})
+			.catch(function(error) {
+				console.log(error);
+			}); 
+	}
+	
+	if(mode == 'danskeordbog') {
+		var url = "https://ordnet.dk/ddo/ordbog?query=" + term;
+	}
+	
+	
 	// https://www.linguee.com/english-italian/search?query=atmosfera
 	searchWindow.loadURL(url);
 	// searchWindow.webContents.openDevTools();
@@ -536,7 +560,9 @@ function getISOLanguageCodeTrigraph(digraph) {
 }
 
 function getFullLanguageName(digraph) {
-	
+	var iso = require('iso-639');
+	var lang = iso.iso_639_1[digraph]['639-2'];
+	return(lang);
 }
 
 const chooseBook = exports.chooseBook = () => {

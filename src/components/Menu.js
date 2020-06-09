@@ -267,10 +267,10 @@ module.exports = function(mainWindow){
 	id: "da",
 	visible: false,
 	submenu: [
-	{ label: 'Search Van Dale',
+	{ label: 'Search Den Danske Ordbog',
 	accelerator: '',
 	click: () => {
-          	mainProcess.createSearchWindow('vandale');
+          	mainProcess.createSearchWindow('danskeordbog');
        	 }
     },
 	
@@ -1012,7 +1012,7 @@ module.exports = function(mainWindow){
 	  {
 		  label: "Glosbe TM search",
 		  click: () => {
-          	glosbe();
+          	mainProcess.createSearchWindow('glosbeTM');
        	 }
 	  },
 	  {
