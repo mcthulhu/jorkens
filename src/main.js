@@ -540,7 +540,9 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var url = "https://ordnet.dk/ddo/ordbog?query=" + term;
 	}
 	
-	
+	if(mode =-= 'rjecnik') {
+		var url = "http://rjecnik.net/search.php?search=" + term;
+	}
 	// https://www.linguee.com/english-italian/search?query=atmosfera
 	searchWindow.loadURL(url);
 	// searchWindow.webContents.openDevTools();

@@ -225,10 +225,10 @@ module.exports = function(mainWindow){
 	id: "hr",
 	visible: false,
 	submenu: [
-	{ label: 'Search Van Dale',
+	{ label: 'Search Rjecnik.net',
 	accelerator: '',
 	click: () => {
-          	mainProcess.createSearchWindow('vandale');
+          	mainProcess.createSearchWindow('rjecnik');
        	 }
     },
 	
