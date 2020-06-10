@@ -26,7 +26,7 @@ ipcRenderer.on('get-user-email', (event, oldaddress) => {
 });
 
 ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
-	console.log("chapter in file-opened is " + chapter);
+	// console.log("chapter in file-opened is " + chapter);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
@@ -48,7 +48,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		language=language.substring(0, 2);
 		document.getElementById("title").textContent=author + " - " + booktitle + " (" + language + ")";
 		document.getElementById("toc").selectedIndex = chapter;
-		console.log(document.getElementById("toc").selectedIndex + " is selected index");
+		// console.log(document.getElementById("toc").selectedIndex + " is selected index");
 		require('electron').remote.getGlobal('sharedObject').language=language;
 		mainProcess.enableDictionaries();
 	   mainProcess.addToRecent(booktitle, url, language);

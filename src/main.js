@@ -540,7 +540,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var url = "https://ordnet.dk/ddo/ordbog?query=" + term;
 	}
 	
-	if(mode =-= 'rjecnik') {
+	if(mode == 'rjecnik') {
 		var url = "http://rjecnik.net/search.php?search=" + term;
 	}
 	// https://www.linguee.com/english-italian/search?query=atmosfera
@@ -562,8 +562,11 @@ function getISOLanguageCodeTrigraph(digraph) {
 }
 
 function getFullLanguageName(digraph) {
+	console.log("getFullLanguageName " + digraph);
+	
 	var iso = require('iso-639');
-	var lang = iso.iso_639_1[digraph]['639-2'];
+	var lang = iso.iso_639_1[digraph]['name'];
+	console.log("lang is " + lang);
 	return(lang);
 }
 
