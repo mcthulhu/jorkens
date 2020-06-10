@@ -528,7 +528,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		fetch(url) 
 			.then((resp) => resp.json())
 			.then(function(json) {
-				displayGlosbeTMResults(term, json);
+				console.log(JSON.stringify(json));
 
 			})
 			.catch(function(error) {
@@ -561,12 +561,9 @@ function getISOLanguageCodeTrigraph(digraph) {
 	return(lang);
 }
 
-function getFullLanguageName(digraph) {
-	console.log("getFullLanguageName " + digraph);
-	
+function getFullLanguageName(digraph) {	
 	var iso = require('iso-639');
 	var lang = iso.iso_639_1[digraph]['name'];
-	console.log("lang is " + lang);
 	return(lang);
 }
 

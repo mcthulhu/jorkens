@@ -55,6 +55,7 @@
     "iso-639": "^0.2.2",
     "iso-639-1": "^2.1.1",
     "jsdom": "^16.2.2",
+    "node-fetch": "^2.6.0",
     "node-xml-stream": "^1.0.2",
     "python-shell": "^2.0.1",
     "sqlite3": "^4.2.0",

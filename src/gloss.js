@@ -8,8 +8,7 @@ document.getElementById("cancel-btn").addEventListener("click", (e) => {
 document.getElementById("ok-btn").addEventListener("click", (e) => {
 	var term=document.getElementById('term').value;
 	var def=document.getElementById('def').value;
-	var lang= 'it';
-	alert(term + " = " + def);
+	var lang= require('electron').remote.getGlobal('sharedObject').language;
 	mainProcess.addToDictionary(term, def, lang);
                     window.close();
                 });
