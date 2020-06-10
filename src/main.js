@@ -515,25 +515,23 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'lingueeTM') {
 		term=term.replace(/ /g, "+");
 		var langname = getFullLanguageName(language);
-		console.log("langname is " + langname);
 		var url="http://www.linguee.com/" + langname.toLowerCase() + "-english/translation/" + term + ".html";
 		
 	}
 	
 	if(mode == 'glosbeTM') {
+		const fetch = require('node-fetch');
 		var lang=getISOLanguageCodeTrigraph(language);
+		var nat = getISOLanguageCodeTrigraph(native);
 		var url="https://glosbe.com/gapi/tm?from=" + lang;
-		url += "&dest=eng&format=json&phrase=" + term + "&page=1&pretty=true";
+		url += "&dest=" + nat + "&format=json&phrase=" + term + "&page=1&pretty=true";
 		console.log(url);
-		fetch(url) 
-			.then((resp) => resp.json())
-			.then(function(json) {
-				console.log(JSON.stringify(json));
+		/* (async () => {
+			const response = await fetch(url);
+			const json = await response.json();
 
-			})
-			.catch(function(error) {
-				console.log(error);
-			}); 
+			console.log(json);
+		}); */
 	}
 	
 	if(mode == 'danskeordbog') {
