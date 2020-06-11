@@ -1016,11 +1016,7 @@ const amazonTranslate = exports.amazonTranslate = () => {
 	translate.translateText(params, function(err, data) {
 		if (err) console.log(err, err.stack); // an error occurred
 		else  {
-			dialog.showMessageBox({
-				buttons: [],
-				title: "Amazon Translate:",
-				message: data.TranslatedText
-			});	
+			mainWindow.webContents.send('got-translation', data.TranslatedText);	
 		}   
 	});
 }

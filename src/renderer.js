@@ -13,6 +13,10 @@ rendition = null;
 lastLocation = null;
 url = null;
 
+ipcRenderer.on('got-translation', (event, translation) => {
+	dialogs.alert(translation);
+});
+
 ipcRenderer.on('get-native-language', (event, oldlanguage) => {
 	dialogs.prompt('Enter the digraph for your native language (in lowercase):', oldlanguage, ok => {
       mainProcess.saveNativeLanguage(ok);
