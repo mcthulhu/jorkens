@@ -197,19 +197,6 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var url="https://forvo.com/word/" + term + "/#" + language;
 	}
 	
-	if(mode == 'gt') {
-		var translate = require('@google-cloud/translate')();
-	// API call requires user's Google Cloud credentials to be set up
-		translate.translate(term, 'en', function(err, translation) {
-		if (!err) {
-			//getEl('dialog').setAttribute("title", "Google Translate: ");
-			//showDialog(translation);
-			alert(translation);
-		} else {
-			console.log(err);
-		}
-	});
-	}
 	if(mode == 'wf') {
 		var url="http://www.wordreference.com/" + language + global.sharedObject.native + "/";
 		url+=encodeURIComponent(term);
@@ -596,7 +583,6 @@ const openFile = exports.openFile = (file, position, chapter) => {
 	  config.chapter = 0;
   }
   var chapter = config.chapter;
-  console.log("config.chapter in openfile is " + config.chapter);
   storage.set('config', config);
   mainWindow.webContents.send('file-opened', file, content, position, chapter);
 };
@@ -608,7 +594,6 @@ const updateConfigLocation = exports.updateConfigLocation = (file, location) => 
 
 const updateConfigChapter = exports.updateConfigChapter = (chapter) => {
 	config.chapter = chapter;
-	console.log("config.chapter  in updateConfigChapter is " + config.chapter);
 	storage.set('config', config);
 };
 
@@ -833,9 +818,11 @@ const importDictionary = exports.importDictionary = () => {
 
 const enableDictionaries = exports.enableDictionaries = () => {
 	var language = global.sharedObject.language;
-	console.log(language);
+	// console.log(language);
 	var myMenu=Menu.getApplicationMenu();	
 	myMenu.items[3].submenu.getMenuItemById(language).visible = true;
+	myMenu.items[8].submenu.items[0].visible = false;
+	
 }
 
 const importTM = exports.importTM = () => {
@@ -1019,6 +1006,24 @@ const amazonTranslate = exports.amazonTranslate = () => {
 			mainWindow.webContents.send('got-translation', data.TranslatedText);	
 		}   
 	});
+}
+
+const googleTranslate = exports.googleTranslate = () => {
+	var text=getSelectedText();
+	var target = global.sharedObject.native;
+	// following code is from https://cloud.google.com/translate/docs/basic/translating-text#translate_translate_text-nodejs
+	const {Translate} = require('@google-cloud/translate').v2;
+	const translate = new Translate();
+	async function translateText() {
+		let [translations] = await translate.translate(text, target);
+		translations = Array.isArray(translations) ? translations : [translations];
+		console.log('Translations:');
+		translations.forEach((translation, i) => {
+			console.log(`${text[i]} => (${target}) ${translation}`);
+		});
+		mainWindow.webContents.send('got-translation', translations);
+	}
+	translateText();
 }
 
 const myMemory = exports.myMemory = () => {

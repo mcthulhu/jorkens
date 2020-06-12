@@ -1088,6 +1088,13 @@ module.exports = function(mainWindow){
 	  label: 'MT',
 	  submenu: [
 	  {
+		  label: "Google Translate",
+		    id: 'google-translate',
+		 click: () => {
+          	mainProcess.googleTranslate();
+       	 }
+	  },
+	  {
 		  label: "Amazon Translate",
 		  accelerator: 'CmdOrCtrl+T',
 		 click: () => {
@@ -1096,7 +1103,6 @@ module.exports = function(mainWindow){
 	  },
 	  {
 		  label: "MyMemory translation",
-		  accelerator: '',
 		 click: () => {
           	mainProcess.myMemory();
        	 }
@@ -1133,10 +1139,10 @@ module.exports = function(mainWindow){
     role: 'help',
     submenu: [
       {
-        label: 'Learn More',
+        label: 'About',
         click: async () => {
           const { shell } = require('electron');
-          await shell.openExternal('https://electronjs.org');
+          await shell.openExternal('https://github.com/mcthulhu/jorkens');
         }
       }
     ]
