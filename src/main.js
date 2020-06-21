@@ -487,6 +487,10 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var url = "https://jisho.org/search/" + term;
 	}
 	
+	if(mode == 'alc.co') {
+		var url = "https://eow.alc.co.jp/search?q=" + term + "&ref=sa";
+	}
+	
 	if(mode == 'wwwjdic') {
 		var url = "http://nihongo.monash.edu/cgi-bin/wwwjdic?1C";
 	}
@@ -1028,6 +1032,10 @@ const googleTranslate = exports.googleTranslate = () => {
 
 const myMemory = exports.myMemory = () => {
 	
+}
+
+const getBookContents = exports.getBookContents = () => {
+	mainWindow.webContents.send('get-book-contents');	
 }
 
 const WindowsTTS = exports.WindowsTTS = () => {

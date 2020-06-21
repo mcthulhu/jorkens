@@ -577,6 +577,11 @@ module.exports = function(mainWindow){
 	id: "ja",
 	visible: false,
 	submenu: [
+	{ label: 'Search ALC.Co',
+	click: () => {
+          	mainProcess.createSearchWindow('alc.co');
+       	 }
+    },
 	{ label: 'Search Jisho',
 	click: () => {
           	mainProcess.createSearchWindow('jisho');
@@ -1113,6 +1118,18 @@ module.exports = function(mainWindow){
   {
 	  label: 'Tools',
 	  submenu: [
+	  {
+		  label: "Libary",
+		  click: () => {
+			  showLibrary();
+		  }
+	  },
+	  {
+		  label: "Get book text",
+		  click: () => {
+			  mainProcess.getBookContents();
+		  }
+	  },
 	  {
 		  label: "Set native language",
 		  click: () => {

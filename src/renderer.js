@@ -13,6 +13,8 @@ rendition = null;
 lastLocation = null;
 url = null;
 
+
+
 ipcRenderer.on('got-translation', (event, translation) => {
 	dialogs.alert(translation);
 });
@@ -34,29 +36,15 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
-  url = file;
-  book=ePub(file, { encoding: "binary"});
-  book.open(content, "binary");
-  
-  rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: 650,
-	  spread: "always"
-    });
-
-    rendition.display(position);
-	 book.ready.then(() => {
-		 var booktitle=book.package.metadata.title;
-		 var author = book.package.metadata.creator;
-		var language=book.package.metadata.language;
-		language=language.substring(0, 2);
-		document.getElementById("title").textContent=author + " - " + booktitle + " (" + language + ")";
-		document.getElementById("toc").selectedIndex = chapter;
-		// console.log(document.getElementById("toc").selectedIndex + " is selected index");
-		require('electron').remote.getGlobal('sharedObject').language=language;
-		mainProcess.enableDictionaries();
-	   mainProcess.addToRecent(booktitle, url, language);
-      var next = document.getElementById("next");
+  var controls = document.getElementById("controls");
+   var currentPage = document.getElementById("current-percent");
+	var slider = document.createElement("input");
+	var slide = function(){
+		var cfi = book.locations.cfiFromPercentage(slider.value / 100);
+		rendition.display(cfi);
+	};
+   var mouseDown = false;
+   var next = document.getElementById("next");
 
       next.addEventListener("click", function(e){
         book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
@@ -80,13 +68,105 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
         if ((e.keyCode || e.which) == 39) {
           book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
         }
+	  };
+   
+  url = file;
+  book=ePub(file, { encoding: "binary"});
+  book.open(content, "binary");
+  
+  rendition = book.renderTo("viewer", {
+      width: "100%",
+      height: 650,
+	  spread: "always"
+    });
 
-      };
+    var displayed = rendition.display(position);
+	rendition.on("keyup", keyListener); // not defined??
+    document.addEventListener("keyup", keyListener, false);
 
-      rendition.on("keyup", keyListener);
-      document.addEventListener("keyup", keyListener, false);
 
-    })
+	 book.ready.then(() => {
+		 var booktitle=book.package.metadata.title;
+		 var author = book.package.metadata.creator;
+		var language=book.package.metadata.language;
+		language=language.substring(0, 2);
+		document.getElementById("title").textContent=author + " - " + booktitle + " (" + language + ")";
+		document.getElementById("toc").selectedIndex = chapter;
+		require('electron').remote.getGlobal('sharedObject').language=language;
+		mainProcess.enableDictionaries();
+	   mainProcess.addToRecent(booktitle, url, language);
+      
+	  
+		 var key = book.key()+'-locations';
+			var stored = localStorage.getItem(key);
+			if (stored && stored.length > 3) {
+				console.log(stored);
+				return book.locations.load(stored);			
+			} else {
+				console.log("generating book locations");
+				return book.locations.generate(1024)
+			}
+	 })
+			.then(function(locations){
+				controls.style.display = "block";
+				slider.setAttribute("type", "range");
+				slider.setAttribute("min", 0);
+				slider.setAttribute("max", 100);
+				// slider.setAttribute("max", book.locations.total+1);
+				slider.setAttribute("step", 1);
+				slider.setAttribute("value", 0);
+
+				slider.addEventListener("change", slide, false);
+				slider.addEventListener("mousedown", function(){
+						mouseDown = true;
+				}, false);
+				slider.addEventListener("mouseup", function(){
+						mouseDown = false;
+				}, false);
+
+				// Wait for book to be rendered to get current page
+				displayed.then(function(){
+						// Get the current CFI
+						var currentLocation = rendition.currentLocation();
+						// Get the Percentage (or location) from that CFI
+						var currentPage = book.locations.percentageFromCfi(currentLocation.start.cfi);
+						console.log("currentPage is " + currentPage);
+						slider.value = currentPage;
+						currentPage.value = currentPage;
+				});
+
+				controls.appendChild(slider);
+
+				currentPage.addEventListener("change", function(){
+					var cfi = book.locations.cfiFromPercentage(currentPage.value/100);
+					rendition.display(cfi);
+				}, false);
+
+				// Listen for location changed event, get percentage from CFI
+				rendition.on('relocated', function(location){
+						var percent = book.locations.percentageFromCfi(location.start.cfi);
+						var percentage = Math.floor(percent * 100);
+						if(!mouseDown) {
+								slider.value = percentage;
+						}
+						currentPage.value = percentage;
+				});
+
+				// Save out the generated locations to JSON
+				localStorage.setItem(book.key()+'-locations', book.locations.save());
+
+		});
+		/*  book.getRange("epubcfi(/6/14[xchapter_001]!/4/2,/2/2/2[c001s0000]/1:0,/8/2[c001p0003]/1:663)").then(function(range) {
+        let text = range.toString()
+        console.log(text);
+		 }); */
+		 
+
+      //});
+
+      
+
+   // })
 
     var title = document.getElementById("title");
 
@@ -109,13 +189,13 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
             $options[i].setAttribute("selected", "");
           }
         }
-		$select.selectedIndix = chapter;
+		$select.selectedIndex = chapter;
       }
 
     });
 
     rendition.on("relocated", function(location){
-	
+	 console.log(location);
       var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
       var prev = book.package.metadata.direction === "rtl" ?  document.getElementById("next") : document.getElementById("prev");
 
@@ -152,11 +232,9 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 					mainProcess.glossarySearch(text);
 				}
 			});
-			//todo: dictionary lookup for text
 	});
 	
     window.addEventListener("unload", function () {
-      console.log("unloading");
       this.book.destroy();
     });
 
@@ -182,6 +260,23 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 			};
 
 		});
+		
+		rendition.hooks.content.register(function(contents, view) {
+			console.log(contents);
+			// var elements = contents.document.querySelectorAll('[video]');
+			// var items = Array.prototype.slice.call(elements);
+
+			// items.forEach(function(item){
+		// do something with the video item
+		});
+		//});
+		/* book.loaded.spine.then((spine) => {
+			spine.each((item) => {
+				item.load().then((contents) => {
+					console.log(contents);
+				});
+			});
+		}); */
 });
 
 ipcRenderer.on('clear-book', () => {
@@ -207,6 +302,16 @@ window.addEventListener('contextmenu', (e) => {
   e.preventDefault()
   cmenu.popup({ window: remote.getCurrentWindow() })
 }, false);
+
+ipcRenderer.on('get-book-contents', () => {
+	book.loaded.spine.then((spine) => {
+		spine.each((item) => {
+			item.load().then((contents) => {
+				console.log(contents);
+			});
+		});
+	});
+	});
 
    
       
