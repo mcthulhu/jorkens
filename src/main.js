@@ -565,6 +565,7 @@ const chooseBook = exports.chooseBook = () => {
 		]
 		
 	});
+	var file = files[0];
 	if(config[file]) {
 		position = config[file];
 	} else {

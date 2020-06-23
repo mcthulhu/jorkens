@@ -1,5 +1,4 @@
 const { app, BrowserWindow, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-// { process } = require('electron').remote;
 const mainProcess = remote.require('./main.js');
 const fs = require("fs");
 const path = require('path');
@@ -100,7 +99,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
-				console.log(stored);
+				// console.log(stored);
 				return book.locations.load(stored);			
 			} else {
 				console.log("generating book locations");
@@ -108,6 +107,10 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 			}
 	 })
 			.then(function(locations){
+				require('electron').remote.getGlobal('sharedObject').firstLocation = locations[0];
+				//console.log(locations[0]);
+				require('electron').remote.getGlobal('sharedObject').lastLocation = locations[locations.length - 1];
+				//console.log(locations[locations.length - 1]);
 				controls.style.display = "block";
 				slider.setAttribute("type", "range");
 				slider.setAttribute("min", 0);
@@ -130,7 +133,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 						var currentLocation = rendition.currentLocation();
 						// Get the Percentage (or location) from that CFI
 						var currentPage = book.locations.percentageFromCfi(currentLocation.start.cfi);
-						console.log("currentPage is " + currentPage);
+						// console.log("currentPage is " + currentPage);
 						slider.value = currentPage;
 						currentPage.value = currentPage;
 				});
@@ -195,7 +198,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
     });
 
     rendition.on("relocated", function(location){
-	 console.log(location);
+	 //console.log(location);
       var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
       var prev = book.package.metadata.direction === "rtl" ?  document.getElementById("next") : document.getElementById("prev");
 
@@ -262,7 +265,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		});
 		
 		rendition.hooks.content.register(function(contents, view) {
-			console.log(contents);
+			// console.log(contents);
 			// var elements = contents.document.querySelectorAll('[video]');
 			// var items = Array.prototype.slice.call(elements);
 
@@ -303,15 +306,68 @@ window.addEventListener('contextmenu', (e) => {
   cmenu.popup({ window: remote.getCurrentWindow() })
 }, false);
 
+const makeRangeCfi = (a, b) => {
+    const CFI = new ePub.CFI()
+    const start = CFI.parse(a), end = CFI.parse(b)
+    const cfi = {
+        range: true,
+        base: start.base,
+        path: {
+            steps: [],
+            terminal: null
+        },
+        start: start.path,
+        end: end.path
+    }
+    const len = cfi.start.steps.length
+    for (let i = 0; i < len; i++) {
+        if (CFI.equalStep(cfi.start.steps[i], cfi.end.steps[i])) {
+            if (i == len - 1) {
+                // Last step is equal, check terminals
+                if (cfi.start.terminal === cfi.end.terminal) {
+                    // CFI's are equal
+                    cfi.path.steps.push(cfi.start.steps[i])
+                    // Not a range
+                    cfi.range = false
+                }
+            } else cfi.path.steps.push(cfi.start.steps[i])
+        } else break
+    }
+    cfi.start.steps = cfi.start.steps.slice(cfi.path.steps.length)
+    cfi.end.steps = cfi.end.steps.slice(cfi.path.steps.length)
+
+    return 'epubcfi(' + CFI.segmentString(cfi.base)
+        + '!' + CFI.segmentString(cfi.path)
+        + ',' + CFI.segmentString(cfi.start)
+        + ',' + CFI.segmentString(cfi.end)
+        + ')'
+}
+
 ipcRenderer.on('get-book-contents', () => {
-	book.loaded.spine.then((spine) => {
+	/* book.loaded.spine.then((spine) => {
 		spine.each((item) => {
 			item.load().then((contents) => {
 				console.log(contents);
 			});
 		});
-	});
-	});
+	}); */
+	const CFI = new ePub.CFI();
+	var firstLocation = require('electron').remote.getGlobal('sharedObject').firstLocation;
+	console.log(firstLocation);
+	var first = CFI.parse(firstLocation).start;
+	console.log(first);
+	var lastLocation =	require('electron').remote.getGlobal('sharedObject').lastLocation;
+	console.log(lastLocation);
+	var last = CFI.parse(lastLocation).end;
+	console.log(last);
+	/* book.getRange(firstLocation).then(function(range) {
+		let text=range.toString();
+		console.log(text);
+	}) */
+	book.getRange(makeRangeCfi(first, last)).then(range => {
+		console.log(range.toString());
+	})
+});
 
    
       
