@@ -59,7 +59,7 @@ module.exports = function(mainWindow){
 	label: 'Dictionaries',
 	submenu: [
 	{ label: 'Add glossary entry',
-	accelerator: 'CmdOrCtrl+A',
+	accelerator: 'CmdOrCtrl+G',
 	click: () => {
           	mainProcess.createGlossWindow();
        	 }
@@ -833,7 +833,7 @@ module.exports = function(mainWindow){
 	
 	{
 	label: "Spanish",
-	id: "sp",
+	id: "es",
 	visible: false,
 	submenu: [
 	{ label: 'Search SpanishDict',

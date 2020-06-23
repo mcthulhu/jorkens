@@ -165,10 +165,11 @@ const createGlossWindow = exports.createGlossWindow = () => {
 	});
 	glossWindow.loadFile(path.join(__dirname, 'gloss.html'));
 	
-	glossWindow.webContents.openDevTools();
+	// glossWindow.webContents.openDevTools();
 	glossWindow.once('ready-to-show', () => {
 		glossWindow.show();
 		glossWindow.webContents.insertText(term);
+		glossWindow.webContents.executeJavaScript('document.getElementById("def").focus()');
 	});
 	glossWindow.on('closed', () => {
 		glossWindow = null;
