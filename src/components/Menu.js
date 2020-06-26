@@ -1064,7 +1064,7 @@ module.exports = function(mainWindow){
 		{
 		  label: 'Add flashcard',
 		  click: () => {
-          	mainProcess.addFlashcard();
+          	mainProcess.createFlashcardWindow();
        	 }
 		},
 		{

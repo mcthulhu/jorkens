@@ -176,6 +176,32 @@ const createGlossWindow = exports.createGlossWindow = () => {
     });
 };
 
+const createFlashcardWindow = exports.createFlashcardWindow = () => {
+	var term = global.sharedObject.selection;
+	term=term.trim();
+	flashWindow = new BrowserWindow({
+	show: false,
+    width: 600,
+    height: 400,
+	frame: false,
+	webPreferences: {
+        nodeIntegration: true
+    }
+	});
+	flashWindow.loadFile(path.join(__dirname, 'flash.html'));
+	
+	// glossWindow.webContents.openDevTools();
+	flashWindow.once('ready-to-show', () => {
+		flashWindow.show();
+		flashWindow.webContents.insertText(term);
+		flashWindow.webContents.executeJavaScript('document.getElementById("def").focus()');
+	});
+	flashWindow.on('closed', () => {
+		flashWindow = null;
+    });
+};
+
+
 const createSearchWindow = exports.createSearchWindow = (mode) => {
 	var language = global.sharedObject.language;
 	var native = global.sharedObject.native;
@@ -650,40 +676,35 @@ const addPairToTM = exports.addPairToTM = () => {
 	
 }
 
-const addFlashcard = exports.addFlashcard = () => {
-		var term=getEl("query").value || getQueryTerm();
-	var def=getEl("def").value || prompt("Enter definition: ");
-	var tags=getEl("dicttags").value;
-	term=term.trim();
-	def=def.trim();
-	tags=tags.trim();
-
-	if(term!=="" && def !=="") {
-		mydb.transaction(function(tx) {
-			tx.executeSql("INSERT OR REPLACE INTO flashcards(term, def, language, tags) VALUES(?,?,?,?)", [term, def, language, tags], 
-		getFlashcardCount, errorHandler);
-		});
+const addFlashcard = exports.addFlashcard = (term, def, language, tags) => {
+	if(term && def && language && tags) {
+		db.run("INSERT OR REPLACE INTO flashcards(term, def, language, tags) VALUES(?,?,?,?)", [term, def, language, tags]);
 	}
 }
 
 const reviewFlashcards = exports.reviewFlashcards = () => {
-	var w=dictwin.width;
-	var h=dictwin.height;
-	var x=(w/2) + dictwin.x - 225;
-	var y=(h/2) + dictwin.y - 125;
-	
-	var options="width=450,height=250,resizable=true,";
-	options+="top=" + y + ",left=" + x;
-	var fc=window.open("flashcard.html", "Jorkens", options);
+	var language = global.sharedObject.language;
+	var data=[];
+	db.each('SELECT * FROM flashcards WHERE language = ?', [language],
+		function (err, row) {
+			var thisItem = [];
+			thisItem.push(row.term);
+			thisItem.push(row.def);
+			thisItem.push(row.tags);
+			data.push(thisItem);
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			console.log(len + " flashcards: " + data);
+		}
+	);
 }
 
 const exportForAnki = exports.exportForAnki = () => {
-		var mydb=openDatabase("mjddict_db", "1", "database for my dictionary", 5 * 1024 * 1024);
 	var data="";
-	mydb.transaction(function (tx) {
-    tx.executeSql('SELECT * FROM flashcards WHERE language = ?', [language], function (tx, results) {
-        var len = results.rows.length, i;
-        Cur("Found rows to export: " + len);
+	/* db.each('SELECT * FROM flashcards WHERE language = ?', [language], function (tx, results) {
 		//flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP
         for (var i = 0; i < len; i++) {
 		   var term=results.rows.item(i).term;
@@ -696,10 +717,9 @@ const exportForAnki = exports.exportForAnki = () => {
 		   console.log(thisentry);
             data+=thisentry;
         }
-		console.log('C:\\Users\\' + getLogin() + '\\Desktop\\ankiexport.txt');
 		fs.writeFile('C:\\Users\\' + getLogin() + '\\Desktop\\ankiexport.txt', data, 'utf8', errorHandler);
 	},function(len) {alert(len + " flashcards exported")}, errorHandler);
-	});
+	}); */
 }
 
 const glossarySearch = exports.glossarySearch = (term) => {
