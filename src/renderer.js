@@ -20,6 +20,7 @@ ipcRenderer.on('start-flashcard-review', (event, data) => {
 		width: 600,
 		height: 400,
 		frame: false,
+		alwaysOnTop: true,
 		webPreferences: {
 			nodeIntegration: true
 		}

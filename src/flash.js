@@ -8,6 +8,9 @@ document.getElementById("ok-btn").addEventListener("click", (e) => {
 	var term=document.getElementById('term').value;
 	var def=document.getElementById('def').value;
 	var tags=document.getElementById('tags').value;
+	if(!tags) {
+		var tags="-";
+	}
 	term=term.trim();
 	def=def.trim();
 	tags=tags.trim();

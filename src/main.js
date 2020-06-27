@@ -195,6 +195,7 @@ const createFlashcardWindow = exports.createFlashcardWindow = () => {
 		flashWindow.show();
 		flashWindow.webContents.insertText(term);
 		flashWindow.webContents.executeJavaScript('document.getElementById("def").focus()');
+		flashWindow.openDevTools();
 	});
 	flashWindow.on('closed', () => {
 		flashWindow = null;
