@@ -21,7 +21,7 @@ ipcRenderer.on('start-flashcard-review', (event, data) => {
 		height: 400,
 		frame: false,
 		webPreferences: {
-			nodeIntegration: false
+			nodeIntegration: true
 		}
 	});
 	fwin.loadFile(path.join(__dirname, 'flashcard_review.html'));
