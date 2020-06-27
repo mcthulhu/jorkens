@@ -697,10 +697,14 @@ const reviewFlashcards = exports.reviewFlashcards = () => {
 			if(err) {
 				return console.log(err);
 			}
-			console.log(len + " flashcards: " + data);
+			// console.log(len + " flashcards: " + data);
+			
+			mainWindow.webContents.send('start-flashcard-review', data);
 		}
 	);
 }
+
+
 
 const exportForAnki = exports.exportForAnki = () => {
 	var data="";

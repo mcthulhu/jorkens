@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+    <title>Jorkens Flashcards</title>
+	<link rel="stylesheet" type="text/css" href="css/examples.css"/>
+	
+   </head>
+<body class="linedpaper"> 
+<h6>Jorkens Flashcard Review</h6>
+ <div id="testword">word</div>
+ <div id="examples"/>
+ <hr>
+ <div id="answer" onclick="turnOverFlashcard()">answer</div>
+  <hr>
+  <div id="fctoolbar">
+ <div id="button-box">
+  <button id="known" onClick="processFlashcard('known')">Known</button>
+  <button id="unknown" onClick="processFlashcard('not known')">Not known</button>
+   <button id="close" onClick="window.close()">Quit</button>
+</div>  
+  </div>
+ <div id="stats"/>
+ <label for="fcright">Score: </label>
+ <span id="fcright">0/0</span>
+ <span id="fctag"></span>
+ </div>
+ 
+	<script src="flashcard_review.js"></script>
+ </body>

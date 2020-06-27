@@ -1,4 +1,5 @@
-const { app, BrowserWindow, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
+const { app, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
+const { BrowserWindow } = require('electron').remote;
 const mainProcess = remote.require('./main.js');
 const fs = require("fs");
 const path = require('path');
@@ -12,7 +13,25 @@ rendition = null;
 lastLocation = null;
 url = null;
 
-
+ipcRenderer.on('start-flashcard-review', (event, data) => {
+	fs.writeFileSync(path.join(__dirname, 'flashcard_data.txt'), JSON.stringify(data));
+	var fwin= new BrowserWindow({
+		show: false,
+		width: 600,
+		height: 400,
+		frame: false,
+		webPreferences: {
+			nodeIntegration: false
+		}
+	});
+	fwin.loadFile(path.join(__dirname, 'flashcard_review.html'));
+	fwin.once('ready-to-show', () => {
+		fwin.show();
+	});
+	fwin.on('closed', () => {
+		fwin = null;
+    });
+});
 
 ipcRenderer.on('got-translation', (event, translation) => {
 	dialogs.alert(translation);
