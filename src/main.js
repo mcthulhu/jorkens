@@ -195,7 +195,7 @@ const createFlashcardWindow = exports.createFlashcardWindow = () => {
 		flashWindow.show();
 		flashWindow.webContents.insertText(term);
 		flashWindow.webContents.executeJavaScript('document.getElementById("def").focus()');
-		flashWindow.openDevTools();
+		// flashWindow.openDevTools();
 	});
 	flashWindow.on('closed', () => {
 		flashWindow = null;
@@ -708,23 +708,29 @@ const reviewFlashcards = exports.reviewFlashcards = () => {
 
 
 const exportForAnki = exports.exportForAnki = () => {
+	var language = global.sharedObject.language;
+	const fn = dialog.showSaveDialogSync(mainWindow, {
+		filters: [
+			{name: 'Flashcard export files', extensions: ['txt']}
+		]
+		
+	});
 	var data="";
-	/* db.each('SELECT * FROM flashcards WHERE language = ?', [language], function (tx, results) {
-		//flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP
-        for (var i = 0; i < len; i++) {
-		   var term=results.rows.item(i).term;
-		   var def=results.rows.item(i).def;
-		   var fclang=results.rows.item(i).language;
-		   var tags=results.rows.item(i).tags;
-		   var deck=results.rows.item(i).deck;
-		   var date=results.rows.item(i).date;
-		   var thisentry=term + "\t" + def + "\t" + tags + "\t" + fclang + "\t" + date + "\r\n";
-		   console.log(thisentry);
-            data+=thisentry;
-        }
-		fs.writeFile('C:\\Users\\' + getLogin() + '\\Desktop\\ankiexport.txt', data, 'utf8', errorHandler);
-	},function(len) {alert(len + " flashcards exported")}, errorHandler);
-	}); */
+	db.each('SELECT * FROM flashcards WHERE language = ?', [language],
+		function (err, row) {
+			data += row.term + "\t" + row.def + "\t" + row.language + row.tags + "\t" + row.date + "\r\n";
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			fs.writeFile(fn, data, function(err) {
+				if(err) {
+					return console.log(err);
+				}
+				console.log("File saved successfully with " + len + " rows written");
+			});
+	});	
 }
 
 const glossarySearch = exports.glossarySearch = (term) => {
