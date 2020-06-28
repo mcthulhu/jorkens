@@ -313,7 +313,7 @@ background-size: 100% 1.2em;
 	text-align: center;
 }
 
-#known {
+#known, #ok-btn {
 	background-color: #4CAF50; /* Green */
 	border: none;
   color: white;
@@ -325,12 +325,20 @@ background-size: 100% 1.2em;
   border-radius: 8px;
 }
 
-#known:hover {
+#known:hover, #ok-btn:hover {
 	font-weight: bold;
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
-#unknown {
+label {
+	font-weight: bold;
+}
+
+#term, #def, #tags {
+	width: 95%;
+}
+
+#unknown, #cancel-btn {
 	background-color: #f44336; /* Red */
 	border: none;
   color: white;
@@ -342,7 +350,7 @@ background-size: 100% 1.2em;
   border-radius: 8px;
 }
 
-#unknown:hover {
+#unknown:hover, #cancel-btn:hover {
 	font-weight: bold;
 	box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }

@@ -58,14 +58,19 @@ let db = new sqlite3.Database(dbPath, (err) => {
 	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 	  db.run('CREATE TABLE IF NOT EXISTS tm (srclang TEXT, tgtlang TEXT, source TEXT, target TEXT, tags TEXT)');
 	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
-	  db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
+	  db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
 	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
 	  db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
 	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');
 	  } catch (e) {
 		  console.log(e);
 	  }
-	  
+	 /*  try {
+		  db.run('ALTER TABLE library ADD COLUMN author TEXT');
+	  } catch (e) {
+		  console.log(e);
+	  }
+	   */
   }
   
 });
@@ -659,8 +664,8 @@ const saveEmailAddress = exports.saveEmailAddress = (newAddress) => {
 	storage.set('config', config);
 }
 
-const addToRecent = exports.addToRecent = (booktitle, file, language) => {
-	db.run("INSERT OR REPLACE INTO library(title, location, language) VALUES(?,?,?)", [booktitle, file, language]);
+const addToRecent = exports.addToRecent = (booktitle, author, file, language) => {
+	db.run("INSERT OR REPLACE INTO library(title, author, location, language) VALUES(?,?,?,?)", [booktitle, author, file, language]);
 };
 
 const clearBook = exports.clearBook = () => {
@@ -731,6 +736,22 @@ const exportForAnki = exports.exportForAnki = () => {
 				console.log("File saved successfully with " + len + " rows written");
 			});
 	});	
+}
+
+const showLibary = exports.showLibrary = () => {
+	// title TEXT PRIMARY KEY UNIQUE, location TEXT, tags TEXT, language TEXT, date DATETIME, author TEXT
+	var data = "";
+	db.each('SELECT * FROM library ORDER BY language, author', [],
+		function (err, row) {
+			data += row.language + "\t" + row.author + "\t" + row.title + row.tags + "\t" +row.location + "\t" + row.date + "\r\n";
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			
+			console.log(data);
+		});
 }
 
 const glossarySearch = exports.glossarySearch = (term) => {

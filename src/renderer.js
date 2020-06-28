@@ -57,7 +57,11 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
   }
   var controls = document.getElementById("controls");
    var currentPage = document.getElementById("current-percent");
-	var slider = document.createElement("input");
+   var sliders = document.getElementsByTagName("input");
+   if(sliders.length == 1) {
+	    var slider = document.createElement("input");
+   }
+   console.log(sliders);
 	var slide = function(){
 		var cfi = book.locations.cfiFromPercentage(slider.value / 100);
 		rendition.display(cfi);
@@ -113,7 +117,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		document.getElementById("toc").selectedIndex = chapter;
 		require('electron').remote.getGlobal('sharedObject').language=language;
 		mainProcess.enableDictionaries();
-	   mainProcess.addToRecent(booktitle, url, language);
+	   mainProcess.addToRecent(booktitle, author, url, language);
       
 	  
 		 var key = book.key()+'-locations';

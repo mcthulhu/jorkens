@@ -1121,7 +1121,7 @@ module.exports = function(mainWindow){
 	  {
 		  label: "Libary",
 		  click: () => {
-			  showLibrary();
+			  mainProcess.showLibrary();
 		  }
 	  },
 	  {
