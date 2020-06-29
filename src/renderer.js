@@ -13,6 +13,43 @@ rendition = null;
 lastLocation = null;
 url = null;
 
+ipcRenderer.on('library-data', (event, data) => {
+	var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Jorkens Flashcards</title>';
+	html += '<link rel="stylesheet" type="text/css" href="css/examples.css"/>';
+	html += '</head><body><h3>Book Library</h4><br><hr><br>';
+	html += '<table style = "width:100%"><tr><th>Language</th><th>Author</th>';
+	html += '<th>Title</th><th>Tags</th><th>Location</th><th>Last opened</th>';
+   console.log(html);
+	var entries = data.split('\r\n');
+	var len = entries.length;
+	var sep = '</td><td>';
+	for(var i=0;i<len;i++) {
+		var fields = entries[i].split('\t');
+		html+='<tr><td>' + fields.join(sep) + '</td></tr>';
+	}
+	
+	html+='</table><button onclick="window.close()">Close</button></body></html>';
+	fs.writeFileSync(path.join(__dirname, 'library.html'), html);
+	var libwin = new BrowserWindow({
+		show: false,
+		width: 800,
+		height: 600,
+		frame: false,
+		alwaysOnTop: true,
+		webPreferences: {
+			nodeIntegration: true
+		}
+	});
+	libwin.loadFile(path.join(__dirname, 'library.html'));
+	libwin.once('ready-to-show', () => {
+		libwin.show();
+	});
+	libwin.on('closed', () => {
+		fwin = null;
+    });
+});
+
+
 ipcRenderer.on('start-flashcard-review', (event, data) => {
 	fs.writeFileSync(path.join(__dirname, 'flashcard_data.txt'), JSON.stringify(data));
 	var fwin= new BrowserWindow({
@@ -61,7 +98,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
    if(sliders.length == 1) {
 	    var slider = document.createElement("input");
    }
-   console.log(sliders);
+   // console.log(sliders);
 	var slide = function(){
 		var cfi = book.locations.cfiFromPercentage(slider.value / 100);
 		rendition.display(cfi);

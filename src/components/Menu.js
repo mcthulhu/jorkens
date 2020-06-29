@@ -1119,7 +1119,7 @@ module.exports = function(mainWindow){
 	  label: 'Tools',
 	  submenu: [
 	  {
-		  label: "Libary",
+		  label: "Library",
 		  click: () => {
 			  mainProcess.showLibrary();
 		  }

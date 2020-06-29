@@ -739,18 +739,17 @@ const exportForAnki = exports.exportForAnki = () => {
 }
 
 const showLibary = exports.showLibrary = () => {
-	// title TEXT PRIMARY KEY UNIQUE, location TEXT, tags TEXT, language TEXT, date DATETIME, author TEXT
 	var data = "";
 	db.each('SELECT * FROM library ORDER BY language, author', [],
 		function (err, row) {
-			data += row.language + "\t" + row.author + "\t" + row.title + row.tags + "\t" +row.location + "\t" + row.date + "\r\n";
+			data += row.language + "\t" + row.author + "\t" + row.title + "\t" + row.tags + "\t" +row.location + "\t" + row.date + "\r\n";
 		}, 
 		function(err, len) {
 			if(err) {
 				return console.log(err);
 			}
 			
-			console.log(data);
+			mainWindow.webContents.send('library-data', data);
 		});
 }
 
