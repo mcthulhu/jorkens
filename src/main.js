@@ -748,9 +748,31 @@ const showLibary = exports.showLibrary = () => {
 			if(err) {
 				return console.log(err);
 			}
-			
-			mainWindow.webContents.send('library-data', data);
-		});
+			var libwin = new BrowserWindow({
+		show: false,
+		width: 800,
+		height: 600,
+		frame: false,
+		alwaysOnTop: true,
+		webPreferences: {
+			nodeIntegration: true
+		}
+	});
+	libwin.loadFile(path.join(__dirname, 'library.html'));
+	libwin.webContents.once('did-finish-load', () => {
+		libwin.webContents.send('library-data', data);
+		console.log('main.js sends libary data ');
+	});
+	libwin.once('ready-to-show', () => {
+		
+		libwin.webContents.openDevTools();
+		libwin.show();
+		
+	});
+	libwin.on('closed', () => {
+		libwin = null;
+    });
+	});
 }
 
 const glossarySearch = exports.glossarySearch = (term) => {

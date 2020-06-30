@@ -13,43 +13,6 @@ rendition = null;
 lastLocation = null;
 url = null;
 
-ipcRenderer.on('library-data', (event, data) => {
-	var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Jorkens Flashcards</title>';
-	html += '<link rel="stylesheet" type="text/css" href="css/examples.css"/>';
-	html += '</head><body><h3>Book Library</h4><br><hr><br>';
-	html += '<table style = "width:100%"><tr><th>Language</th><th>Author</th>';
-	html += '<th>Title</th><th>Tags</th><th>Location</th><th>Last opened</th>';
-   console.log(html);
-	var entries = data.split('\r\n');
-	var len = entries.length;
-	var sep = '</td><td>';
-	for(var i=0;i<len;i++) {
-		var fields = entries[i].split('\t');
-		html+='<tr><td>' + fields.join(sep) + '</td></tr>';
-	}
-	
-	html+='</table><button onclick="window.close()">Close</button></body></html>';
-	fs.writeFileSync(path.join(__dirname, 'library.html'), html);
-	var libwin = new BrowserWindow({
-		show: false,
-		width: 800,
-		height: 600,
-		frame: false,
-		alwaysOnTop: true,
-		webPreferences: {
-			nodeIntegration: true
-		}
-	});
-	libwin.loadFile(path.join(__dirname, 'library.html'));
-	libwin.once('ready-to-show', () => {
-		libwin.show();
-	});
-	libwin.on('closed', () => {
-		fwin = null;
-    });
-});
-
-
 ipcRenderer.on('start-flashcard-review', (event, data) => {
 	fs.writeFileSync(path.join(__dirname, 'flashcard_data.txt'), JSON.stringify(data));
 	var fwin= new BrowserWindow({
@@ -68,6 +31,7 @@ ipcRenderer.on('start-flashcard-review', (event, data) => {
 	});
 	fwin.on('closed', () => {
 		fwin = null;
+		fs.unlinkSync(path.join(__dirname, 'flashcard_data.txt'));
     });
 });
 
@@ -368,6 +332,7 @@ window.addEventListener('contextmenu', (e) => {
 }, false);
 
 const makeRangeCfi = (a, b) => {
+	// from johnfactotum
     const CFI = new ePub.CFI()
     const start = CFI.parse(a), end = CFI.parse(b)
     const cfi = {
@@ -412,6 +377,8 @@ ipcRenderer.on('get-book-contents', () => {
 			});
 		});
 	}); */
+	console.log(book.locations[0]);
+	console.log(book.locations[book.locations.length - 1]);
 	const CFI = new ePub.CFI();
 	var firstLocation = require('electron').remote.getGlobal('sharedObject').firstLocation;
 	console.log(firstLocation);
