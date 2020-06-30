@@ -240,6 +240,13 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
       }
 		lastLocation=rendition.currentLocation().start.cfi;
 		mainProcess.updateConfigLocation(url, lastLocation);
+		let spineItem = book.spine.get(lastLocation);
+        let navItem = book.navigation.get(spineItem.href);
+		//console.log("navItem is " + JSON.stringify(navItem));
+		//console.log(navItem.id.split('-')[1].trim());
+		var navpoint = navItem.id.split('-')[1].trim();
+		document.getElementById('toc').selectedIndex = navpoint - 1;
+		
     });
 
     rendition.on("layout", function(layout) {

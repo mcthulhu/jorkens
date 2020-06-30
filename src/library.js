@@ -3,6 +3,7 @@ const { BrowserWindow } = require('electron').remote;
 const mainProcess = remote.require('./main.js');
 const fs = require("fs");
 const path = require('path');
+const storage = require('electron-json-storage');
 
 var table=document.querySelector('#booklist');
 
@@ -19,6 +20,7 @@ ipcRenderer.on('library-data', (event, data) => {
 			var newcell=document.createElement("td");
 			newcell.textContent=fields[j];
 			newrow.addEventListener('click', function () {
+				
 				mainProcess.openFile(this.getElementsByTagName("td")[4].textContent, 0, 0);
 				window.close();
 			});
