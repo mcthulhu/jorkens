@@ -14,7 +14,6 @@ lastLocation = null;
 url = null;
 
 ipcRenderer.on('start-flashcard-review', (event, data) => {
-	fs.writeFileSync(path.join(__dirname, 'flashcard_data.txt'), JSON.stringify(data));
 	var fwin= new BrowserWindow({
 		show: false,
 		width: 600,
@@ -26,12 +25,15 @@ ipcRenderer.on('start-flashcard-review', (event, data) => {
 		}
 	});
 	fwin.loadFile(path.join(__dirname, 'flashcard_review.html'));
+	fwin.webContents.once('did-finish-load', () => {
+		fwin.webContents.send('flashcard-data', data);
+	});
 	fwin.once('ready-to-show', () => {
 		fwin.show();
+		//fwin.webContents.openDevTools();
 	});
 	fwin.on('closed', () => {
 		fwin = null;
-		fs.unlinkSync(path.join(__dirname, 'flashcard_data.txt'));
     });
 });
 
@@ -51,8 +53,7 @@ ipcRenderer.on('get-user-email', (event, oldaddress) => {
     })
 });
 
-ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
-	// console.log("chapter in file-opened is " + chapter);
+ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
@@ -115,7 +116,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		var language=book.package.metadata.language;
 		language=language.substring(0, 2);
 		document.getElementById("title").textContent=author + " - " + booktitle + " (" + language + ")";
-		document.getElementById("toc").selectedIndex = chapter;
+		// document.getElementById("toc").selectedIndex = chapter;
 		require('electron').remote.getGlobal('sharedObject').language=language;
 		mainProcess.enableDictionaries();
 	   mainProcess.addToRecent(booktitle, author, url, language);
@@ -217,13 +218,12 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
             $options[i].setAttribute("selected", "");
           }
         }
-		$select.selectedIndex = chapter;
+		// $select.selectedIndex = chapter;
       }
 
     });
 
     rendition.on("relocated", function(location){
-	 //console.log(location);
       var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
       var prev = book.package.metadata.direction === "rtl" ?  document.getElementById("next") : document.getElementById("prev");
 
@@ -242,8 +242,6 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 		mainProcess.updateConfigLocation(url, lastLocation);
 		let spineItem = book.spine.get(lastLocation);
         let navItem = book.navigation.get(spineItem.href);
-		//console.log("navItem is " + JSON.stringify(navItem));
-		//console.log(navItem.id.split('-')[1].trim());
 		var navpoint = navItem.id.split('-')[1].trim();
 		document.getElementById('toc').selectedIndex = navpoint - 1;
 		
@@ -289,7 +287,7 @@ ipcRenderer.on('file-opened', (event, file, content, position, chapter) => {
 					var index = $select.selectedIndex,
 							url = $select.options[index].getAttribute("ref");
 					// save current chapter location to config
-					mainProcess.updateConfigChapter(index);
+					// mainProcess.updateConfigChapter(index);
 					rendition.display(url);
 					return false;
 			};

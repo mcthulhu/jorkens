@@ -604,25 +604,25 @@ const chooseBook = exports.chooseBook = () => {
 	} else {
 		position = 0;
 	}
-	if(!config.chapter) {
+	/* if(!config.chapter) {
 		config.chapter = 0;
 	}
-	console.log("config.chapter in choosebook is " + config.chapter);
-	if (files) { openFile(files[0], position, config.chapter) }
+	console.log("config.chapter in choosebook is " + config.chapter); */
+	if (files) { openFile(files[0], position) } // removed config.chapter argument
 };
 
-const openFile = exports.openFile = (file, position, chapter) => {
+const openFile = exports.openFile = (file, position) => { // removed chapter argument
   clearBook();
   const content = fs.readFileSync(file, "binary");
   url = file;
   config.lastBook=file;
   
-  if(!config.chapter) {
+  /* if(!config.chapter) {
 	  config.chapter = 0;
   }
-  var chapter = config.chapter;
+  var chapter = config.chapter; */
   storage.set('config', config);
-  mainWindow.webContents.send('file-opened', file, content, position, chapter);
+  mainWindow.webContents.send('file-opened', file, content, position); // removed chapter argument
 };
 
 const updateConfigLocation = exports.updateConfigLocation = (file, location) => {
@@ -630,10 +630,10 @@ const updateConfigLocation = exports.updateConfigLocation = (file, location) => 
 	storage.set('config', config);
 };
 
-const updateConfigChapter = exports.updateConfigChapter = (chapter) => {
+/* const updateConfigChapter = exports.updateConfigChapter = (chapter) => {
 	config.chapter = chapter;
 	storage.set('config', config);
-};
+}; */
 
 const updateNativeLanguage = exports.updateNativeLanguage = () => {
 	if(config.native) {
@@ -763,11 +763,9 @@ const showLibary = exports.showLibrary = () => {
 		libwin.webContents.send('library-data', data);
 		console.log('main.js sends libary data ');
 	});
-	libwin.once('ready-to-show', () => {
-		
-		libwin.webContents.openDevTools();
-		libwin.show();
-		
+	libwin.once('ready-to-show', () => {		
+		//libwin.webContents.openDevTools();
+		libwin.show();		
 	});
 	libwin.on('closed', () => {
 		libwin = null;

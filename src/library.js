@@ -20,8 +20,8 @@ ipcRenderer.on('library-data', (event, data) => {
 			var newcell=document.createElement("td");
 			newcell.textContent=fields[j];
 			newrow.addEventListener('click', function () {
-				
-				mainProcess.openFile(this.getElementsByTagName("td")[4].textContent, 0, 0);
+				// removed chapter argument, still need to get last position instead of 0
+				mainProcess.openFile(this.getElementsByTagName("td")[4].textContent, 0); 
 				window.close();
 			});
 			newrow.appendChild(newcell);
