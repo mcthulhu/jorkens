@@ -676,10 +676,12 @@ const addToDictionary = exports.addToDictionary = (term, def, lang) => {
 	if(term && def && lang) {
 		db.run('INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)', [lang, term, def]);
 	}	
+	updateDBCounts();
 };
 
 const addPairToTM = exports.addPairToTM = () => {
-	
+	// 
+	updateDBCounts();
 }
 
 const addFlashcard = exports.addFlashcard = (term, def, language, tags) => {
@@ -736,6 +738,35 @@ const exportForAnki = exports.exportForAnki = () => {
 				console.log("File saved successfully with " + len + " rows written");
 			});
 	});	
+}
+
+const updateDBCounts = exports.updateDBCounts = () => {
+	var language = global.sharedObject.language;
+	var glosscount=0;
+	var tmcount=0;
+	var fccount=0;
+	db.get('SELECT count(*) AS cnt FROM tm WHERE srclang = ?', [language],
+		function(err, row) {
+			if(err) return console.log(err);
+			tmcount=row.cnt;
+			mainWindow.webContents.send('update-tm-count', tmcount);
+		}
+	);
+	db.get('SELECT count(*) AS cnt FROM dictionary WHERE lang = ?', [language],
+		function(err, row) {
+			if(err) return console.log(err);
+			glosscount=row.cnt;
+			mainWindow.webContents.send('update-gloss-count', glosscount);
+		}
+	);
+	db.get('SELECT count(*) AS cnt FROM flashcards WHERE language = ?', [language],
+		function(err, row) {
+			if(err) return console.log(err);
+			fccount=row.cnt;
+			mainWindow.webContents.send('update-fc-count', fccount);
+		}
+	);
+	
 }
 
 const showLibary = exports.showLibrary = () => {
@@ -930,7 +961,7 @@ const importTM = exports.importTM = () => {
 		}	
 		db.run("COMMIT");
 	});
-	
+	updateDBCounts();
 }
 
 const exportDictionary = exports.exportDictionary = () => {

@@ -163,7 +163,8 @@ body {
   left: 50%;
   width: 400px;
   margin-left: -200px;
-  text-align: center;
+  /* text-align: center; */
+  
 }
 
 #controls > input[type=range] {
@@ -381,3 +382,7 @@ label {
 	justify-content: space-around;
 }
 
+#glosscount, #tmcount, #fccount {
+	padding: 0px 20px 0px 10px;
+	font-size: 75%;
+}

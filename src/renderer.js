@@ -13,6 +13,19 @@ rendition = null;
 lastLocation = null;
 url = null;
 
+ipcRenderer.on('update-fc-count', (event, fccount) => {
+	document.getElementById('fccount').textContent = "Flashcards: " + fccount;
+});
+
+
+ipcRenderer.on('update-gloss-count', (event, glosscount) => {
+	document.getElementById('glosscount').textContent = "Glossary: " + glosscount;
+});
+
+ipcRenderer.on('update-tm-count', (event, tmcount) => {
+	document.getElementById('tmcount').textContent = "TM: " + tmcount;
+});
+
 ipcRenderer.on('start-flashcard-review', (event, data) => {
 	var fwin= new BrowserWindow({
 		show: false,
@@ -120,7 +133,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		require('electron').remote.getGlobal('sharedObject').language=language;
 		mainProcess.enableDictionaries();
 	   mainProcess.addToRecent(booktitle, author, url, language);
-      
+      mainProcess.updateDBCounts();
 	  
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
