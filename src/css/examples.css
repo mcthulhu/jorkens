@@ -69,7 +69,7 @@ body {
 }
 
 #toc {
-  display: block;
+  display: inline;
   margin: 10px auto;
   min-height: 18px;
 }
@@ -332,7 +332,7 @@ background-size: 100% 1.2em;
 }
 
 label {
-	font-weight: bold;
+	text-align: center;
 }
 
 #term, #def, #tags {
@@ -385,4 +385,10 @@ label {
 #glosscount, #tmcount, #fccount {
 	padding: 0px 20px 0px 10px;
 	font-size: 75%;
+}
+
+#toclabel {
+	display: block;
+	text-align: center;
+	width: 80em;
 }

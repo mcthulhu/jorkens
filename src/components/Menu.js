@@ -205,15 +205,19 @@ module.exports = function(mainWindow){
 	visible: false,
 	submenu: [
 	{ label: 'Search Dict.cn',
-	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('dictcn');
        	 }
     },
 	{ label: 'Search MDBG',
-	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('mdbg');
+       	 }
+    },
+	
+	{ label: 'Search Yellowbridge',
+	click: () => {
+          	mainProcess.createSearchWindow('yellowbridge');
        	 }
     },
 	
@@ -1125,9 +1129,9 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  {
-		  label: "Get book text",
+		  label: "Save current chapter to file",
 		  click: () => {
-			  mainProcess.getBookContents();
+			  mainProcess.saveChapterToFile();
 		  }
 	  },
 	  {

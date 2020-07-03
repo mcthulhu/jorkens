@@ -536,6 +536,10 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var url = "https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb=" + term;
 	}
 	
+	if(mode=='yellowbridge') {
+		var url = "https://www.yellowbridge.com/chinese/dictionary.php?word=" + term;
+	}
+	
 	if(mode == 'lingueeTM') {
 		term=term.replace(/ /g, "+");
 		var langname = getFullLanguageName(language);
@@ -792,7 +796,6 @@ const showLibary = exports.showLibrary = () => {
 	libwin.loadFile(path.join(__dirname, 'library.html'));
 	libwin.webContents.once('did-finish-load', () => {
 		libwin.webContents.send('library-data', data);
-		console.log('main.js sends libary data ');
 	});
 	libwin.once('ready-to-show', () => {		
 		//libwin.webContents.openDevTools();
@@ -935,6 +938,7 @@ const enableDictionaries = exports.enableDictionaries = () => {
 
 const importTM = exports.importTM = () => {
 	var DOMParser = require('xmldom').DOMParser;
+	var flag=0;
 	var language = global.sharedObject.language;
 	var native= global.sharedObject.native;
 	const files = dialog.showOpenDialogSync(mainWindow, {
@@ -955,13 +959,28 @@ const importTM = exports.importTM = () => {
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<tulen;i++) {
 			var tuvs=tus[i].getElementsByTagName("tuv");
-			var src=tuvs[0].getElementsByTagName("seg")[0].textContent;
-			var tgt=tuvs[1].getElementsByTagName("seg")[0].textContent;
+			if(tuvs[0].getAttribute("xml:lang") == language && tuvs[1].getAttribute("xml:lang") == native) {
+				// console.log("first tuv has lang " + tuvs[0].getAttribute("xml:lang"));
+				var src=tuvs[0].getElementsByTagName("seg")[0].textContent;
+				var tgt=tuvs[1].getElementsByTagName("seg")[0].textContent;
+				flag=1;
+			} else if(tuvs[1].getAttribute("xml:lang") == language && tuvs[0].getAttribute("xml:lang") == native) {
+				
+					// console.log("second tuv has lang " + tuvs[1].getAttribute("xml:lang"));
+				var src=tuvs[1].getElementsByTagName("seg")[0].textContent;
+				var tgt=tuvs[0].getElementsByTagName("seg")[0].textContent;
+				flag=1;
+			} else if(flag==0) {
+				var src=tuvs[0].getElementsByTagName("seg")[0].textContent;
+				var tgt=tuvs[1].getElementsByTagName("seg")[0].textContent;
+			}
+					
 			db.run("INSERT OR REPLACE INTO tm(srclang, tgtlang, source, target) VALUES(?,?,?,?)", [language, native, src, tgt]);
 		}	
 		db.run("COMMIT");
+		updateDBCounts();
 	});
-	updateDBCounts();
+	
 }
 
 const exportDictionary = exports.exportDictionary = () => {
@@ -1136,6 +1155,12 @@ const googleTranslate = exports.googleTranslate = () => {
 
 const myMemory = exports.myMemory = () => {
 	
+}
+
+const saveChapterToFile = exports.saveChapterToFile = () => {
+	var txt = global.sharedObject.currentChapter;
+	console.log(txt);
+	console.log(JSON.stringify(global.sharedObject));
 }
 
 const getBookContents = exports.getBookContents = () => {

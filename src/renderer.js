@@ -12,6 +12,7 @@ book = ePub();
 rendition = null;
 lastLocation = null;
 url = null;
+locations=[];
 
 ipcRenderer.on('update-fc-count', (event, fccount) => {
 	document.getElementById('fccount').textContent = "Flashcards: " + fccount;
@@ -196,6 +197,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 				// Save out the generated locations to JSON
 				localStorage.setItem(book.key()+'-locations', book.locations.save());
+				locations=book.locations;
 
 		});
 		/*  book.getRange("epubcfi(/6/14[xchapter_001]!/4/2,/2/2/2[c001s0000]/1:0,/8/2[c001p0003]/1:663)").then(function(range) {
@@ -231,7 +233,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
             $options[i].setAttribute("selected", "");
           }
         }
-		// $select.selectedIndex = chapter;
+		//$select.selectedIndex = chapter;
       }
 
     });
@@ -252,10 +254,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         prev.style.visibility = "visible";
       }
 		lastLocation=rendition.currentLocation().start.cfi;
+		console.log("lastlocation is " + lastLocation);
 		mainProcess.updateConfigLocation(url, lastLocation);
 		let spineItem = book.spine.get(lastLocation);
         let navItem = book.navigation.get(spineItem.href);
+		console.log(navItem);
 		var navpoint = navItem.id.split('-')[1].trim();
+		console.log(navpoint);
 		document.getElementById('toc').selectedIndex = navpoint - 1;
 		
     });
@@ -308,7 +313,17 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		});
 		
 		rendition.hooks.content.register(function(contents, view) {
-			// console.log(contents);
+			var currentChapter=contents.content.textContent;
+			//console.log(currentChapter);
+			var docpath = remote.app.getPath('documents');
+			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+			fs.writeFile(fn, currentChapter, function(err) {
+				if(err) {
+					return console.log(err);
+				}
+				//console.log("chapter text saved successfully");
+			});
+			// require('electron').remote.getGlobal('sharedObject').currentChapter = currentChapter;
 			// var elements = contents.document.querySelectorAll('[video]');
 			// var items = Array.prototype.slice.call(elements);
 
@@ -395,8 +410,8 @@ ipcRenderer.on('get-book-contents', () => {
 			});
 		});
 	}); */
-	console.log(book.locations[0]);
-	console.log(book.locations[book.locations.length - 1]);
+	console.log(locations[0]);
+	console.log(locations[locations.length - 1]);
 	const CFI = new ePub.CFI();
 	var firstLocation = require('electron').remote.getGlobal('sharedObject').firstLocation;
 	console.log(firstLocation);
