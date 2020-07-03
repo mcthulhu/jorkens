@@ -1003,7 +1003,7 @@ module.exports = function(mainWindow){
 	  {
 		  label: "Add sentence pair to memory",
 		  click: () => {
-          	mainProcess.addPairToTM();
+          	mainProcess.createTMWindow();
        	 }
 	  },
 	  {

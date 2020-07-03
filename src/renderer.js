@@ -8,6 +8,7 @@ const { Menu, MenuItem } = remote
 const storage = require('electron-json-storage');
 const Dialogs = require('dialogs');
 const dialogs = Dialogs();
+var Mousetrap = require('mousetrap');
 book = ePub();
 rendition = null;
 lastLocation = null;

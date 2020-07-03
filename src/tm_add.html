@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="UTF-8">
+	    
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+<link rel="stylesheet" type="text/css" href="css/examples.css"/>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1"">
+<style>
+            body {
+                padding: 10px;
+                margin: 10px;
+            }
+           textarea {
+	width: 100%;
+          }
+          #btns {
+	display: flex;
+	align-items: flex-end;
+         }
+</style>
+</head>
+
+<body>
+<div>
+<label for="source">Source segment</label> <textarea rows="5" id="source"></textarea>
+<label for="target">Target segment</label> <textarea rows="5"  id="target"></textarea>
+</div>
+<div id="button-box">
+                  <button id="cancel-btn">Cancel</button>
+                  <button id="ok-btn">OK</button>
+             </div>
+
+<script>require('./tm_add')</script>
+
+</body>

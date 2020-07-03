@@ -182,6 +182,31 @@ const createGlossWindow = exports.createGlossWindow = () => {
     });
 };
 
+const createTMWindow = exports.createTMWindow = () => {
+	var source = global.sharedObject.selection;
+	source=source.trim();
+	tmWindow = new BrowserWindow({
+		show: false,
+		width: 600,
+		height: 400,
+		frame: false,
+		webPreferences: {
+        nodeIntegration: true
+    }
+	});
+	tmWindow.loadFile(path.join(__dirname, 'tm_add.html'));
+	
+	// tmWindow.webContents.openDevTools();
+	tmWindow.once('ready-to-show', () => {
+		tmWindow.show();
+		tmWindow.webContents.insertText(source);
+		tmWindow.webContents.executeJavaScript('document.getElementById("target").focus()');
+	});
+	tmWindow.on('closed', () => {
+		tmWindow = null;
+    });
+};
+
 const createFlashcardWindow = exports.createFlashcardWindow = () => {
 	var term = global.sharedObject.selection;
 	term=term.trim();
@@ -684,9 +709,12 @@ const addToDictionary = exports.addToDictionary = (term, def, lang) => {
 	updateDBCounts();
 };
 
-const addPairToTM = exports.addPairToTM = () => {
-	// 
-	updateDBCounts();
+const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
+	var tgtlang = global.sharedObject.native;
+	if(source && target && srclang) {
+		db.run('INSERT OR REPLACE INTO tm(srclang, tgtlang, source, target) VALUES(?,?,?,?)', [srclang, tgtlang, source, target]);
+	}	
+	updateDBCounts(); 
 }
 
 const addFlashcard = exports.addFlashcard = (term, def, language, tags) => {
@@ -863,7 +891,7 @@ const concordance = exports.concordance = () => {
 	//console.log("searching for " + term + " in memory");
 	var html="<!DOCTYPE html><html><head><title>Concordance search results</title>";
 	html+='</head><body><table style="border: solid 1px 	black"; table-layout: fixed; width: 100%;><thead><tr><th>Source</th><th>Translation</th></tr><tbody>';
-    db.each('SELECT * FROM tm WHERE srclang = ? AND source LIKE ?', [global.sharedObject.language, "%"+term+"%"], 
+    db.each('SELECT * FROM tm WHERE srclang = ? AND source LIKE ? LIMIT 100', [global.sharedObject.language, "%"+term+"%"], 
 		function (err, row) {
 			if(err) console.log(err);
 	 else {
@@ -1197,9 +1225,10 @@ const getChapterWordFrequencies = exports.getChapterWordFrequencies = () => {
 		}
 	);
 	var output=pairlist.join('\r\n');
+	output+='\r\n';
 	const fo = dialog.showSaveDialogSync(mainWindow, {
 		filters: [
-			{name: 'Save file', extensions: ['txt']}
+			{name: 'Save file', extensions: ['csv']}
 		]		
 	});
 	
