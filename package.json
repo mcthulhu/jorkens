@@ -59,6 +59,7 @@
     "node-xml-stream": "^1.0.2",
     "python-shell": "^2.0.1",
     "sqlite3": "^4.2.0",
+    "underscore": "^1.10.2",
     "xliff": "^5.0.5",
     "xml2js": "^0.4.23",
     "xmldom": "^0.3.0"

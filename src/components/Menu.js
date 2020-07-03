@@ -1129,9 +1129,9 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  {
-		  label: "Save current chapter to file",
+		  label: "Generate word frequency list for chapter",
 		  click: () => {
-			  mainProcess.saveChapterToFile();
+			  mainProcess.getChapterWordFrequencies();
 		  }
 	  },
 	  {

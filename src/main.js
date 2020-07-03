@@ -5,6 +5,7 @@ const qs = require("querystring");
 const menu = require('./components/menu');
 const storage = require('electron-json-storage');
 const xml2js = require('xml2js');
+const _ = require('underscore');
  
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -1158,9 +1159,52 @@ const myMemory = exports.myMemory = () => {
 }
 
 const saveChapterToFile = exports.saveChapterToFile = () => {
-	var txt = global.sharedObject.currentChapter;
-	console.log(txt);
-	console.log(JSON.stringify(global.sharedObject));
+	
+}
+
+function tokenizeWords(s) {
+	s=s.trim();
+	var words=s.split(/[\u0009\u000a\u000b\u000d\u0020\u00a0\u2000-\u2009\u200a\u2028\u2029\u202f\u3000\d\u2000-\u2069»:«,\.!)(\[\]\?;»«;:']+/u);
+	words=words.filter(function(n) { return n != ""});
+	return(words);
+}
+
+const getChapterWordFrequencies = exports.getChapterWordFrequencies = () => {
+	var freqs={};
+	var docpath = app.getPath('documents');
+	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+	var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	console.log(chaptertext);
+	var words=tokenizeWords(chaptertext);
+	var len=words.length;
+	
+	for(var i=0;i<len;i++) {
+		if(!freqs[words[i]]) {
+			freqs[words[i]] = 1;
+		} else {
+			freqs[words[i]] += 1;
+		}
+	}
+	var pairlist=_.pairs(freqs);
+	var vocabSize=pairlist.length;
+	var textRich=vocabSize/len;
+	textRich=textRich.toFixed(2);
+	pairlist=pairlist.sort(function(a,b) 
+		{ 
+			if(a[1] < b[1]) return 1;
+			if(a[1] > b[1]) return -1;
+			return 0;
+		}
+	);
+	var output=pairlist.join('\r\n');
+	const fo = dialog.showSaveDialogSync(mainWindow, {
+		filters: [
+			{name: 'Save file', extensions: ['txt']}
+		]		
+	});
+	
+	fs.writeFileSync(fo, output);
+
 }
 
 const getBookContents = exports.getBookContents = () => {
