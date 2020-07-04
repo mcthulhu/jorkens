@@ -186,15 +186,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 					rendition.display(cfi);
 				}, false);
 
-				// Listen for location changed event, get percentage from CFI
-				rendition.on('relocated', function(location){
-						var percent = book.locations.percentageFromCfi(location.start.cfi);
-						var percentage = Math.floor(percent * 100);
-						if(!mouseDown) {
-								slider.value = percentage;
-						}
-						currentPage.value = percentage;
-				});
+				
 
 				// Save out the generated locations to JSON
 				localStorage.setItem(book.key()+'-locations', book.locations.save());
@@ -240,6 +232,14 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
     });
 
     rendition.on("relocated", function(location){
+		// Listen for location changed event, get percentage from CFI
+		var percent = book.locations.percentageFromCfi(location.start.cfi);
+		var percentage = Math.floor(percent * 100);
+		if(!mouseDown) {
+			slider.value = percentage;
+		}
+		currentPage.value = percentage;
+				
       var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
       var prev = book.package.metadata.direction === "rtl" ?  document.getElementById("next") : document.getElementById("prev");
 

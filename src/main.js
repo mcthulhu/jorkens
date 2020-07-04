@@ -55,14 +55,19 @@ let db = new sqlite3.Database(dbPath, (err) => {
   } else {
 	  console.log('Connected to the jorkens database.');
 	  try {
-	  db.run('CREATE TABLE IF NOT EXISTS dictionary (lang TEXT, term TEXT, def TEXT, tags TEXT, context TEXT, times INTEGER DEFAULT 1)');
-	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
-	  db.run('CREATE TABLE IF NOT EXISTS tm (srclang TEXT, tgtlang TEXT, source TEXT, target TEXT, tags TEXT)');
-	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
-	  db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
-	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
-	  db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
-	  db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');
+		db.run('CREATE TABLE IF NOT EXISTS dictionary (lang TEXT, term TEXT, def TEXT, tags TEXT, context TEXT, times INTEGER DEFAULT 1)');	  
+		db.run('CREATE TABLE IF NOT EXISTS tm (srclang TEXT, tgtlang TEXT, source TEXT, target TEXT, tags TEXT)');	  
+		db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
+		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
+	  } catch (e) {
+		  console.log(e);
+	  }
+	  
+	  try {
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');		  
 	  } catch (e) {
 		  console.log(e);
 	  }
