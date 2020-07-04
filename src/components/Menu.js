@@ -1089,7 +1089,9 @@ module.exports = function(mainWindow){
 	  label: 'External',
 	  submenu: [
 		{
-		  label: 'Python scripts'
+		  label: 'Python scripts',
+		  id: 'python',
+		  submenu: []
 		}
 	  ]
   },

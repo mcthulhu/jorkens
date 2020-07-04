@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, globalShortcut, shell } = require('electron');
+const { app, BrowserWindow, Menu, MenuItem, dialog, globalShortcut, shell } = require('electron');
 const fs = require("fs");
 const path = require('path');
 const qs = require("querystring");
@@ -6,6 +6,7 @@ const menu = require('./components/menu');
 const storage = require('electron-json-storage');
 const xml2js = require('xml2js');
 const _ = require('underscore');
+const {PythonShell} = require('python-shell')
  
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -121,7 +122,7 @@ const createWindow = () => {
   });
 
 Menu.setApplicationMenu(menu(mainWindow));
-	
+buildPythonMenu();
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -1270,4 +1271,25 @@ const WindowsTTS = exports.WindowsTTS = () => {
 		ssWindow = null;
     });
 	
+}
+
+const buildPythonMenu = exports.buildPythonMenu = () => {
+	var myMenu=Menu.getApplicationMenu();
+	var pythonmenu = myMenu.items[7].submenu.getMenuItemById('python').submenu;
+	console.log(pythonmenu);
+	var pythonpath = path.join(docpath, 'Jorkens', 'Python');
+	fs.readdir(pythonpath, (err, files) => {
+		files.forEach(file => {
+			var thisscript = path.join(docpath, 'Jorkens', 'Python', file);
+			pythonmenu.append(new MenuItem ({
+				label: file,
+				click() {
+					PythonShell.run(thisscript, null, function (err) {
+						if (err) throw err;
+						console.log('finished');
+					});
+				}
+			}))
+		});
+	});
 }
