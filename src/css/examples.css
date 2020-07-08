@@ -392,3 +392,34 @@ label {
 	text-align: center;
 	width: 80em;
 }
+
+table {
+	border: 2px solid #CCCCCC;
+	border-collapse: collapse;
+}
+
+table td, #booklist th {
+	border: 1px solid #CCC;
+	padding: 10px;
+}
+
+table th {
+	font-weight: bold;
+    font-size: 16px;
+	background-color: #DDE9FF;
+}
+
+table tr:nth-of-type(2n + 2) {
+    background-color: #ECF7FF;
+}
+
+table tr:nth-of-type(2n + 3) {
+    background-color: #FBFDFF;
+}
+
+th {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
