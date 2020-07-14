@@ -77,6 +77,7 @@ module.exports = function(mainWindow){
        	 }
     },
 	{ label: 'Search Wordreference',
+	accelerator: 'CmdOrCtrl+Shift+W',
 	click: () => {
           	mainProcess.createSearchWindow('wf');
        	 }
@@ -1136,6 +1137,14 @@ module.exports = function(mainWindow){
 			  mainProcess.getChapterWordFrequencies();
 		  }
 	  },
+	  
+	  {
+		  label: "Extract book text for analysis",
+		  click: () => {
+			  mainProcess.getBookContents();
+		  }
+	  },
+	  
 	  {
 		  label: "Set native language",
 		  click: () => {

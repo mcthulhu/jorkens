@@ -91,9 +91,10 @@ const createWindow = () => {
     height: 850,
 	webPreferences: {
         nodeIntegration: true,
-		nativeWindowOpen: true
+		nativeWindowOpen: true,
+		enableRemoteModule: true
     }, 
-	icon: __dirname + '/book_open.png'
+	icon: __dirname + '/book_open.png'	
   });
   
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -165,6 +166,7 @@ app.on('activate', () => {
 });
 
 const createGlossWindow = exports.createGlossWindow = () => {
+	// if(glossWindow) return;
 	var term = global.sharedObject.selection;
 	term=term.trim();
 	glossWindow = new BrowserWindow({
@@ -1275,18 +1277,35 @@ const WindowsTTS = exports.WindowsTTS = () => {
 }
 
 const buildPythonMenu = exports.buildPythonMenu = () => {
+	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+	var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	var pythonpath = path.join(docpath, 'Jorkens', 'Python');
+	let options = {
+		mode: 'text',
+		pythonPath: path.join(home, 'Anaconda3', 'python.exe'),
+		pythonOptions: ['-u'], // get print results in real-time
+		scriptPath: pythonpath
+		// args: ['value1', 'value2', 'value3']
+	};
 	var myMenu=Menu.getApplicationMenu();
 	var pythonmenu = myMenu.items[7].submenu.getMenuItemById('python').submenu;
-	// console.log(pythonmenu);
-	var pythonpath = path.join(docpath, 'Jorkens', 'Python');
+	
 	fs.readdir(pythonpath, (err, files) => {
 		files.forEach(file => {
-			var thisscript = path.join(docpath, 'Jorkens', 'Python', file);
+			// var thisscript = path.join(docpath, 'Jorkens', 'Python', file);
 			pythonmenu.append(new MenuItem ({
 				label: file,
 				click() {
-					PythonShell.run(thisscript, null, function (err) {
+					let pyshell = new PythonShell(file, options);
+					pyshell.send(chaptertext);
+					pyshell.on('message', function (message) {
+						// received a message sent from the Python script (a simple "print" statement)
+						console.log(message);
+					});
+					pyshell.end(function (err,code,signal) {
 						if (err) throw err;
+						console.log('The exit code was: ' + code);
+						console.log('The exit signal was: ' + signal);
 						console.log('finished');
 					});
 				}
