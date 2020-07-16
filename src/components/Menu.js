@@ -1132,6 +1132,12 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  {
+		  label: "Run Anki Flashcards",
+		  click: () => {
+			  mainProcess.runAnki();
+		  }
+	  },
+	  {
 		  label: "Generate word frequency list for chapter",
 		  click: () => {
 			  mainProcess.getChapterWordFrequencies();

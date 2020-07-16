@@ -1313,3 +1313,17 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 		});
 	});
 }
+
+const runAnki = exports.runAnki = () => {
+	var child = require('child_process').execFile;
+	var executablePath = "C:\\Program Files (x86)\\Anki\\anki.exe";
+	var parameters = ["-b", "%APPDATA%\\Anki2\\User 1"];
+	child(executablePath, parameters, function(err, data) {
+		if(err){
+			console.error(err);
+		return;
+		}
+ 
+		console.log(data.toString());
+}	);
+}
