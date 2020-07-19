@@ -329,8 +329,38 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			fs.writeFile(fn, currentChapter, function(err) {
 				if(err) {
 					return console.log(err);
+				} else {
+					mainProcess.treeTagger();
 				}
+				
 			});
+			var range, textNode, offset;
+			const el2 = rendition.getContents()[0].documentElement;
+			//console.log(el2.textContent);
+			el2.addEventListener('mousemove', e => {
+				console.log(e.clientX, e.clientY);
+				/* range = document.caretRangeFromPoint(e.clientX, e.clientY);
+				//console.log(range);
+            textNode = range.startContainer;
+			//console.log(textNode);
+            offset = range.startOffset;
+			var data = textNode.data,
+            i = offset,
+            begin,
+            end;
+			console.log("data is " + data);
+			//Find the begin of the word (space)
+        while (i > 0 && data[i] !== " ") { --i; };
+        begin = i;
+
+        //Find the end of the word
+        i = offset;
+        while (i < data.length && data[i] !== " ") { ++i; };
+        end = i;
+		console.log(begin, end);
+        //Return the word under the mouse cursor
+        console.log(data.substring(begin, end)); */
+			}); 
 			
 		});
 		

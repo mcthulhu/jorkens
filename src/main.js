@@ -8,7 +8,10 @@ const xml2js = require('xml2js');
 const _ = require('underscore');
 const {PythonShell} = require('python-shell');
 const home = app.getPath('home');
- 
+const nlp = require('natural') ;
+
+var lemmas = [];
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
   app.quit();
@@ -628,6 +631,30 @@ function getFullLanguageName(digraph) {
 	return(lang);
 }
 
+const treeTagger = exports.treeTagger = () => {
+	lemmas = [];
+	var language = global.sharedObject.language;
+	var lang = getFullLanguageName(language).toLowerCase();
+	//var txt = global.sharedObject.selection;
+	//var tokenizer = new nlp.WordTokenizer();
+	//var tokens = tokenizer.tokenize(txt).join('\r\n');
+	//console.log(tokens);
+	var child = require('child_process').execFile;
+	var executablePath = "C:\\TreeTagger\\bin\\tag-" + lang + ".bat";
+	var input = path.join(docpath, "Jorkens", "currentChapter.txt");
+	var parameters = [input];
+	child(executablePath, parameters, function(err, data) {
+		console.log(err);
+		var lines = data.trim().split('\r\n');
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i];
+			var items = line.split('\t');
+			lemmas[items[0]] = items[2];
+		}
+		// console.log(lemmas);
+	});
+}
+
 const chooseBook = exports.chooseBook = () => {
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
@@ -847,6 +874,9 @@ const showLibary = exports.showLibrary = () => {
 
 const glossarySearch = exports.glossarySearch = (term) => {
 	term = term.trim();
+	if(lemmas[term]) {
+		term = lemmas[term];
+	}
 	// console.log("searching for " + term + " in glossary");
 	var html="<!DOCTYPE html><html><head><title>Glossary search results</title>";
 	html+='</head><body><table style="border: solid 1px black; table-layout: fixed; width: 100%;"><thead><tr><th>Term</th><th>Translation</th></tr><tbody>';

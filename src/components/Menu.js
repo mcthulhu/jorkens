@@ -1138,6 +1138,12 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  {
+		  label: "Run TreeTagger",
+		  click: () => {
+			  mainProcess.treeTagger();
+		  }
+	  },
+	  {
 		  label: "Generate word frequency list for chapter",
 		  click: () => {
 			  mainProcess.getChapterWordFrequencies();
