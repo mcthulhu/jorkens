@@ -21,4 +21,6 @@ Jorkens has so far been tested only on a Windows 10 machine, but it should be po
 
 The name Jorkens is from the storyteller character in the short story collections by Lord Dunsany. 
 
+## Lemmatization ##
 
+Jorkens is currently able to use TreeTagger at https://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/ to convert inflected words to their dictionary headword forms (lemmas) for improved lookup, e.g. highlighting the word "tuffamo" will show results for the infinitive form "tuffare." Users who wish to take advantage of this should install the Windows version per the instructions at that link, as well as the parameter files for the foreign languages they need to use. The graphical interface mentioned there is not necessary. The languages supported by TreeTagger include German, English, French, Italian, Danish, Swedish, Norwegian, Dutch, Spanish, Bulgarian, Russian, Portuguese, Galician, Greek, Chinese, Swahili, Slovak, Slovenian, Latin, Estonian, Polish, Romanian, and Czech. 
