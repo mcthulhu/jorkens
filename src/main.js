@@ -339,6 +339,12 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		url+="&x=34&y=12&query=" + term;
 		url+="&target=endic&ie=utf8&query_utf=&isOnlyViewEE=N";
 	}
+	if(mode == 'milog') {
+		var url = "https://milog.co.il/" + term;
+	}
+	if(mode == 'daum') {
+		var url = "https://dic.daum.net/search.do?q=" + term + "&dic=" + getISOLanguageCodeTrigraph(native);
+	}
 	if(mode == 'gramota') {
 		var url="http://www.gramota.ru/slovari/dic/?word=" + term + "+&all=x&lop=x&bts=x&zar=x&ag=x&ab=x&sin=x&lv=x&az=x&pe=x";
 	}

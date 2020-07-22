@@ -468,9 +468,13 @@ module.exports = function(mainWindow){
 	visible: false,
 	submenu: [
 	{ label: 'Search Morfix',
-	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('morfix');
+       	 }
+    },
+	{ label: 'Search Milog',
+	click: () => {
+          	mainProcess.createSearchWindow('milog');
        	 }
     },
 	
@@ -606,6 +610,11 @@ module.exports = function(mainWindow){
 	id: "ko",
 	visible: false,
 	submenu: [
+	{ label: 'Search Daum',
+	click: () => {
+          	mainProcess.createSearchWindow('daum');
+       	 }
+    },
 	{ label: 'Search Naver',
 	click: () => {
           	mainProcess.createSearchWindow('naver');
