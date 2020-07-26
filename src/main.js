@@ -636,19 +636,16 @@ function getFullLanguageName(digraph) {
 	var lang = iso.iso_639_1[digraph]['name'];
 	return(lang);
 }
-
+     
 const treeTagger = exports.treeTagger = () => {
 	lemmas = [];
 	var language = global.sharedObject.language;
 	var lang = getFullLanguageName(language).toLowerCase();
-	//var txt = global.sharedObject.selection;
-	//var tokenizer = new nlp.WordTokenizer();
-	//var tokens = tokenizer.tokenize(txt).join('\r\n');
-	//console.log(tokens);
+	
 	var child = require('child_process').execFile;
-	var executablePath = "C:\\TreeTagger\\bin\\tag-" + lang + ".bat";
-	var input = path.join(docpath, "Jorkens", "currentChapter.txt");
-	var parameters = [input];
+	var executablePath = "C:\\TreeTagger\\bin\\tree-tagger.exe";
+	var input = path.join(docpath, "Jorkens", "tokens.txt");
+	var parameters = ["C:\\TreeTagger\\lib\\" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
 	child(executablePath, parameters, function(err, data) {
 		console.log(err);
 		var lines = data.trim().split('\r\n');
@@ -657,7 +654,7 @@ const treeTagger = exports.treeTagger = () => {
 			var items = line.split('\t');
 			lemmas[items[0]] = items[2];
 		}
-		// console.log(lemmas);
+		console.log(lemmas);
 	});
 }
 

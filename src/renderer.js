@@ -10,6 +10,8 @@ const Dialogs = require('dialogs');
 const dialogs = Dialogs();
 const _ = require('underscore');
 var Mousetrap = require('mousetrap');
+const nlp = require('natural') ;
+
 book = ePub();
 rendition = null;
 lastLocation = null;
@@ -321,19 +323,27 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			};
 
 		});
-		
+   		
 		rendition.hooks.content.register(function(contents, view) {
 			var currentChapter=contents.content.textContent;
+			var tokenizer = new nlp.WordTokenizer();
+			var tokens = tokenizer.tokenize(currentChapter).join('\r\n');
 			var docpath = remote.app.getPath('documents');
 			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
 			fs.writeFile(fn, currentChapter, function(err) {
 				if(err) {
 					return console.log(err);
+				} 				
+			});
+			var fn = path.join(docpath, 'Jorkens', 'tokens.txt');
+			fs.writeFile(fn, tokens, function(err) {
+				if(err) {
+					return console.log(err);
 				} else {
 					mainProcess.treeTagger();
-				}
-				
+				}				
 			});
+			
 			var range, textNode, offset;
 			const el2 = rendition.getContents()[0].documentElement;
 			//console.log(el2.textContent);
