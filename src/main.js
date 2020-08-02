@@ -984,8 +984,9 @@ const importDictionary = exports.importDictionary = () => {
 	if (files) { var fn = files[0] }
 	fs.readFile(fn, "utf8", (err,data) => {
 		if(err) throw err;
-		var lines=data.split("\r\n");
+		var lines=data.split(/[\r\n]+/);
 		var len=lines.length;
+		console.log(len + " entries found");
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<len;i++) {
 			var pieces=lines[i].split("\t");
@@ -995,7 +996,9 @@ const importDictionary = exports.importDictionary = () => {
 			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", [pieces[2], pieces[0], pieces[1]]);
 		}
 		db.run("COMMIT");
+		updateDBCounts();
 	});
+	
 }
 
 const enableDictionaries = exports.enableDictionaries = () => {
@@ -1048,6 +1051,33 @@ const importTM = exports.importTM = () => {
 					
 			db.run("INSERT OR REPLACE INTO tm(srclang, tgtlang, source, target) VALUES(?,?,?,?)", [language, native, src, tgt]);
 		}	
+		db.run("COMMIT");
+		updateDBCounts();
+	});
+	
+}
+
+const importTabDelimitedSentences = exports.importTabDelimitedSentences = () => {
+	var language = global.sharedObject.language;
+	var native= global.sharedObject.native;
+	const files = dialog.showOpenDialogSync(mainWindow, {
+		properties: ['openFile'],
+		filters: [
+			{name: 'Tab-delimited text files', extensions: ['txt']}
+		]
+		
+	});
+	if (files) { var fn = files[0] }
+	fs.readFile(fn, "utf8", (err,data) => {
+		if(err) throw err;
+		var lines=data.split(/[\r\n]+/);
+		var len=lines.length;
+		console.log(len + " entries found");
+		db.run("BEGIN TRANSACTION");
+		for(var i=0;i<len;i++) {
+			var pieces=lines[i].split("\t");
+			db.run("INSERT OR REPLACE INTO tm(srclang, tgtlang, source, target) VALUES(?,?,?,?)", [language, native, pieces[0], pieces[1]]);
+		}
 		db.run("COMMIT");
 		updateDBCounts();
 	});

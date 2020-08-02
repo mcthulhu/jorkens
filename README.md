@@ -1,6 +1,8 @@
 # jorkens
 Jorkens is a desktop epub reader based on epub.js and intended for foreign language learners. The current version uses Electron.js, instead of NW.js like the previous version. Some functionality from the previous NW.js version has yet to be recreated. 
 
+![screen shot](screenshot.JPG)
+
 Jorkens can search for definitions of foreign words in numerous online dictionaries, and also contains a SQLite database to store a local glossary and translation memory. (Note: The local database is initially empty, and needs to be populated before search results can be returned.) A highlighted word or partial word will be automatically looked up in the glossary and any matches will be displayed; if none are found a concordance search will be done next (see next paragraph). Glossaries can be imported from and exported to text files. 
 
 Jorkens can also search Google Images for highlighted words; image search results can be surprisingly useful for showing the meanings of foreign words, as well as finding images to use in flashcards. 

@@ -1011,6 +1011,12 @@ module.exports = function(mainWindow){
        	 }
 	  },
 	  {
+		  label: "Import tab-delimited sentence pairs",
+		  click: () => {
+          	mainProcess.importTabDelimitedSentences();
+       	 }
+	  },
+	  {
 		  label: "Add sentence pair to memory",
 		  click: () => {
           	mainProcess.createTMWindow();
