@@ -1209,7 +1209,7 @@ const playPolly = exports.playPolly = () => {
 			var wstream = fs.createWriteStream(output);
 			wstream.write(data.AudioStream);
 			wstream.end();
-			shell.openItem(output);	
+			shell.openPath(output);	
 		}   
 	});
 }

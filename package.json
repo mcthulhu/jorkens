@@ -1,7 +1,7 @@
 {
   "name": "jorkens",
   "productName": "jorkens",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "My Electron application description",
   "main": "src/main.js",
   "scripts": {
