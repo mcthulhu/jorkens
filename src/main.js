@@ -53,38 +53,38 @@ try {
 	fs.mkdirSync(path.join(docpath, 'Jorkens', 'Python'));
 }
 const dbPath = path.join(docpath, 'Jorkens', 'db', 'jorkens.db');
+var exists = fs.existsSync(dbPath);
 
-let db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error(err.message);
-  } else {
-	  console.log('Connected to the jorkens database.');
-	  try {
+let db = new sqlite3.Database(dbPath, createTables); 
+
+function createTables() {
+	if(!exists) {
+		db.serialize(()  => {
 		db.run('CREATE TABLE IF NOT EXISTS dictionary (lang TEXT, term TEXT, def TEXT, tags TEXT, context TEXT, times INTEGER DEFAULT 1)');	  
 		db.run('CREATE TABLE IF NOT EXISTS tm (srclang TEXT, tgtlang TEXT, source TEXT, target TEXT, tags TEXT)');	  
 		db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
 		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
-	  } catch (e) {
-		  console.log(e);
-	  }
-	  
-	  try {
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
-		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');		  
-	  } catch (e) {
-		  console.log(e);
-	  }
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');	
+		console.log("created database tables");
+	});
+  
+	}
+	
+	  
 	 /*  try {
 		  db.run('ALTER TABLE library ADD COLUMN author TEXT');
 	  } catch (e) {
 		  console.log(e);
 	  }
 	   */
+	   
   }
   
-});
+  
+//});
 
 const createWindow = () => {
   // Create the browser window.
@@ -654,7 +654,7 @@ const treeTagger = exports.treeTagger = () => {
 			var items = line.split('\t');
 			lemmas[items[0]] = items[2];
 		}
-		console.log(lemmas);
+		// console.log(lemmas);
 	});
 }
 
@@ -875,11 +875,21 @@ const showLibary = exports.showLibrary = () => {
 	});
 }
 
+function normalizeSpelling(s, language) {
+	if(language == 'fa') {
+		s=s.replace(/\u064A/g, '\u06CC'); // change Arabic ye to Farsi ye
+	}
+	return(s);
+}
+
 const glossarySearch = exports.glossarySearch = (term) => {
+	var language = global.sharedObject.language;
 	term = term.trim();
+	term = normalizeSpelling(term, language);
 	if(lemmas[term]) {
 		term = lemmas[term];
 	}
+	
 	// console.log("searching for " + term + " in glossary");
 	var html="<!DOCTYPE html><html><head><title>Glossary search results</title>";
 	html+='</head><body><table style="border: solid 1px black; table-layout: fixed; width: 100%;"><thead><tr><th>Term</th><th>Translation</th></tr><tbody>';

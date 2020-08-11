@@ -20,6 +20,12 @@ module.exports = function(mainWindow){
           	mainProcess.clearBook();
        	 }
     },
+	{
+		  label: "Library",
+		  click: () => {
+			  mainProcess.showLibrary();
+		  }
+	  },
         
       { role: 'quit' }
     ]
@@ -1140,24 +1146,19 @@ module.exports = function(mainWindow){
   {
 	  label: 'Tools',
 	  submenu: [
-	  {
-		  label: "Library",
-		  click: () => {
-			  mainProcess.showLibrary();
-		  }
-	  },
+	  
 	  {
 		  label: "Run Anki Flashcards",
 		  click: () => {
 			  mainProcess.runAnki();
 		  }
 	  },
-	  {
+	  /* {
 		  label: "Run TreeTagger",
 		  click: () => {
 			  mainProcess.treeTagger();
 		  }
-	  },
+	  }, */
 	  {
 		  label: "Generate word frequency list for chapter",
 		  click: () => {

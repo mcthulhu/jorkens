@@ -20,6 +20,12 @@ locations=[];
 
 setUpMousetrapShortcuts();
 
+/* ipcRenderer.on('created-database-tables', (event) => {
+	var myNotification = new Notification('', {
+		body: 'initialized database tables'
+	});
+}); */
+
 ipcRenderer.on('update-fc-count', (event, fccount) => {
 	document.getElementById('fccount').textContent = "Flashcards: " + fccount;
 });
@@ -264,7 +270,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         prev.style.visibility = "visible";
       }
 		lastLocation=rendition.currentLocation().start.cfi;
-		console.log("lastlocation is " + lastLocation);
+		// console.log("lastlocation is " + lastLocation);
 		mainProcess.updateConfigLocation(url, lastLocation);
 		let spineItem = book.spine.get(lastLocation);
         let navItem = book.navigation.get(spineItem.href);
@@ -461,7 +467,10 @@ ipcRenderer.on('get-book-contents', () => {
 	
 	
 	
-	})
+	});
+	const myNotification = new Notification('', {
+		body: 'finished exporting book contents to text'
+	});
 	});
 });
 
