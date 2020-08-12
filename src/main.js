@@ -141,8 +141,8 @@ buildPythonMenu();
     // when you should delete the corresponding element.
     mainWindow = null;
 	db.close();
+	
   });
-  //mainWindow.webContents.executeJavaScript('console.log("test");');
 };
 
 // This method will be called when Electron has finished
@@ -153,6 +153,9 @@ app.on('ready', createWindow);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
+	
+	// delete temporary data files here?
+	
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -1389,8 +1392,9 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 
 const runAnki = exports.runAnki = () => {
 	var child = require('child_process').execFile;
-	var executablePath = "C:\\Program Files (x86)\\Anki\\anki.exe";
-	var parameters = ["-b", "%APPDATA%\\Anki2\\User 1"];
+	var executablePath = "C:\\Program Files\\Anki\\anki-console.exe";
+	//var parameters = ["-b", "%APPDATA%\\Anki2\\User 1"];
+	var parameters = [];
 	child(executablePath, parameters, function(err, data) {
 		if(err){
 			console.error(err);
