@@ -1146,6 +1146,48 @@ module.exports = function(mainWindow){
   {
 	  label: 'Tools',
 	  submenu: [
+	  {
+		  label: "Themes",
+		  submenu: [
+		  
+		  {
+		  label: "Dark",
+		  click: () => {
+			  mainProcess.setTheme('dark');
+		  }
+		},
+		{
+		  label: "Light",
+		  click: () => {
+			  mainProcess.setTheme('light');
+		  }
+		},
+		{
+		  label: "Sepia",
+		  click: () => {
+			  mainProcess.setTheme('sepia');
+		  }
+		},
+		{
+		  label: "Green on black",
+		  click: () => {
+			  mainProcess.setTheme('greenonblack');
+		  }
+		},
+		{
+		  label: "Ruby Blue",
+		  click: () => {
+			  mainProcess.setTheme('rubyblue');
+		  }
+		},
+	  {
+		  label: "Nord",
+		  click: () => {
+			  mainProcess.setTheme('nord');
+	      }
+	  },
+		  ]
+	  },
 	  
 	  {
 		  label: "Run Anki Flashcards",

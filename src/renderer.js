@@ -26,6 +26,10 @@ setUpMousetrapShortcuts();
 	});
 }); */
 
+ipcRenderer.on('change-theme', (event, mode) => {
+	rendition.themes.select(mode);
+});
+
 ipcRenderer.on('update-fc-count', (event, fccount) => {
 	document.getElementById('fccount').textContent = "Flashcards: " + fccount;
 });
@@ -379,6 +383,25 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			}); 
 			
 		});
+		
+	rendition.themes.register("dark", "css/themes.css");
+    rendition.themes.register("light", "css/themes.css");
+    rendition.themes.register("tan", "css/themes.css");
+
+
+
+    rendition.themes.default({
+      h2: {
+        'font-size': '32px',
+        color: 'purple'
+      },
+      p: {
+        "margin": '10px'
+      }
+    });
+
+    rendition.themes.select("sepia");
+    rendition.themes.fontSize("120%");
 		
 });
 

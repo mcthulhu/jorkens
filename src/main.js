@@ -130,7 +130,7 @@ Menu.setApplicationMenu(menu(mainWindow));
 buildPythonMenu();
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
 
 
@@ -1388,6 +1388,10 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 			}))
 		});
 	});
+}
+
+const setTheme = exports.setTheme = (mode) => {
+	mainWindow.webContents.send('change-theme', mode);
 }
 
 const runAnki = exports.runAnki = () => {

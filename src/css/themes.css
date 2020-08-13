@@ -1,0 +1,29 @@
+.dark {
+	background: #000;
+	color: #fff
+}
+
+.light {
+	background: #fff;
+	color: #000;
+}
+
+.sepia {
+	background: #efe7dd;
+	color: #5b4636;
+}
+
+.nord {
+	background: #2e3440;
+	color: #d8dee9;
+}
+
+.greenonblack {
+	background: #000;
+	color: lime;
+}
+
+.rubyblue {
+	background: #112435;
+	color: #fff;
+}
