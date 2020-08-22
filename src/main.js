@@ -130,7 +130,7 @@ Menu.setApplicationMenu(menu(mainWindow));
 buildPythonMenu();
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
 
 
@@ -141,6 +141,18 @@ buildPythonMenu();
     // when you should delete the corresponding element.
     mainWindow = null;
 	db.close();
+	var docpath = app.getPath('documents');
+	try {
+		var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+		fs.unlinkSync(fn);
+	} catch(e) {
+		console.log(e);
+	}
+	
+	fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+	fs.unlinkSync(fn);
+	fn = path.join(docpath, 'Jorkens', 'tokens.txt');
+	fs.unlinkSync(fn);
 	
   });
 };
@@ -887,7 +899,7 @@ function normalizeSpelling(s, language) {
 
 const glossarySearch = exports.glossarySearch = (term) => {
 	var language = global.sharedObject.language;
-	term = term.trim();
+	term = term.trim().toLowerCase();
 	term = normalizeSpelling(term, language);
 	if(lemmas[term]) {
 		term = lemmas[term];
@@ -946,7 +958,7 @@ const concordance = exports.concordance = () => {
 	//console.log("searching for " + term + " in memory");
 	var html="<!DOCTYPE html><html><head><title>Concordance search results</title>";
 	html+='</head><body><table style="border: solid 1px 	black"; table-layout: fixed; width: 100%;><thead><tr><th>Source</th><th>Translation</th></tr><tbody>';
-    db.each('SELECT * FROM tm WHERE srclang = ? AND source LIKE ? LIMIT 100', [global.sharedObject.language, "%"+term+"%"], 
+    db.each('SELECT * FROM tm WHERE srclang = ? AND source LIKE ? LIMIT 100', [global.sharedObject.language, "% "+term+"%"], 
 		function (err, row) {
 			if(err) console.log(err);
 	 else {
@@ -1282,13 +1294,13 @@ function tokenizeWords(s) {
 	return(words);
 }
 
-const getChapterWordFrequencies = exports.getChapterWordFrequencies = () => {
+const getWordFrequencies = exports.getWordFrequencies = () => {
 	var freqs={};
 	var docpath = app.getPath('documents');
-	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
-	var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
-	console.log(chaptertext);
-	var words=tokenizeWords(chaptertext);
+	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	console.log(booktext);
+	var words=tokenizeWords(booktext);
 	var len=words.length;
 	
 	for(var i=0;i<len;i++) {

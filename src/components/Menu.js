@@ -1202,18 +1202,12 @@ module.exports = function(mainWindow){
 		  }
 	  }, */
 	  {
-		  label: "Generate word frequency list for chapter",
+		  label: "Generate word frequency list",
 		  click: () => {
-			  mainProcess.getChapterWordFrequencies();
+			  mainProcess.getWordFrequencies();
 		  }
 	  },
 	  
-	  {
-		  label: "Extract book text for analysis",
-		  click: () => {
-			  mainProcess.getBookContents();
-		  }
-	  },
 	  
 	  {
 		  label: "Set native language",

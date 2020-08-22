@@ -225,7 +225,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
    // })
 
     var title = document.getElementById("title");
-
+	mainProcess.getBookContents();
     rendition.on("rendered", function(section){
       var current = book.navigation && book.navigation.get(section.href);
 	  
@@ -358,7 +358,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			const el2 = rendition.getContents()[0].documentElement;
 			//console.log(el2.textContent);
 			el2.addEventListener('mousemove', e => {
-				console.log(e.clientX, e.clientY);
+				// console.log(e.clientX, e.clientY);
 				/* range = document.caretRangeFromPoint(e.clientX, e.clientY);
 				//console.log(range);
             textNode = range.startContainer;
@@ -386,7 +386,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		
 	rendition.themes.register("dark", "css/themes.css");
     rendition.themes.register("light", "css/themes.css");
-    rendition.themes.register("tan", "css/themes.css");
+    rendition.themes.register("sepia", "css/themes.css");
 
 
 
@@ -475,6 +475,7 @@ ipcRenderer.on('get-book-contents', () => {
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
 				const doc=thisitem.document;
+				console.log(doc);
 				const el = doc.evaluate(
 					'/html/body',
 					doc,
@@ -483,17 +484,19 @@ ipcRenderer.on('get-book-contents', () => {
 					null
 				).iterateNext();
 				if(el) {
+					console.log(el);
 					fs.appendFileSync(fn, el.textContent);
+					console.log(el.textContent);
 				}
 			
 			})
 	
-	
+		
 	
 	});
 	const myNotification = new Notification('', {
-		body: 'finished exporting book contents to text'
-	});
+			body: 'book contents exported to text'
+		});
 	});
 });
 
