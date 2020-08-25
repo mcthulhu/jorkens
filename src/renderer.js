@@ -475,7 +475,6 @@ ipcRenderer.on('get-book-contents', () => {
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
 				const doc=thisitem.document;
-				console.log(doc);
 				const el = doc.evaluate(
 					'/html/body',
 					doc,
@@ -484,9 +483,8 @@ ipcRenderer.on('get-book-contents', () => {
 					null
 				).iterateNext();
 				if(el) {
-					console.log(el);
+//					console.log(el);
 					fs.appendFileSync(fn, el.textContent);
-					console.log(el.textContent);
 				}
 			
 			})
@@ -501,7 +499,7 @@ ipcRenderer.on('get-book-contents', () => {
 });
 
 function setUpMousetrapShortcuts() {
-	console.log("mousetrap");
+//	console.log("mousetrap");
 	Mousetrap.bind(['command+shift+w', 'ctrl+shift+w'], function() {
 		mainProcess.createSearchWindow('wf');
 		return false;

@@ -130,7 +130,7 @@ Menu.setApplicationMenu(menu(mainWindow));
 buildPythonMenu();
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
 
 
@@ -1366,7 +1366,12 @@ const WindowsTTS = exports.WindowsTTS = () => {
 
 const buildPythonMenu = exports.buildPythonMenu = () => {
 	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
-	var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	if(fs.existsSync(fn)) {
+		var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	
+	} else {
+		var chaptertext = '';
+	}
 	var pythonpath = path.join(docpath, 'Jorkens', 'Python');
 	let options = {
 		mode: 'text',
