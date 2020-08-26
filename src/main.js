@@ -656,11 +656,17 @@ const treeTagger = exports.treeTagger = () => {
 	lemmas = [];
 	var language = global.sharedObject.language;
 	var lang = getFullLanguageName(language).toLowerCase();
-	
-	var child = require('child_process').execFile;
-	var executablePath = "C:\\TreeTagger\\bin\\tree-tagger.exe";
 	var input = path.join(docpath, "Jorkens", "tokens.txt");
-	var parameters = ["C:\\TreeTagger\\lib\\" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
+	var child = require('child_process').execFile;
+	if(process.platform == 'win32') {
+		var executablePath = "C:\\TreeTagger\\bin\\tree-tagger.exe";
+		var parameters = ["C:\\TreeTagger\\lib\\" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
+	} else if(process.platform == 'linux') {
+		var executablePath = "~/TreeTagger/bin/tree-tagger";
+		var parameters = ["~/TreeTagger/lib/" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
+	}
+	
+	
 	child(executablePath, parameters, function(err, data) {
 		console.log(err);
 		var lines = data.trim().split('\r\n');
@@ -1372,18 +1378,24 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 	} else {
 		var chaptertext = '';
 	}
-	var pythonpath = path.join(docpath, 'Jorkens', 'Python');
+	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
+	if(process.platform == 'win32') {
+		var myPythonPath = path.join('C:', 'Python38', 'python.exe');
+	} else if(process.platform == 'linux') {
+		var myPythonPath = '/usr/bin/python3';
+	}
+
 	let options = {
 		mode: 'text',
-		pythonPath: path.join(home, 'Anaconda3', 'python.exe'),
+		pythonPath: myPythonPath,
 		pythonOptions: ['-u'], // get print results in real-time
-		scriptPath: pythonpath
+		scriptPath: pythonScriptPath
 		// args: ['value1', 'value2', 'value3']
 	};
 	var myMenu=Menu.getApplicationMenu();
 	var pythonmenu = myMenu.items[7].submenu.getMenuItemById('python').submenu;
 	
-	fs.readdir(pythonpath, (err, files) => {
+	fs.readdir(pythonScriptPath, (err, files) => {
 		files.forEach(file => {
 			// var thisscript = path.join(docpath, 'Jorkens', 'Python', file);
 			pythonmenu.append(new MenuItem ({
