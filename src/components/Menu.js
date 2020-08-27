@@ -1214,6 +1214,12 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  
+	  {
+		  label: "Verb conjugation (Verbix)",
+		  click: () => {
+			  mainProcess.createSearchWindow('verbix');
+		  }
+	  },
 	  
 	  {
 		  label: "Set native language",

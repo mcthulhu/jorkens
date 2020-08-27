@@ -276,6 +276,15 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		}
 	});
 	
+	if(mode == 'verbix') {
+		var fullLang = getFullLanguageName(language);
+		fullLang.charAt(0).toUpperCase();
+		if(lemmas[term]) {
+			term = lemmas[term];
+		}
+		var url = "https://verbix.com/webverbix/" + fullLang + "/" + term + ".html";
+	}
+	
 	if(mode=='images') {
 		var url="https://www.google.com/search?as_epq=" + term + "&as_sitesearch=wikipedia.org&tbm=isch";
 	}
