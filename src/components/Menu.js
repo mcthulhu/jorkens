@@ -1192,6 +1192,12 @@ module.exports = function(mainWindow){
 			  mainProcess.setTheme('lavender');
 	      }
 	  },
+	  {
+		  label: "Lavender on blue",
+		  click: () => {
+			  mainProcess.setTheme('lavenderonblue');
+	      }
+	  },
 		  ]
 	  },
 	  

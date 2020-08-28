@@ -337,7 +337,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		rendition.hooks.content.register(function(contents, view) {
 			var currentChapter=contents.content.textContent;
 			var tokenizer = new nlp.WordTokenizer();
-			var tokens = tokenizer.tokenize(currentChapter).join('\r\n');
+			if(process.platform == 'win32') {
+				var tokens = tokenizer.tokenize(currentChapter).join('\r\n');
+			} else if(process.platform == 'linux') {
+				var tokens = tokenizer.tokenize(currentChapter).join('\n');
+			}
+			
 			var docpath = remote.app.getPath('documents');
 			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
 			fs.writeFile(fn, currentChapter, function(err) {

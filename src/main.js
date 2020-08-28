@@ -671,14 +671,16 @@ const treeTagger = exports.treeTagger = () => {
 		var executablePath = "C:\\TreeTagger\\bin\\tree-tagger.exe";
 		var parameters = ["C:\\TreeTagger\\lib\\" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
 	} else if(process.platform == 'linux') {
-		var executablePath = "~/TreeTagger/bin/tree-tagger";
-		var parameters = ["~/TreeTagger/lib/" + lang + ".par", input, "-token", "-lemma", "-no-unknown"];
+		const os = require('os');
+		var home = os.homedir();
+		var executablePath = path.join(home, "TreeTagger", "bin", "tree-tagger");
+		var parameters = [path.join(home, "TreeTagger", "lib", lang + ".par"), input, "-token", "-lemma", "-no-unknown"];
 	}
 	
 	
 	child(executablePath, parameters, function(err, data) {
 		console.log(err);
-		var lines = data.trim().split('\r\n');
+		var lines = data.trim().split(/[\r\n]+/);
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i];
 			var items = line.split('\t');
