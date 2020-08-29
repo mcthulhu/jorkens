@@ -63,6 +63,7 @@
     "node-xml-stream": "^1.0.2",
     "python-shell": "^2.0.1",
     "sqlite3": "^5.0.0",
+    "stopword": "^1.0.1",
     "underscore": "^1.10.2",
     "xliff": "^5.0.6",
     "xml2js": "^0.4.23",

@@ -477,7 +477,6 @@ ipcRenderer.on('get-book-contents', () => {
 	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
 	book.loaded.spine.then((spine) => {
 		spine.each((item) => {
-			console.log(item.href);
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
 				const doc=thisitem.document;

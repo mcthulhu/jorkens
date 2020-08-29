@@ -186,7 +186,10 @@ app.on('activate', () => {
 const createGlossWindow = exports.createGlossWindow = () => {
 	// if(glossWindow) return;
 	var term = global.sharedObject.selection;
-	term=term.trim();
+	term=term.trim().toLowerCase();
+	if(lemmas[term]) {
+		term = lemmas[term];
+	}
 	glossWindow = new BrowserWindow({
 	show: false,
     width: 600,
@@ -1312,12 +1315,15 @@ function tokenizeWords(s) {
 }
 
 const getWordFrequencies = exports.getWordFrequencies = () => {
+	const sw = require('stopword');
+	var language = global.sharedObject.language;
+	var filter = eval(`sw.${language}`);
 	var freqs={};
 	var docpath = app.getPath('documents');
 	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
 	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
-	console.log(booktext);
 	var words=tokenizeWords(booktext);
+	words = sw.removeStopwords(words, filter);
 	var len=words.length;
 	
 	for(var i=0;i<len;i++) {
