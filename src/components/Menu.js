@@ -71,9 +71,13 @@ module.exports = function(mainWindow){
        	 }
     },
 	{ label: 'Import dictionary',
-	accelerator: '',
 	click: () => {
           	mainProcess.importDictionary();
+       	 }
+    },
+	{ label: 'Import Facebook MUSE dictionary',
+	click: () => {
+          	mainProcess.importFacebookMUSEDictionary();
        	 }
     },
 	{ label: 'Export dictionary',
@@ -1122,9 +1126,8 @@ module.exports = function(mainWindow){
 	  submenu: [
 	  {
 		  label: "Google Translate",
-		    id: 'google-translate',
 		 click: () => {
-          	mainProcess.googleTranslate();
+          	mainProcess.createSearchWindow('google-translate');
        	 }
 	  },
 	  {
@@ -1217,6 +1220,13 @@ module.exports = function(mainWindow){
 		  label: "Generate word frequency list",
 		  click: () => {
 			  mainProcess.getWordFrequencies();
+		  }
+	  },
+	  
+	  {
+		  label: "Extract keywords (RAKE)",
+		  click: () => {
+			  mainProcess.RAKE();
 		  }
 	  },
 	  

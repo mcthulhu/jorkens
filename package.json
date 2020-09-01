@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@google-cloud/translate": "^5.3.0",
+    "@shopping24/rake-js": "^2.2.0",
     "aws-sdk": "^2.710.0",
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.8",

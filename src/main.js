@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, MenuItem, dialog, globalShortcut, shell } = re
 const fs = require("fs");
 const path = require('path');
 const qs = require("querystring");
-const menu = require('./components/menu');
+const menu = require('./components/menu.js');
 const storage = require('electron-json-storage');
 const xml2js = require('xml2js');
 const _ = require('underscore');
@@ -278,6 +278,11 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 			nodeIntegration: true
 		}
 	});
+	
+	if(mode == 'google-translate') {
+		//var url = "https://translate.google.pn/translate_a/t?client=dict-chrome-ex&sl=auto&tl=" + native + "&q=" + term + "&ie=UTF-8&oe=UTF-8";
+		var url = "https://translate.google.pn/#view=home&op=translate&sl=auto&tl=" + native + "&text=" + term; 
+	}
 	
 	if(mode == 'verbix') {
 		var fullLang = getFullLanguageName(language);
@@ -1017,7 +1022,30 @@ const concordance = exports.concordance = () => {
 	});
 }
 
-const importDictionary = exports.importDictionary = () => {
+const RAKE = exports.RAKE = () => {
+	const rakejs = require('@shopping24/rake-js');
+	const sw = require('stopword');
+	var language = global.sharedObject.language;
+	var myStopwords = eval(`sw.${language}`);
+	const opts = {stopwords: myStopwords};
+	
+	var docpath = app.getPath('documents');
+	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	booktext = booktext.replace(/\s+/g, ' ');
+	const { result } = rakejs.extract(booktext)
+.setOptions({ stopWords: myStopwords })
+.pipe(rakejs.extractKeyPhrases)
+// .pipe(rakejs.extractAdjoinedKeyPhrases)
+.pipe(rakejs.keywordLengthFilter)
+.pipe(rakejs.distinct)
+.pipe(rakejs.scoreWordFrequency)
+.pipe(rakejs.sortByScore);
+
+console.log(result);
+}
+
+function getInputFile() {
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
 		filters: [
@@ -1027,6 +1055,49 @@ const importDictionary = exports.importDictionary = () => {
 	});
 	
 	if (files) { var fn = files[0] }
+	return(fn);
+}
+
+const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () => {
+	var lang = global.sharedObject.language;
+	var fn = getInputFile();
+	var entries = {};
+	
+	fs.readFile(fn, "utf8", (err,data) => {
+		if(err) throw err;
+		var lines=data.split(/[\r\n]+/);
+		var len=lines.length;
+		for(var i=0;i<len;i++) {
+			if(lines[i] && lines[i].length > 2)  {
+				var pieces=lines[i].split(" ");
+			//console.log("working on " + pieces[0]);
+			if(pieces[0] != pieces[1]) {
+				if(pieces[0].length > 0 && !entries[pieces[0]]) {
+					entries[pieces[0]] = [];
+				} 
+				if(pieces[1].length > 0) { entries[pieces[0]].push(pieces[1]); }
+					//console.log(pieces[0] + " = " + entries[pieces[0]]);
+			}
+			
+			}
+			
+		}
+		//console.log(entries);
+		var elen= Object.keys(entries).length;
+		console.log(elen + " entries found");
+		db.run("BEGIN TRANSACTION");
+		for(var term in entries) {
+			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", lang,  term, entries[term].join(", "));
+		}
+		db.run("COMMIT");
+		updateDBCounts();
+	});
+	
+	
+}
+
+const importDictionary = exports.importDictionary = () => {
+	var fn = getInputFile();
 	fs.readFile(fn, "utf8", (err,data) => {
 		if(err) throw err;
 		var lines=data.split(/[\r\n]+/);
@@ -1035,7 +1106,7 @@ const importDictionary = exports.importDictionary = () => {
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<len;i++) {
 			var pieces=lines[i].split("\t");
-			if(!pieces[2]) {
+			if(!pieces[2] || pieces[2].length != 2) {
 				pieces[2] = global.sharedObject.language;
 			}
 			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", [pieces[2], pieces[0], pieces[1]]);
@@ -1051,7 +1122,7 @@ const enableDictionaries = exports.enableDictionaries = () => {
 	// console.log(language);
 	var myMenu=Menu.getApplicationMenu();	
 	myMenu.items[3].submenu.getMenuItemById(language).visible = true;
-	myMenu.items[8].submenu.items[0].visible = false;
+	// myMenu.items[8].submenu.items[0].visible = false;
 	
 }
 
