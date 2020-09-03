@@ -1058,6 +1058,40 @@ function getInputFile() {
 	return(fn);
 }
 
+const wordNetLookup = exports.wordNetLookup = () => {
+	var output = [];
+	var txt = getSelectedText();
+	if(!txt) { return }
+	var WordPOS = require('wordpos'),
+    wordpos = new WordPOS({stopwords: true}); // stopwords not working here
+	var words = wordpos.parse(txt);
+	var sw = require('stopword');
+	var filter = sw.en;
+	words = sw.removeStopwords(words, filter);
+	words = words.filter(function(e){return e}); // remove empty elements
+	console.log(words);
+	var len = words.length;
+	for(var i = 0; i<len; i++) {
+		wordpos.lookup(words[i],  function(result) {
+			var rlen = result.length;
+			for(var j=0;j<rlen;j++) {
+				//if(words.includes(result[j].lemma)) {
+					output.push(result[j].lemma + " = " + result[j].def);
+				//}				
+			}
+			if(i === len) {
+				console.log(output);
+				if(output.length > 0) {
+					mainWindow.webContents.send('got-translation', output.join('\r\n'));
+				}
+				
+			}
+		});
+	}	
+	
+}
+
+
 const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () => {
 	var lang = global.sharedObject.language;
 	var fn = getInputFile();

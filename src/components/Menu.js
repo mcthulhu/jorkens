@@ -314,15 +314,19 @@ module.exports = function(mainWindow){
 	visible: false,
 	submenu: [
 	{ label: 'Search Lexico (Oxford)',
-	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('lexico');
        	 }
     },
 	{ label: 'Search Merriam-Webster',
-	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('mwebster');
+       	 }
+    },
+	
+	{ label: 'Search WordNet',
+	click: () => {
+          	mainProcess.wordNetLookup();
        	 }
     },
 	
