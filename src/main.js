@@ -1445,8 +1445,14 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
 	var words=tokenizeWords(booktext);
 	words = sw.removeStopwords(words, filter);
-	var len=words.length;
+	// to do - add lemmatization here
 	
+	var len=words.length;
+	for(var i=0;i<len;i++) {
+		if(lemmas[words[i]]) {
+			words[i] = lemmas[words[i]];
+		}
+	}
 	for(var i=0;i<len;i++) {
 		if(!freqs[words[i]]) {
 			freqs[words[i]] = 1;
