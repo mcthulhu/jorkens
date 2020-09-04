@@ -1248,6 +1248,12 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  {
+		  label: "Set (force) foreign language",
+		  click: () => {
+			  mainProcess.updateForeignLanguage();
+		  }
+	  },
+	  {
 		  label: "Update user email",
 		  click: () => {
 			  mainProcess.updateUserEmail();

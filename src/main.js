@@ -753,6 +753,15 @@ const updateNativeLanguage = exports.updateNativeLanguage = () => {
 	mainWindow.webContents.send('get-native-language', oldlanguage);
 }
 
+const updateForeignLanguage = exports.updateForeignLanguage = () => {
+	if(config.language) {
+		var oldlanguage=config.language;
+	} else {
+		var oldlanguage="eo";
+	}
+	mainWindow.webContents.send('get-foreign-language', oldlanguage);
+}
+
 const updateUserEmail = exports.updateUserEmail = () => {
 	if(config.emailAddress) {
 		var oldaddress=config.emailAddress;
@@ -767,6 +776,13 @@ const saveNativeLanguage = exports.saveNativeLanguage = (newlanguage) => {
 	config.native = newlanguage;
 	storage.set('config', config);
 }
+
+const saveForeignLanguage = exports.saveForeignLanguage = (newlanguage) => {
+	global.sharedObject.language = newlanguage;
+	config.language = newlanguage;
+	storage.set('config', config);
+}
+
 
 const saveEmailAddress = exports.saveEmailAddress = (newAddress) => {
 	config.emailAddress = newAddress;

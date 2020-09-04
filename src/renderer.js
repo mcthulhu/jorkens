@@ -17,6 +17,7 @@ rendition = null;
 lastLocation = null;
 url = null;
 locations=[];
+language = "";
 
 setUpMousetrapShortcuts();
 
@@ -76,6 +77,17 @@ ipcRenderer.on('get-native-language', (event, oldlanguage) => {
       mainProcess.saveNativeLanguage(ok);
     })
 });
+
+ipcRenderer.on('get-foreign-language', (event, oldlanguage) => {
+	dialogs.prompt("Enter the digraph for the book's correct language (in lowercase): ", oldlanguage, ok => {
+      mainProcess.saveForeignLanguage(ok);
+	  var title = document.getElementById("title").textContent;
+	  language = ok;
+	  document.getElementById("title").textContent =title.replace(/\([a-z][a-z]\)/, "(" + language + ")");
+	  mainProcess.enableDictionaries();
+    })
+});
+
 
 ipcRenderer.on('get-user-email', (event, oldaddress) => {
 	dialogs.prompt('Enter your email address:', oldaddress, ok => {
