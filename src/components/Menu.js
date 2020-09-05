@@ -1214,12 +1214,12 @@ module.exports = function(mainWindow){
 			  mainProcess.runAnki();
 		  }
 	  },
-	  /* {
-		  label: "Run TreeTagger",
+	  {
+		  label: "Save list of words searched this session",
 		  click: () => {
-			  mainProcess.treeTagger();
+			  mainProcess.saveUnknowns();
 		  }
-	  }, */
+	  }, 
 	  {
 		  label: "Generate word frequency list",
 		  click: () => {

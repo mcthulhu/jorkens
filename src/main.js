@@ -11,6 +11,7 @@ const home = app.getPath('home');
 const nlp = require('natural') ;
 
 var lemmas = [];
+var unknowns = [];
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -140,6 +141,7 @@ buildPythonMenu();
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
+	console.log("unknown words were: " + unknowns);
 	db.close();
 	var docpath = app.getPath('documents');
 	try {
@@ -182,6 +184,21 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+const saveUnknowns = exports.saveUnknowns = () => {
+	const fn = dialog.showSaveDialogSync(mainWindow, {
+		filters: [
+			{name: 'Text files', extensions: ['txt']}
+		]
+		
+	});
+	var data = unknowns.join('\r\n');
+	fs.writeFile(fn, data, function(err) {
+		if(err) {
+			return console.log(err);
+		}
+	});
+}
 
 const createGlossWindow = exports.createGlossWindow = () => {
 	// if(glossWindow) return;
@@ -942,9 +959,11 @@ const glossarySearch = exports.glossarySearch = (term) => {
 	var language = global.sharedObject.language;
 	term = term.trim().toLowerCase();
 	term = normalizeSpelling(term, language);
+	unknowns.push(term);
 	if(lemmas[term]) {
 		term = lemmas[term];
 	}
+	
 	
 	// console.log("searching for " + term + " in glossary");
 	var html="<!DOCTYPE html><html><head><title>Glossary search results</title>";
