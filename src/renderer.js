@@ -18,6 +18,7 @@ lastLocation = null;
 url = null;
 locations=[];
 language = "";
+booktitle = "";
 
 setUpMousetrapShortcuts();
 
@@ -157,7 +158,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			 bookdata+=output;
 			 //console.log(bookdata);
 		 });
-		 var booktitle=book.package.metadata.title;
+		 booktitle=book.package.metadata.title;
+		 require('electron').remote.getGlobal('sharedObject').booktitle = booktitle;
 		 var author = book.package.metadata.creator;
 		var language=book.package.metadata.language;
 		language=language.substring(0, 2);
@@ -167,7 +169,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		mainProcess.enableDictionaries();
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
-	  // console.log("contents are: " + JSON.stringify(rendition.getContents()));
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
@@ -179,6 +180,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			}
 	 })
 			.then(function(locations){
+				// console.log(booktitle, locations);
+				mainProcess.saveLocations(booktitle, locations);
 				require('electron').remote.getGlobal('sharedObject').firstLocation = locations[0];
 				//console.log(locations[0]);
 				require('electron').remote.getGlobal('sharedObject').lastLocation = locations[locations.length - 1];
@@ -222,6 +225,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				// Save out the generated locations to JSON
 				localStorage.setItem(book.key()+'-locations', book.locations.save());
 				locations=book.locations;
+				require('electron').remote.getGlobal('sharedObject').locations = locations;
 
 		});
 		/*  book.getRange("epubcfi(/6/14[xchapter_001]!/4/2,/2/2/2[c001s0000]/1:0,/8/2[c001p0003]/1:663)").then(function(range) {
@@ -288,6 +292,17 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		lastLocation=rendition.currentLocation().start.cfi;
 		// console.log("lastlocation is " + lastLocation);
 		mainProcess.updateConfigLocation(url, lastLocation);
+		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
+		
+		 // the following seems to result in a severe memory leak
+		 
+		/* console.log("about to update location - booktitle is " + booktitle + " and lastLocation is " + lastLocation);
+		try {
+			mainProcess.saveCurrentLocation(title, lastLocation);
+		} catch(err) {
+			console.log(err);
+		}
+		 */
 		let spineItem = book.spine.get(lastLocation);
         let navItem = book.navigation.get(spineItem.href);
 		//console.log(navItem);
@@ -404,8 +419,11 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	rendition.themes.register("dark", "css/themes.css");
     rendition.themes.register("light", "css/themes.css");
     rendition.themes.register("sepia", "css/themes.css");
-
-
+	rendition.themes.register("lavender", "css/themes.css");
+	rendition.themes.register("lavenderonblue", "css/themes.css");
+	rendition.themes.register("nord", "css/themes.css");
+	rendition.themes.register("rubyblue", "css/themes.css");
+	rendition.themes.register("greenonblack", "css/themes.css");
 
     rendition.themes.default({
       h2: {
@@ -416,8 +434,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         "margin": '10px'
       }
     });
-
-    rendition.themes.select("sepia");
+	if(require('electron').remote.getGlobal('sharedObject').theme) {
+		rendition.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
+	} else {
+		rendition.themes.select("sepia");
+	}
+    
     rendition.themes.fontSize("120%");
 		
 });

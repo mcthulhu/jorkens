@@ -12,6 +12,7 @@ const nlp = require('natural') ;
 
 var lemmas = [];
 var unknowns = [];
+var title;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -21,7 +22,10 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 global.sharedObject = {
 	native: 'en',
 	language: 'eo',
-	selection: ''
+	theme: 'sepia',
+	selection: '',
+	booktitle: '',
+	lastLocation: []
 }
 
 
@@ -36,7 +40,7 @@ const setNativeLanguage = exports.setNativeLanguage = () => {
 	
 }
 
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3');
 var docpath = app.getPath('documents');
 try {
 	fs.accessSync(path.join(docpath, 'Jorkens'));
@@ -59,20 +63,27 @@ var exists = fs.existsSync(dbPath);
 let db = new sqlite3.Database(dbPath, createTables); 
 
 function createTables() {
-	if(!exists) {
 		db.serialize(()  => {
 		db.run('CREATE TABLE IF NOT EXISTS dictionary (lang TEXT, term TEXT, def TEXT, tags TEXT, context TEXT, times INTEGER DEFAULT 1)');	  
 		db.run('CREATE TABLE IF NOT EXISTS tm (srclang TEXT, tgtlang TEXT, source TEXT, target TEXT, tags TEXT)');	  
 		db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
-		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
+		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	
+		db.run('CREATE TABLE IF NOT EXISTS locations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
+		db.run('CREATE TABLE IF NOT EXISTS quotations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');	
+		 db.all("PRAGMA table_info('library')", (err, rows) => {
+			 if (err) throw err;
+			 if(JSON.stringify(rows).indexOf('secret') < 0) {
+				 db.run('ALTER TABLE library ADD COLUMN secret INTEGER NOT NULL DEFAULT 0');
+			 }
+		 });
+		 
 		console.log("created database tables");
 	});
   
-	}
 	
 	  
 	 /*  try {
@@ -115,6 +126,10 @@ const createWindow = () => {
   config = data;
 	var booklocation = path.normalize(config.lastBook);
 	var position = config[booklocation];
+	if(config.theme) {
+		global.sharedObject.theme = config.theme;
+	}
+	
   openFile(booklocation, position);
 });
   } else {
@@ -133,15 +148,18 @@ buildPythonMenu();
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
 
-
-
+mainWindow.on('close', () => {
+	saveCurrentLocation(global.sharedObject.booktitle, global.sharedObject.lastLocation);
+});
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
+	
     mainWindow = null;
-	console.log("unknown words were: " + unknowns);
+	// console.log(JSON.stringify(config));
+	
 	db.close();
 	var docpath = app.getPath('documents');
 	try {
@@ -809,6 +827,20 @@ const saveEmailAddress = exports.saveEmailAddress = (newAddress) => {
 const addToRecent = exports.addToRecent = (booktitle, author, file, language) => {
 	db.run("INSERT OR REPLACE INTO library(title, author, location, language) VALUES(?,?,?,?)", [booktitle, author, file, language]);
 };
+
+const saveLocations = exports.saveLocations = (title, locations) => {
+	db.run("INSERT OR IGNORE INTO locations(title, locations) VALUES(?,?)", [title, locations]);
+
+}
+
+const saveCurrentLocation = exports.saveCurrentLocation = (title, current_location) => {
+	console.log("title is " + title);
+	console.log("cfi is " + current_location);
+	db.run('UPDATE locations SET current_location = ? WHERE TITLE = ?', [current_location, title], 
+		function(err) {
+			console.log(err);
+		});
+} 
 
 const clearBook = exports.clearBook = () => {
 	mainWindow.webContents.send('clear-book');	
@@ -1583,6 +1615,8 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 }
 
 const setTheme = exports.setTheme = (mode) => {
+	config.theme = mode;
+	storage.set('config', config);
 	mainWindow.webContents.send('change-theme', mode);
 }
 
