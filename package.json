@@ -52,6 +52,7 @@
     "aws-sdk": "^2.710.0",
     "dialogs": "^2.0.1",
     "electron-json-storage": "^4.1.8",
+    "electron-preferences": "^2.0.0",
     "electron-squirrel-startup": "^1.0.0",
     "iso-639": "^0.2.2",
     "iso-639-1": "^2.1.3",

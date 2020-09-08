@@ -1259,6 +1259,13 @@ module.exports = function(mainWindow){
 			  mainProcess.updateUserEmail();
 		  }
 	  },
+	  
+	  {
+		  label: "Add to secret shelf",
+		  click: () => {
+			  mainProcess.addToSecretShelf();
+		  }
+	  },
 	  ]
   },
   {

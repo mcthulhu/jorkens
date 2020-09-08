@@ -25,8 +25,12 @@ global.sharedObject = {
 	theme: 'sepia',
 	selection: '',
 	booktitle: '',
+	booklocation: '',
 	lastLocation: []
 }
+
+const ElectronPreferences = require('electron-preferences');
+
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -77,11 +81,11 @@ function createTables() {
 		 db.all("PRAGMA table_info('library')", (err, rows) => {
 			 if (err) throw err;
 			 if(JSON.stringify(rows).indexOf('secret') < 0) {
-				 db.run('ALTER TABLE library ADD COLUMN secret INTEGER NOT NULL DEFAULT 0');
+				 db.run('ALTER TABLE library ADD COLUMN secret INTEGER DEFAULT 0');
 			 }
 		 });
 		 
-		console.log("created database tables");
+		// console.log("created database tables");
 	});
   
 	
@@ -125,6 +129,7 @@ const createWindow = () => {
   if (error) throw error;
   config = data;
 	var booklocation = path.normalize(config.lastBook);
+	global.sharedObject.booklocation = booklocation; 
 	var position = config[booklocation];
 	if(config.theme) {
 		global.sharedObject.theme = config.theme;
@@ -743,6 +748,8 @@ const chooseBook = exports.chooseBook = () => {
 		
 	});
 	var file = files[0];
+	global.sharedObject.booklocation = file;
+	// search of locations table goes here
 	if(config[file]) {
 		position = config[file];
 	} else {
@@ -759,6 +766,7 @@ const openFile = exports.openFile = (file, position) => { // removed chapter arg
   clearBook();
   const content = fs.readFileSync(file, "binary");
   url = file;
+  global.sharedObject.booklocation = file;
   config.lastBook=file;
   
   /* if(!config.chapter) {
@@ -825,7 +833,7 @@ const saveEmailAddress = exports.saveEmailAddress = (newAddress) => {
 }
 
 const addToRecent = exports.addToRecent = (booktitle, author, file, language) => {
-	db.run("INSERT OR REPLACE INTO library(title, author, location, language) VALUES(?,?,?,?)", [booktitle, author, file, language]);
+	db.run("INSERT OR IGNORE INTO library(title, author, location, language) VALUES(?,?,?,?)", [booktitle, author, file, language]);
 };
 
 const saveLocations = exports.saveLocations = (title, locations) => {
@@ -834,8 +842,6 @@ const saveLocations = exports.saveLocations = (title, locations) => {
 }
 
 const saveCurrentLocation = exports.saveCurrentLocation = (title, current_location) => {
-	console.log("title is " + title);
-	console.log("cfi is " + current_location);
 	db.run('UPDATE locations SET current_location = ? WHERE TITLE = ?', [current_location, title], 
 		function(err) {
 			console.log(err);
@@ -843,6 +849,7 @@ const saveCurrentLocation = exports.saveCurrentLocation = (title, current_locati
 } 
 
 const clearBook = exports.clearBook = () => {
+	global.sharedObject.booklocation = "";
 	mainWindow.webContents.send('clear-book');	
 }
 
@@ -946,11 +953,20 @@ const updateDBCounts = exports.updateDBCounts = () => {
 	
 }
 
+const addToSecretShelf = exports.addToSecretShelf = () => {
+	db.run('UPDATE library SET secret = 1 WHERE location = ?', [global.sharedObject.booklocation], function(error, row) {
+		if(error) {
+			console.log(error);
+		}
+	});
+	console.log("set to secret");
+}
+
 const showLibary = exports.showLibrary = () => {
 	var data = "";
 	db.each('SELECT * FROM library ORDER BY language, author', [],
 		function (err, row) {
-			data += row.language + "\t" + row.author + "\t" + row.title + "\t" + row.tags + "\t" +row.location + "\t" + row.date + "\r\n";
+			data += row.language + "\t" + row.author + "\t" + row.title + "\t" + row.tags + "\t" +row.location + "\t" + row.date + "\t" + row.secret + "\r\n";
 		}, 
 		function(err, len) {
 			if(err) {

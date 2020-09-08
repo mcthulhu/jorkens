@@ -271,6 +271,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		var percent = book.locations.percentageFromCfi(location.start.cfi);
 		var percentage = Math.floor(percent * 100);
 		if(!mouseDown) {
+			// follow line produces Linux error - slider is null
 			slider.value = percentage;
 		}
 		currentPage.value = percentage;
