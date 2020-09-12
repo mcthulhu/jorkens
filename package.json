@@ -61,7 +61,7 @@
     "mousetrap": "^1.6.5",
     "natural": "^2.1.5",
     "node-abi": "^2.18.0",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-xml-stream": "^1.0.2",
     "python-shell": "^2.0.1",
     "sqlite3": "github:mohd-akram/node-sqlite3#fix-segfaults",
