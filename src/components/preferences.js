@@ -4,7 +4,7 @@ const electron = require('electron');
 const app = electron.app;
 const path = require('path');
 const os = require('os');
-const ElectronPreferences = require('../');
+const ElectronPreferences = require('electron-preferences');
 
 const preferences = new ElectronPreferences({
     'dataStore': path.resolve(__dirname, 'preferences.json'),

@@ -26,6 +26,13 @@ module.exports = function(mainWindow){
 			  mainProcess.showLibrary();
 		  }
 	  },
+	  /* {
+		  label: "Preferences",
+		  click: () => {
+			  console.log(mainProcess.preferences);
+			  mainProcess.preferences.show();
+		  }
+	  }, */
         
       { role: 'quit' }
     ]
@@ -1206,6 +1213,13 @@ module.exports = function(mainWindow){
 	      }
 	  },
 		  ]
+	  },
+	  
+	  	  {
+		  label: "Mark passage",
+		  click: () => {
+			  mainProcess.createAnnotationWindow();
+		  }
 	  },
 	  
 	  {

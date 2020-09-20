@@ -28,6 +28,19 @@ setUpMousetrapShortcuts();
 	});
 }); */
 
+ipcRenderer.on('add-highlight', (event) => {
+	var cfiRange = require('electron').remote.getGlobal('sharedObject').cfiRange;
+	book.getRange(cfiRange).then((range) => {
+                if (range) {
+                    let text = range.toString();
+					console.log(text);
+					// require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
+					// mainProcess.glossarySearch(text);					
+				}
+			});
+})
+
+
 ipcRenderer.on('change-theme', (event, mode) => {
 	rendition.themes.select(mode);
 });
@@ -322,12 +335,15 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         viewer.classList.add('single');
       }
     });
+	
+	
 
 	var checkGlossary = function(cfiRange, contents) {
 		book.getRange(cfiRange).then((range) => {
                 if (range) {
                     let text = range.toString();
 					require('electron').remote.getGlobal('sharedObject').selection = text;
+					require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
 					mainProcess.glossarySearch(text);					
 				}
 			});

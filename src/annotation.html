@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="UTF-8">
+	    
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Highlights and annotations</title>
+<link rel="stylesheet" type="text/css" href="css/examples.css"/>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1"">
+<style>
+            body {
+                padding: 10px;
+                margin: 10px;
+            }
+           textarea {
+	width: 100%;
+          }
+          #btns {
+	display: flex;
+	align-items: flex-end;
+         }
+</style>
+</head>
+
+<body>
+<h2> Warning - annotations saved to database but not applied in GUI yet </h2>
+<div>
+<label for="passage">Passage</label> <textarea spellcheck="false" rows="5" id="passage" style="background-color: yellow;"></textarea>
+<label for="notes">Notes</label> <textarea rows="5"  id="notes"></textarea>
+<label for="tags">Tags</label> <textarea rows="1"  id="tags"></textarea>
+</div>
+<div id="select-box">
+<label for="marktype">Type</label> 
+<select id="marktype">
+<option value="highlight" selected="selected">highlight</option>
+<option value="underline">underline</option>
+<option value="mark">mark</option>
+</select>
+<label for="color">Color</label> 
+
+<select id="color">
+<option value="yellow" selected="selected">yellow</option>
+<option value="lavender">lavender</option>
+<option value="pink">pink</option>
+</select>
+
+</div>
+<div id="button-box">
+                  <button id="cancel-btn">Cancel</button>
+                  <button id="ok-btn">OK</button>
+             </div>
+
+<script>require('./annotation')</script>
+
+</body>

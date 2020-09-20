@@ -20,6 +20,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
+
+
 global.sharedObject = {
 	native: 'en',
 	language: 'eo',
@@ -27,170 +29,10 @@ global.sharedObject = {
 	selection: '',
 	booktitle: '',
 	booklocation: '',
-	lastLocation: []
+	lastLocation: [],
+	cfiRange: ''
 }
 
-const ElectronPreferences = require('electron-preferences');
-
-const preferences = new ElectronPreferences({
-	'dataStore': path.resolve(app.getPath('userData'), 'preferences.json'),
-	'defaults': {
-        'notes': {
-            'folder': path.resolve(os.homedir(), 'Notes')
-        },
-        'markdown': {
-            'auto_format_links': true,
-            'show_gutter': false
-        },
-        'preview': {
-            'show': true
-        },
-        'drawer': {
-            'show': true
-        }
-    },
-	'onLoad': (preferences) => {
-        // ...
-        return preferences;
-    },
-	'sections': [
-        {
-            'id': 'about',
-            'label': 'About You',
-            /**
-             * See the list of available icons below.
-             */
-            'icon': 'single-01',
-            'form': {
-                'groups': [
-                    {
-                        /**
-                         * Group heading is optional.
-                         */
-                        'label': 'About You',
-                        'fields': [
-                            {
-                                'label': 'First Name',
-                                'key': 'first_name',
-                                'type': 'text',
-                                /**
-                                 * Optional text to be displayed beneath the field.
-                                 */
-                                'help': 'What is your first name?'
-                            },
-                            {
-                                'label': 'Last Name',
-                                'key': 'last_name',
-                                'type': 'text',
-                                'help': 'What is your last name?'
-                            },
-                            {
-                                'label': 'Gender',
-                                'key': 'gender',
-                                'type': 'dropdown',
-                                'options': [
-                                    {'label': 'Male', 'value': 'male'},
-                                    {'label': 'Female', 'value': 'female'},
-                                    {'label': 'Unspecified', 'value': 'unspecified'},
-                                ],
-                                'help': 'What is your gender?'
-                            },
-                            {
-                                'label': 'Which of the following foods do you like?',
-                                'key': 'foods',
-                                'type': 'checkbox',
-                                'options': [
-                                    { 'label': 'Ice Cream', 'value': 'ice_cream' },
-                                    { 'label': 'Carrots', 'value': 'carrots' },
-                                    { 'label': 'Cake', 'value': 'cake' },
-                                    { 'label': 'Spinach', 'value': 'spinach' }
-                                ],
-                                'help': 'Select one or more foods that you like.'
-                            },
-                            {
-                                'label': 'Coolness',
-                                'key': 'coolness',
-                                'type': 'slider',
-                                'min': 0,
-                                'max': 9001
-                            },
-                            {
-                                'label': 'Eye Color',
-                               'key': 'eye_color',
-                                'type': 'color',
-                                'format': 'hex', // can be hex, hsl or rgb
-                                'help': 'Your eye color'
-                            },
-                            {
-                                'label': 'Hair Color',
-                                'key': 'hair_color',
-                                'type': 'color',
-                                'format': 'rgb',
-                                'help': 'Your hair color'
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            'id': 'notes',
-            'label': 'Notes',
-            'icon': 'folder-15',
-            'form': {
-                'groups': [
-                    {
-                        'label': 'Stuff',
-                        'fields': [
-                            {
-                                'label': 'Read notes from folder',
-                                'key': 'folder',
-                                'type': 'directory',
-                                'help': 'The location where your notes will be stored.'
-                            },
-                            {
-                                'heading': 'Important Message',
-                                'content': '<p>The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence. The quick brown fox jumps over the long white fence.</p>',
-                                'type': 'message',
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            'id': 'space',
-            'label': 'Other Settings',
-            'icon': 'spaceship',
-            'form': {
-                'groups': [
-                    {
-                        'label': 'Other Settings',
-                        'fields': [
-                            {
-                                'label': 'Phone Number',
-                                'key': 'phone_number',
-                                'type': 'text',
-                                'help': 'What is your phone number?'
-                            },
-                            {
-                                'label': "Foo or Bar?",
-                                'key': 'foobar',
-                                'type': 'radio',
-                                'options': [
-                                    {'label': 'Foo', 'value': 'foo'},
-                                    {'label': 'Bar', 'value': 'bar'},
-                                    {'label': 'FooBar', 'value': 'foobar'},
-                                ],
-                                'help': 'Foo? Bar?'
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    ]
-});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -232,7 +74,7 @@ function createTables() {
 		db.run('CREATE TABLE IF NOT EXISTS library (title TEXT PRIMARY KEY UNIQUE, author TEXT, location TEXT, tags TEXT, language TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	  
 		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	
 		db.run('CREATE TABLE IF NOT EXISTS locations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
-		db.run('CREATE TABLE IF NOT EXISTS quotations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
+		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
@@ -410,6 +252,32 @@ const createGlossWindow = exports.createGlossWindow = () => {
 	});
 	glossWindow.on('closed', () => {
 		glossWindow = null;
+    });
+};
+
+const createAnnotationWindow = exports.createAnnotationWindow = () => {
+	// if(glossWindow) return;
+	var  passage = global.sharedObject.selection;
+	passage=passage.trim();
+	annotationWindow = new BrowserWindow({
+	show: false,
+    width: 600,
+    height: 400,
+	frame: false,
+	webPreferences: {
+        nodeIntegration: true
+    }
+	});
+	annotationWindow.loadFile(path.join(__dirname, 'annotation.html'));
+	
+	annotationWindow.webContents.openDevTools();
+	annotationWindow.once('ready-to-show', () => {
+		annotationWindow.show();
+		annotationWindow.webContents.insertText(passage);
+		annotationWindow.webContents.executeJavaScript('document.getElementById("notes").focus()');
+	});
+	annotationWindow.on('closed', () => {
+		annotationWindow = null;
     });
 };
 
@@ -1019,6 +887,16 @@ const addToDictionary = exports.addToDictionary = (term, def, lang) => {
 		db.run('INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)', [lang, term, def]);
 	}	
 	updateDBCounts();
+};
+
+const addToPassages = exports.addToPassages = (passage, notes, marktype, color, tags) => {
+	// 		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
+	var cfiRange = global.sharedObject.cfiRange;
+	var title = global.sharedObject.booktitle;
+	if(passage) {
+		
+		db.run('INSERT OR REPLACE INTO passages(title, passage, cfiRange, type, notes, style, tags) VALUES(?,?,?,?,?,?,?)', [title, passage, cfiRange, marktype, notes, color, tags]);
+	}	
 };
 
 const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
@@ -1813,4 +1691,8 @@ const runAnki = exports.runAnki = () => {
  
 		console.log(data.toString());
 }	);
+}
+
+const addHighlight = exports.addHighlight = () => {
+	mainWindow.webContents.send('add-highlight');
 }
