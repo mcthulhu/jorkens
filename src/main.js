@@ -270,7 +270,7 @@ const createAnnotationWindow = exports.createAnnotationWindow = () => {
 	});
 	annotationWindow.loadFile(path.join(__dirname, 'annotation.html'));
 	
-	annotationWindow.webContents.openDevTools();
+	// annotationWindow.webContents.openDevTools();
 	annotationWindow.once('ready-to-show', () => {
 		annotationWindow.show();
 		annotationWindow.webContents.insertText(passage);
@@ -889,15 +889,30 @@ const addToDictionary = exports.addToDictionary = (term, def, lang) => {
 	updateDBCounts();
 };
 
-const addToPassages = exports.addToPassages = (passage, notes, marktype, color, tags) => {
-	// 		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
+const addToPassages = exports.addToPassages = (passage, notes) => {
 	var cfiRange = global.sharedObject.cfiRange;
 	var title = global.sharedObject.booktitle;
-	if(passage) {
-		
-		db.run('INSERT OR REPLACE INTO passages(title, passage, cfiRange, type, notes, style, tags) VALUES(?,?,?,?,?,?,?)', [title, passage, cfiRange, marktype, notes, color, tags]);
+	if(passage) {		
+		db.run('INSERT OR REPLACE INTO passages(title, passage, cfiRange, notes) VALUES(?,?,?,?)', [title, passage, cfiRange, notes]);
 	}	
+	mainWindow.webContents.send('apply-highlight', title, passage, cfiRange, notes);
 };
+
+const applyPassages = exports.applyPassages = () => {
+	var title = global.sharedObject.booktitle;
+	db.each('SELECT * FROM passages WHERE title = ?', [title],
+		function (err, row) {
+			mainWindow.webContents.send('apply-highlight', row.title, row.passage, row.cfiRange, row.notes);
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			console.log(len + " passages found");
+		}
+	);
+	
+}
 
 const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 	var tgtlang = global.sharedObject.native;

@@ -28,16 +28,13 @@ setUpMousetrapShortcuts();
 	});
 }); */
 
-ipcRenderer.on('add-highlight', (event) => {
-	var cfiRange = require('electron').remote.getGlobal('sharedObject').cfiRange;
-	book.getRange(cfiRange).then((range) => {
-                if (range) {
-                    let text = range.toString();
-					console.log(text);
-					// require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
-					// mainProcess.glossarySearch(text);					
-				}
-			});
+ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
+	rendition.annotations.add('highlight', cfiRange, {'annotation' : notes}, (e) => {
+        var note = e.target.getAttribute("data-annotation");
+		const myNotification = new Notification('', {
+			body: note
+		});
+	});
 })
 
 
@@ -182,6 +179,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		mainProcess.enableDictionaries();
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
+	  mainProcess.applyPassages();
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
