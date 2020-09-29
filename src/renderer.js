@@ -338,11 +338,25 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 	var checkGlossary = function(cfiRange, contents) {
 		book.getRange(cfiRange).then((range) => {
+			// console.log(contents);
                 if (range) {
                     let text = range.toString();
+					// let startOffset = range.startOffset;
+                    let paragraph = range.startContainer.data;
+					var regexp = /[^\.\!\?]*[\.\!\?]/g;
+					var sentences = paragraph.match(regexp);
+					var senlen = sentences.length;
+					for(var i=0;i<senlen;i++) {
+						if(sentences[i].includes(text)) {
+							require('electron').remote.getGlobal('sharedObject').contextSentence = sentences[i];
+							// console.log(sentences[i]);
+						}
+					}
+
 					require('electron').remote.getGlobal('sharedObject').selection = text;
 					require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
-					mainProcess.glossarySearch(text);					
+					mainProcess.glossarySearch(text);	
+					
 				}
 			});
 	}

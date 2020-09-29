@@ -30,7 +30,8 @@ global.sharedObject = {
 	booktitle: '',
 	booklocation: '',
 	lastLocation: [],
-	cfiRange: ''
+	cfiRange: '', 
+	contextSentence: ''
 }
 
 
@@ -83,6 +84,12 @@ function createTables() {
 			 if (err) throw err;
 			 if(JSON.stringify(rows).indexOf('secret') < 0) {
 				 db.run('ALTER TABLE library ADD COLUMN secret INTEGER DEFAULT 0');
+			 }
+		 });
+		 db.all("PRAGMA table_info('flashcards')", (err, rows) => {
+			 if (err) throw err;
+			 if(JSON.stringify(rows).indexOf('context') < 0) {
+				 db.run('ALTER TABLE flashcards ADD COLUMN context TEXT');
 			 }
 		 });
 		 
@@ -233,6 +240,7 @@ const createGlossWindow = exports.createGlossWindow = () => {
 	if(lemmas[term]) {
 		term = lemmas[term];
 	}
+	// console.log("createglosswindow: " + term);
 	glossWindow = new BrowserWindow({
 	show: false,
     width: 600,
@@ -882,10 +890,14 @@ const clearBook = exports.clearBook = () => {
 	mainWindow.webContents.send('clear-book');	
 }
 
-const addToDictionary = exports.addToDictionary = (term, def, lang) => {
+const addToDictionary = exports.addToDictionary = (term, def, context, lang, addflashcard) => {
 	if(term && def && lang) {
-		db.run('INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)', [lang, term, def]);
+		db.run('INSERT OR REPLACE INTO dictionary(lang, term, def, context) VALUES(?,?,?,?)', [lang, term, def, context]);
 	}	
+	if(addflashcard == true) {
+		var tags = '';
+		addFlashcard(term, def, context, lang, tags);
+	}
 	updateDBCounts();
 };
 
@@ -922,10 +934,12 @@ const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 	updateDBCounts(); 
 }
 
-const addFlashcard = exports.addFlashcard = (term, def, language, tags) => {
-	if(term && def && language && tags) {
-		db.run("INSERT OR REPLACE INTO flashcards(term, def, language, tags) VALUES(?,?,?,?)", [term, def, language, tags]);
-	}
+const addFlashcard = exports.addFlashcard = (term, def, context, language, tags) => {
+	console.log(term, def, context, language, tags);
+	//if(term && def && language && tags) {
+		db.run("INSERT OR REPLACE INTO flashcards(term, def, context, language, tags) VALUES(?,?,?,?,?)", [term, def, context, language, tags]);
+	//}
+	updateDBCounts();
 }
 
 const reviewFlashcards = exports.reviewFlashcards = () => {
@@ -1063,6 +1077,7 @@ const glossarySearch = exports.glossarySearch = (term) => {
 	term = normalizeSpelling(term, language);
 	unknowns.push(term);
 	if(lemmas[term]) {
+		var oldterm = term;
 		term = lemmas[term];
 	}
 	
@@ -1070,7 +1085,7 @@ const glossarySearch = exports.glossarySearch = (term) => {
 	// console.log("searching for " + term + " in glossary");
 	var html="<!DOCTYPE html><html><head><title>Glossary search results</title>";
 	html+='</head><body><table style="border: solid 1px black; table-layout: fixed; width: 100%;"><thead><tr><th>Term</th><th>Translation</th></tr><tbody>';
-	db.each('SELECT * FROM dictionary WHERE lang = ? AND term LIKE ?', [global.sharedObject.language, term+"%"], 
+	db.each('SELECT * FROM dictionary WHERE lang = ? AND term LIKE ? or term = ?', [global.sharedObject.language, term+"%", oldterm], 
 		function (err, row) {
 			if(err) console.log(err);
 	 else {

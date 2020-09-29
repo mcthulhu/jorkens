@@ -7,6 +7,7 @@ document.getElementById("cancel-btn").addEventListener("click", (e) => {
 document.getElementById("ok-btn").addEventListener("click", (e) => {
 	var term=document.getElementById('term').value;
 	var def=document.getElementById('def').value;
+	var context=document.getElementById('context').value || '';
 	var tags=document.getElementById('tags').value;
 	if(!tags) {
 		var tags="-";
@@ -15,6 +16,6 @@ document.getElementById("ok-btn").addEventListener("click", (e) => {
 	def=def.trim();
 	tags=tags.trim();
 	var language= require('electron').remote.getGlobal('sharedObject').language;
-	mainProcess.addFlashcard(term, def, language, tags);
+	mainProcess.addFlashcard(term, def, context, language, tags);
     window.close();
 });
