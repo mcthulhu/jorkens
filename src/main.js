@@ -1075,7 +1075,7 @@ const glossarySearch = exports.glossarySearch = (term) => {
 	var language = global.sharedObject.language;
 	term = term.trim().toLowerCase();
 	term = normalizeSpelling(term, language);
-	unknowns.push(term);
+	unknowns.push(term + "\t" + global.sharedObject.contextSentence);
 	if(lemmas[term]) {
 		var oldterm = term;
 		term = lemmas[term];
