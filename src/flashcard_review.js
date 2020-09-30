@@ -19,6 +19,7 @@ function getEl(s) {
 
 function getNextFlashcard() {
 	getEl("testword").textContent="";
+	getEl("testword").title = "";
 	getEl("answer").textContent="";
 	getEl("known").style.display="none";
 	getEl("unknown").style.display="none";
@@ -32,6 +33,7 @@ function testFlashcard(data) {
 	if(len>0) {
 		var rand=Math.floor(Math.random()*len);
 		getEl("testword").textContent=data[rand][0];
+		getEl("testword").title = data[rand][2];
 		getEl("answer").textContent="(click to show answer)";
 		fcanswer=data[rand][1];
 	} else {

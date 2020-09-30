@@ -935,7 +935,7 @@ const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 }
 
 const addFlashcard = exports.addFlashcard = (term, def, context, language, tags) => {
-	console.log(term, def, context, language, tags);
+	// console.log(term, def, context, language, tags);
 	//if(term && def && language && tags) {
 		db.run("INSERT OR REPLACE INTO flashcards(term, def, context, language, tags) VALUES(?,?,?,?,?)", [term, def, context, language, tags]);
 	//}
@@ -950,6 +950,7 @@ const reviewFlashcards = exports.reviewFlashcards = () => {
 			var thisItem = [];
 			thisItem.push(row.term);
 			thisItem.push(row.def);
+			thisItem.push(row.context);
 			thisItem.push(row.tags);
 			data.push(thisItem);
 		}, 
