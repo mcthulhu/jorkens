@@ -779,12 +779,25 @@ const chooseBook = exports.chooseBook = () => {
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
 		filters: [
-		{name: 'Epub books', extensions: ['epub']},
-			{name: 'Text files', extensions: ['txt']}
+			{name: 'Epub books', extensions: ['epub']},
+			{name: 'Text files', extensions: ['txt']},
+			{name: 'Mobipocket books', extensions: ['mobi']},
+			{name: 'Kindle books', extensions: ['azw3', 'azw']},
+			{name: 'PDF files', extensions: ['pdf']},
+			{name: 'Microsoft Reader books', extensions: ['lit']},
+			{name: 'Sony ebooks', extensions: ['lrf']},
+			{name: 'Microsoft Word files', extensions: ['docx', 'doc']},
+			{name: 'Palm ebooks', extensions: ['pdb']},
+			{name: 'FictionBook ebooks', extensions: ['fb2']},
+			{name: 'RTF files', extensions: ['rtf']}
 		]
 		
 	});
 	var file = files[0];
+	if(path.extname(file) != '.epub') {
+		convertToEpub(file);
+		return;
+	}
 	global.sharedObject.booklocation = file;
 	// search of locations table goes here
 	if(config[file]) {
@@ -792,10 +805,7 @@ const chooseBook = exports.chooseBook = () => {
 	} else {
 		position = 0;
 	}
-	/* if(!config.chapter) {
-		config.chapter = 0;
-	}
-	console.log("config.chapter in choosebook is " + config.chapter); */
+
 	if (files) { openFile(files[0], position) } // removed config.chapter argument
 };
 
@@ -805,11 +815,6 @@ const openFile = exports.openFile = (file, position) => { // removed chapter arg
   url = file;
   global.sharedObject.booklocation = file;
   config.lastBook=file;
-  
-  /* if(!config.chapter) {
-	  config.chapter = 0;
-  }
-  var chapter = config.chapter; */
   storage.set('config', config);
   mainWindow.webContents.send('file-opened', file, content, position); // removed chapter argument
 };
@@ -1709,6 +1714,32 @@ const setTheme = exports.setTheme = (mode) => {
 	mainWindow.webContents.send('change-theme', mode);
 }
 
+const convertToEpub = exports.convertToEpub = (fn) => {
+	if(!fn) {
+		const files = dialog.showOpenDialogSync(mainWindow, {
+			properties: ['openFile']
+	});
+	var fn = files[0];
+	} 
+	var ext = path.extname(fn);
+	var output = fn.replace(ext, '.epub');
+	var language = global.sharedObject.language;
+	var child = require('child_process').execFile;
+	var executablePath = "C:\\Program Files (x86)\\Calibre2\\ebook-convert.exe";
+	var parameters = [fn, output, "--language", language];
+	child(executablePath, parameters, function(err, data) {
+		if(err){
+			console.error(err);
+			return;
+		}
+ 
+		console.log(data.toString());
+		openFile(output, 0);
+	});	
+	
+	
+}
+
 const runAnki = exports.runAnki = () => {
 	var child = require('child_process').execFile;
 	var executablePath = "C:\\Program Files\\Anki\\anki-console.exe";
@@ -1721,7 +1752,7 @@ const runAnki = exports.runAnki = () => {
 		}
  
 		console.log(data.toString());
-}	);
+	});
 }
 
 const addHighlight = exports.addHighlight = () => {

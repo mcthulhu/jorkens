@@ -26,6 +26,8 @@ module.exports = function(mainWindow){
 			  mainProcess.showLibrary();
 		  }
 	  },
+	  
+	 
 	  /* {
 		  label: "Preferences",
 		  click: () => {
