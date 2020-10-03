@@ -42,7 +42,10 @@
 		 </head>
     <body ondrop="dropHandler(event);">
 	<div id="title"></div>
+	<div id="tocbox">
 	<label for="toc">Table of Contents: <select id="toc"></select></label>
+	<span id="clock">00:00:00</span>
+	</div>
   <div id="viewer" class="spreads"></div>
   <a id="prev" href="#prev" class="arrow">‹</a>
   <a id="next" href="#next" class="arrow">›</a>
@@ -52,6 +55,7 @@
 			<span id="glosscount">Glossary: 0</span>
 			<span id="tmcount">TM: 0</span>
 			<span id="fccount">Flashcards: 0</span>
+			
 	</div>
 <script>
 let url = "";

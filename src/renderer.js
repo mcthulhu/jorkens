@@ -180,6 +180,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
 	  mainProcess.applyPassages();
+	  var timer=setInterval(updateTimer, 1000);
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
@@ -576,7 +577,33 @@ function setUpMousetrapShortcuts() {
 		
 }
       
+function updateTimer() {
+	var timer=document.getElementById("clock");
+	var timertext=timer.textContent;
+	var pieces=timertext.split(":");
+	var seconds=parseInt(pieces[2]);
+	var minutes=parseInt(pieces[1]);
+	var hours=parseInt(pieces[0]);
+	seconds++;
+	if(seconds==60) {
+		seconds=0;
+		minutes++;
+	}
+	if(minutes==60) {
+		minutes=0;
+		hours++;
+	}
+	var newtext=pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+	timer.textContent=newtext;
+} 
 
+function pad(num) {
+	var digits=num.toString();
+	if(digits.length<2) {
+		digits="0" + digits;
+	}
+	return(digits);
+}
   
 	
 

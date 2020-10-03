@@ -20,6 +20,11 @@ body {
   font-weight: 400;
 }
 
+#tocbox {
+	display: flex;
+  justify-content: space-between;
+}
+
 #title:hover {
   color: #777;
 }
@@ -382,7 +387,7 @@ label {
 	justify-content: space-around;
 }
 
-#glosscount, #tmcount, #fccount {
+#glosscount, #tmcount, #fccount, #clock {
 	padding: 0px 20px 0px 10px;
 	font-size: 75%;
 }
