@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
 	    
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
+        <title>Audio Player</title>
 <link rel="stylesheet" type="text/css" href="css/examples.css"/>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1"">
@@ -24,17 +24,33 @@
 </head>
 
 <body>
-<div>
-<label for="term">Term</label> <textarea spellcheck="false" rows="1" id="term"></textarea>
-<label for="def">Definition</label> <textarea rows="5"  id="def"></textarea>
-<label for="context">Context</label> <textarea rows="5" spellcheck="false" id="context"></textarea>
-<label for="addflashcard">Add flashcard?</label> <input type="checkbox" id="addflashcard"></input>
-</div>
-<div id="button-box">
-                  <button id="cancel-btn">Cancel</button>
-                  <button id="ok-btn">OK</button>
-             </div>
+<div id="waveform">
 
-<script>require('./gloss')</script>
+</div>
+<div id="wave-timeline"></div>
+<div id="button-box">
+<button id="backward">
+  Backward
+</button>
+
+<button id="playpause"">
+  Play | Pause
+</button>
+
+<button id="forward">
+  Forward
+</button>
+
+<button id=mute">
+  Toggle Mute
+</button>
+     <button id="cancel-btn">Close</button>
+</div>
+
+<script src="js/wavesurfer.js"></script>
+<script src="js/wavesurfer.cursor.min.js"></script>
+<script src="js/wavesurfer.timeline.min.js"></script>
+
+<script>require('./audioplayer')</script>
 
 </body>

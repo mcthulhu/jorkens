@@ -1098,6 +1098,12 @@ module.exports = function(mainWindow){
 		  click: () => {
           	mainProcess.playPolly();
        	 }
+	  },
+	  {
+		  label: "Play local audio file",
+		  click: () => {
+          	mainProcess.playAudio();
+       	 }
 	  }
 	  ]
   }, 

@@ -340,7 +340,7 @@ label {
 	text-align: center;
 }
 
-#term, #def, #tags {
+#term, #def, #tags, #context {
 	width: 95%;
 }
 
@@ -431,4 +431,8 @@ th {
 
 .secret {
 	display: none;
+}
+
+#context {
+	word-break: break-word;
 }

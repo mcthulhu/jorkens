@@ -1714,6 +1714,39 @@ const setTheme = exports.setTheme = (mode) => {
 	mainWindow.webContents.send('change-theme', mode);
 }
 
+const playAudio = exports.playAudio = () => {
+	const files = dialog.showOpenDialogSync(mainWindow, {
+			properties: ['openFile'],
+			filters: [
+				{name: 'MP3 files', extensions: ['mp3']},
+				{name: 'WAVE files', extensions: ['wav']},
+				{name: 'OGG files', extensions: ['ogg']},
+		]
+	});
+	var fn = files[0];
+	audioWindow = new BrowserWindow({
+		show: false,
+		width: 600,
+		height: 200,
+		webPreferences: {
+			nodeIntegration: true
+		}
+	});
+	audioWindow.loadURL(path.join(__dirname, 'audioplayer.html'));
+	/ audioWindow.webContents.openDevTools();
+	audioWindow.webContents.on('did-finish-load', () => {
+		audioWindow.webContents.send('play-audio', fn);
+	});
+	audioWindow.once('ready-to-show', () => {
+		audioWindow.setMenu(null);
+		audioWindow.show();
+	});
+	audioWindow.on('closed', () => {
+		audioWindow = null;
+    });
+	
+}
+
 const convertToEpub = exports.convertToEpub = (fn) => {
 	if(!fn) {
 		const files = dialog.showOpenDialogSync(mainWindow, {
