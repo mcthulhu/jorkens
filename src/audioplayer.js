@@ -38,15 +38,12 @@ document.getElementById("cancel-btn").addEventListener("click", (e) => {
     window.close();
 });
 document.getElementById("backward").addEventListener("click", (e) => {
-	wavesurfer.skipBackward();
+	wavesurfer.skipBackward(5);
 });
 
 document.getElementById("playpause").addEventListener("click", (e) => {
 	wavesurfer.playPause();
 });
 document.getElementById("forward").addEventListener("click", (e) => {
-	wavesurfer.skipForward();
-});
-document.getElementById("mute").addEventListener("click", (e) => {
-	wavesurfer.toggleMute();
+	wavesurfer.skipForward(5);
 });

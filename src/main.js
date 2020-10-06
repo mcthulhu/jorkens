@@ -1727,13 +1727,13 @@ const playAudio = exports.playAudio = () => {
 	audioWindow = new BrowserWindow({
 		show: false,
 		width: 600,
-		height: 200,
+		height: 300,
 		webPreferences: {
 			nodeIntegration: true
 		}
 	});
 	audioWindow.loadURL(path.join(__dirname, 'audioplayer.html'));
-	/ audioWindow.webContents.openDevTools();
+	// audioWindow.webContents.openDevTools();
 	audioWindow.webContents.on('did-finish-load', () => {
 		audioWindow.webContents.send('play-audio', fn);
 	});
