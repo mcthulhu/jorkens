@@ -856,6 +856,11 @@ const updateUserEmail = exports.updateUserEmail = () => {
 	mainWindow.webContents.send('get-user-email', oldaddress);
 }
 
+const getSearchTerm = exports.getSearchTerm = () => {
+	mainWindow.webContents.send('get-search-term');
+}
+
+
 const saveNativeLanguage = exports.saveNativeLanguage = (newlanguage) => {
 	global.sharedObject.native = newlanguage;
 	config.native = newlanguage;
@@ -1036,6 +1041,33 @@ const addToSecretShelf = exports.addToSecretShelf = () => {
 	console.log("set to secret");
 }
 
+const displaySearchResults = exports.displaySearchResults = (results) => {
+	// console.log(results);
+	var searchresultswin = new BrowserWindow({
+		show: false,
+		width: 800,
+		height: 600,
+		// frame: false,
+		alwaysOnTop: true,
+		webPreferences: {
+			nodeIntegration: true,
+			enableRemoteModule: true
+		}
+	});
+	searchresultswin.movable = true;
+	searchresultswin.loadFile(path.join(__dirname, 'searchresults.html'));
+	searchresultswin.webContents.once('did-finish-load', () => {
+		searchresultswin.webContents.send('search-results-data', results);
+	});
+	searchresultswin.once('ready-to-show', () => {		
+		//searchresultswin.webContents.openDevTools();
+		searchresultswin.show();		
+	});
+	searchresultswin.on('closed', () => {
+		searchresultswin = null;
+    });
+}
+
 const showLibary = exports.showLibrary = () => {
 	var data = "";
 	db.each('SELECT * FROM library ORDER BY language, author', [],
@@ -1046,7 +1078,7 @@ const showLibary = exports.showLibrary = () => {
 			if(err) {
 				return console.log(err);
 			}
-			var libwin = new BrowserWindow({
+		var libwin = new BrowserWindow({
 		show: false,
 		width: 800,
 		height: 600,
@@ -1088,7 +1120,6 @@ const glossarySearch = exports.glossarySearch = (term) => {
 	}
 	
 	
-	// console.log("searching for " + term + " in glossary");
 	var html="<!DOCTYPE html><html><head><title>Glossary search results</title>";
 	html+='</head><body><table style="border: solid 1px black; table-layout: fixed; width: 100%;"><thead><tr><th>Term</th><th>Translation</th></tr><tbody>';
 	db.each('SELECT * FROM dictionary WHERE lang = ? AND term LIKE ? or term = ?', [global.sharedObject.language, term+"%", oldterm], 
@@ -1138,7 +1169,6 @@ const concordance = exports.concordance = () => {
 		alert("Nothing highlighted!");
 		return;
 	}
-	//console.log("searching for " + term + " in memory");
 	var html="<!DOCTYPE html><html><head><title>Concordance search results</title>";
 	html+='</head><body><table style="border: solid 1px 	black"; table-layout: fixed; width: 100%;><thead><tr><th>Source</th><th>Translation</th></tr><tbody>';
     db.each('SELECT * FROM tm WHERE srclang = ? AND source LIKE ? LIMIT 100', [global.sharedObject.language, "% "+term+"%"], 
@@ -1790,4 +1820,8 @@ const runAnki = exports.runAnki = () => {
 
 const addHighlight = exports.addHighlight = () => {
 	mainWindow.webContents.send('add-highlight');
+}
+
+const jumpToSearchResult = exports.jumpToSearchResult = (cfi) => {
+	mainWindow.webContents.send('jump-to-search-result', cfi);
 }

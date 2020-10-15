@@ -68,7 +68,7 @@
     "python-shell": "^2.0.1",
     "sqlite3": "github:mohd-akram/node-sqlite3#fix-segfaults",
     "stopword": "^1.0.1",
-    "sweetalert2": "^10.0.1",
+    "sweetalert2": "^10.5.1",
     "underscore": "^1.10.2",
     "wordpos": "^2.0.0",
     "xliff": "^5.0.6",

@@ -43,6 +43,12 @@ module.exports = function(mainWindow){
   {
     label: 'Edit',
     submenu: [
+		 {
+	label: 'Search',
+	click: () => {
+		mainProcess.getSearchTerm();
+       	 }		 
+    },
       { role: 'undo' },
       { role: 'redo' },
       { type: 'separator' },

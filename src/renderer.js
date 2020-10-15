@@ -8,6 +8,7 @@ const { Menu, MenuItem } = remote
 const storage = require('electron-json-storage');
 const Dialogs = require('dialogs');
 const dialogs = Dialogs();
+const Swal = require('sweetalert2')
 const _ = require('underscore');
 var Mousetrap = require('mousetrap');
 const nlp = require('natural') ;
@@ -36,6 +37,10 @@ ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 		});
 	});
 })
+
+ipcRenderer.on('jump-to-search-result', (event, cfi) => {
+	rendition.display(cfi);
+});
 
 
 ipcRenderer.on('change-theme', (event, mode) => {
@@ -104,6 +109,34 @@ ipcRenderer.on('get-user-email', (event, oldaddress) => {
 	dialogs.prompt('Enter your email address:', oldaddress, ok => {
       mainProcess.saveEmailAddress(ok);
     })
+});
+
+ipcRenderer.on('get-search-term', async (event) => {
+	const { value: searchTerm } = await Swal.fire({
+  title: 'Enter your search term',
+  input: 'text',
+  showCancelButton: true,
+  inputValidator: (value) => {
+    if (!value) {
+      return 'You need to write something!'
+    }
+  }
+  
+  
+	})
+
+	doSearch(searchTerm).then((result) => {
+		for(let hit of result) {
+			var spineitem = book.spine.get(hit.cfi);
+			var navitem = book.navigation.get(spineitem.href);
+			if(navitem) {
+				hit.section = navitem.label;
+				hit.section = hit.section.trim();
+			}
+		}
+		
+		mainProcess.displaySearchResults(result);
+	})
 });
 
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
@@ -604,10 +637,12 @@ function pad(num) {
 	}
 	return(digits);
 }
-  
-	
 
- 
+function doSearch(q) {
+    return Promise.all(
+        book.spine.spineItems.map(item => item.load(book.load.bind(book)).then(item.find.bind(item, q)).finally(item.unload.bind(item)))
+    ).then(results => Promise.resolve([].concat.apply([], results))); 
+};
 
 
   
