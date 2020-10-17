@@ -42,6 +42,10 @@ ipcRenderer.on('jump-to-search-result', (event, cfi) => {
 	rendition.display(cfi);
 });
 
+ipcRenderer.on('text-richness', (event, textRich) => {
+	document.getElementById("ttr").textContent = textRich;
+});
+
 
 ipcRenderer.on('change-theme', (event, mode) => {
 	rendition.themes.select(mode);

@@ -1047,7 +1047,7 @@ const displaySearchResults = exports.displaySearchResults = (results) => {
 		show: false,
 		width: 800,
 		height: 600,
-		// frame: false,
+		frame: false,
 		alwaysOnTop: true,
 		webPreferences: {
 			nodeIntegration: true,
@@ -1639,6 +1639,7 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 	var vocabSize=pairlist.length;
 	var textRich=vocabSize/len;
 	textRich=textRich.toFixed(2);
+	mainWindow.webContents.send('text-richness', textRich);
 	pairlist=pairlist.sort(function(a,b) 
 		{ 
 			if(a[1] < b[1]) return 1;
