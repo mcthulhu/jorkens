@@ -387,7 +387,7 @@ label {
 	justify-content: space-around;
 }
 
-#glosscount, #tmcount, #fccount, #clock {
+#glosscount, #tmcount, #fccount, #clock, #ttr {
 	padding: 0px 20px 0px 10px;
 	font-size: 75%;
 }

@@ -6,8 +6,6 @@ const path = require('path');
 const qs = require("querystring");
 const { Menu, MenuItem } = remote
 const storage = require('electron-json-storage');
-const Dialogs = require('dialogs');
-const dialogs = Dialogs();
 const Swal = require('sweetalert2')
 const _ = require('underscore');
 var Mousetrap = require('mousetrap');
@@ -43,7 +41,7 @@ ipcRenderer.on('jump-to-search-result', (event, cfi) => {
 });
 
 ipcRenderer.on('text-richness', (event, textRich) => {
-	document.getElementById("ttr").textContent = textRich;
+	document.getElementById("ttr").textContent = "TTR: " + textRich;
 });
 
 
@@ -89,44 +87,56 @@ ipcRenderer.on('start-flashcard-review', (event, data) => {
 });
 
 ipcRenderer.on('got-translation', (event, translation) => {
-	dialogs.alert(translation);
+	Swal.fire(translation);
 });
 
-ipcRenderer.on('get-native-language', (event, oldlanguage) => {
-	dialogs.prompt('Enter the digraph for your native language (in lowercase):', oldlanguage, ok => {
-      mainProcess.saveNativeLanguage(ok);
-    })
+ipcRenderer.on('get-native-language', async (event, oldlanguage) => {
+	const { value: newlanguage } = await Swal.fire({
+		title: 'Enter the digraph for your native language (in lowercase):',
+		input: 'text',
+		//inputLabel: 'Your IP address',
+		inputValue: oldlanguage,
+		showCancelButton: true
+	})
+	if (newlanguage) {
+      mainProcess.saveNativeLanguage(newlanguage);
+    }
 });
 
-ipcRenderer.on('get-foreign-language', (event, oldlanguage) => {
-	dialogs.prompt("Enter the digraph for the book's correct language (in lowercase): ", oldlanguage, ok => {
-      mainProcess.saveForeignLanguage(ok);
+ipcRenderer.on('get-foreign-language', async (event, oldlanguage) => {
+	const { value: forlanguage } = await Swal.fire({
+		title: "Enter the digraph for the book's correct language (in lowercase): ",
+		input: 'text',
+		inputValue: oldlanguage,
+		showCancelButton: true
+	})
+	if (forlanguage) {	
+      mainProcess.saveForeignLanguage(forlanguage);
 	  var title = document.getElementById("title").textContent;
-	  language = ok;
-	  document.getElementById("title").textContent =title.replace(/\([a-z][a-z]\)/, "(" + language + ")");
+	  language = forlanguage;
+	  document.getElementById("title").textContent =title.replace(/\([a-z][a-z]\)/, "(" + forlanguage + ")");
 	  mainProcess.enableDictionaries();
-    })
+    }
 });
 
 
-ipcRenderer.on('get-user-email', (event, oldaddress) => {
-	dialogs.prompt('Enter your email address:', oldaddress, ok => {
-      mainProcess.saveEmailAddress(ok);
-    })
+ipcRenderer.on('get-user-email', async (event, oldaddress) => {
+	const { value: emailaddress } = await Swal.fire({
+		title: 'Enter your email address:',
+		input: 'text',
+		inputValue: oldaddress,
+		showCancelButton: true
+})
+	if (emailaddress) {
+      mainProcess.saveEmailAddress(emailaddress);
+    }
 });
 
 ipcRenderer.on('get-search-term', async (event) => {
 	const { value: searchTerm } = await Swal.fire({
-  title: 'Enter your search term',
-  input: 'text',
-  showCancelButton: true,
-  inputValidator: (value) => {
-    if (!value) {
-      return 'You need to write something!'
-    }
-  }
-  
-  
+		title: 'Enter your search term',
+		input: 'text',
+		showCancelButton: true
 	})
 
 	doSearch(searchTerm).then((result) => {
@@ -508,7 +518,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	}
     
     rendition.themes.fontSize("120%");
-		
+	
 });
 
 ipcRenderer.on('clear-book', () => {
@@ -577,6 +587,7 @@ ipcRenderer.on('get-book-contents', () => {
 	var docpath = remote.app.getPath('documents');
 	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
 	book.loaded.spine.then((spine) => {
+		console.log(spine.length + " spine items");
 		spine.each((item) => {
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
@@ -599,10 +610,12 @@ ipcRenderer.on('get-book-contents', () => {
 		
 	
 	});
-	const myNotification = new Notification('', {
-			body: 'book contents exported to text'
-		});
+	// mainProcess.calculateTypeTokenRatio();	
+/* 	const myNotification = new Notification('', {
+		body: 'book contents exported to text'
+	}); */
 	});
+
 });
 
 function setUpMousetrapShortcuts() {

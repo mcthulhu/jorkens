@@ -1484,6 +1484,10 @@ const playPolly = exports.playPolly = () => {
 			var voice="Marlene";
 			break;
 		}
+		case "es": {
+			var voice="Penelope";
+			break;
+		}
 		case "is": {
 			var voice="Dora";
 			break;
@@ -1610,6 +1614,37 @@ function tokenizeWords(s) {
 	return(words);
 }
 
+const calculateTypeTokenRatio = exports.calculateTypeTokenRatio = () => {
+	const sw = require('stopword');
+	var language = global.sharedObject.language;
+	var filter = eval(`sw.${language}`);
+	var freqs={};
+	var docpath = app.getPath('documents');
+	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	var words=tokenizeWords(booktext);
+	words = sw.removeStopwords(words, filter);
+	
+	var len=words.length;
+	for(var i=0;i<len;i++) {
+		if(lemmas[words[i]]) {
+			words[i] = lemmas[words[i]];
+		}
+	}
+	for(var i=0;i<len;i++) {
+		if(!freqs[words[i]]) {
+			freqs[words[i]] = 1;
+		} else {
+			freqs[words[i]] += 1;
+		}
+	}
+	var pairlist=_.pairs(freqs);
+	var vocabSize=pairlist.length;
+	var textRich=vocabSize/len;
+	textRich=textRich.toFixed(2);
+	mainWindow.webContents.send('text-richness', textRich);
+}
+
 const getWordFrequencies = exports.getWordFrequencies = () => {
 	const sw = require('stopword');
 	var language = global.sharedObject.language;
@@ -1620,7 +1655,6 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
 	var words=tokenizeWords(booktext);
 	words = sw.removeStopwords(words, filter);
-	// to do - add lemmatization here
 	
 	var len=words.length;
 	for(var i=0;i<len;i++) {
@@ -1654,8 +1688,10 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 			{name: 'Save file', extensions: ['csv']}
 		]		
 	});
+	if (fo) {
+		fs.writeFileSync(fo, output);
+	}
 	
-	fs.writeFileSync(fo, output);
 
 }
 

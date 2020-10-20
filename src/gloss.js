@@ -4,8 +4,11 @@ const mainProcess = remote.require('./main.js');
 document.getElementById('term').focus();
 document.getElementById('context').value = require('electron').remote.getGlobal('sharedObject').contextSentence;
 document.getElementById("cancel-btn").addEventListener("click", (e) => {
-                    window.close();
-                });
+    window.close();
+});
+document.getElementById("clear-btn").addEventListener("click", (e) => {
+     document.getElementById('context').value = '';
+});
 document.getElementById("ok-btn").addEventListener("click", (e) => {
 	var term=document.getElementById('term').value;
 	var def=document.getElementById('def').value;
