@@ -156,7 +156,7 @@ const createWindow = () => {
   });
 
 Menu.setApplicationMenu(menu(mainWindow));
-buildPythonMenu();
+
 
 
 
@@ -745,6 +745,43 @@ function getFullLanguageName(digraph) {
 	var lang = iso.iso_639_1[digraph]['name'];
 	return(lang);
 }
+
+const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
+	var language = global.sharedObject.language;
+	console.log("running stanza lemmatizer for " + language);
+	var output = [];
+	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
+	if(process.platform == 'win32') {
+		var myPythonPath = path.join('C:', 'Python38', 'python.exe');
+	} else if(process.platform == 'linux') {
+		var myPythonPath = '/usr/bin/python3';
+	}
+
+	let options = {
+		mode: 'text',
+		pythonPath: myPythonPath,
+		pythonOptions: ['-u'], // get print results in real-time
+		scriptPath: pythonScriptPath,
+		args: [language]
+	};
+	
+	let pyshell = new PythonShell('stanza-lemmatizer.py', options);
+	pyshell.on('message', function (message) {
+		output.push(message);
+	});
+	pyshell.end(function (err) {
+		if (err) throw err;
+		processStanza(output);
+	});	
+}
+
+const processStanza = exports.processStanza = (results) => {
+	var len = results.length;
+	for(var i = 0; i<len; i++) {
+		var pieces = results[i].split('\t');
+		lemmas[pieces[0] = pieces[1]];
+	}
+}
      
 const treeTagger = exports.treeTagger = () => {
 	lemmas = [];
@@ -773,6 +810,7 @@ const treeTagger = exports.treeTagger = () => {
 		}
 		// console.log(lemmas);
 	});
+	stanzaLemmatizer();
 }
 
 const chooseBook = exports.chooseBook = () => {
@@ -869,6 +907,7 @@ const saveNativeLanguage = exports.saveNativeLanguage = (newlanguage) => {
 
 const saveForeignLanguage = exports.saveForeignLanguage = (newlanguage) => {
 	global.sharedObject.language = newlanguage;
+	console.log("global language setting is " + global.sharedObject.language);
 	config.language = newlanguage;
 	storage.set('config', config);
 }
@@ -1603,10 +1642,6 @@ const myMemory = exports.myMemory = () => {
 	
 }
 
-const saveChapterToFile = exports.saveChapterToFile = () => {
-	
-}
-
 function tokenizeWords(s) {
 	s=s.trim();
 	var words=s.split(/[\u0009\u000a\u000b\u000d\u0020\u00a0\u2000-\u2009\u200a\u2028\u2029\u202f\u3000\d\u2000-\u2069»:«,\.!)(\[\]\?;»«;:']+/u);
@@ -1727,6 +1762,8 @@ const WindowsTTS = exports.WindowsTTS = () => {
 }
 
 const buildPythonMenu = exports.buildPythonMenu = () => {
+	var language = global.sharedObject.language;
+	var output = [];
 	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
 	if(fs.existsSync(fn)) {
 		var chaptertext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
@@ -1745,8 +1782,8 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 		mode: 'text',
 		pythonPath: myPythonPath,
 		pythonOptions: ['-u'], // get print results in real-time
-		scriptPath: pythonScriptPath
-		// args: ['value1', 'value2', 'value3']
+		scriptPath: pythonScriptPath,
+		args: [language, chaptertext]
 	};
 	var myMenu=Menu.getApplicationMenu();
 	var pythonmenu = myMenu.items[7].submenu.getMenuItemById('python').submenu;
@@ -1761,13 +1798,22 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 					pyshell.send(chaptertext);
 					pyshell.on('message', function (message) {
 						// received a message sent from the Python script (a simple "print" statement)
-						console.log(message);
+						
+						if(file == 'stanza-lemmatizer.py') {
+							output.push(message);
+						} else {
+							console.log(message);
+						}
 					});
 					pyshell.end(function (err,code,signal) {
 						if (err) throw err;
-						console.log('The exit code was: ' + code);
+						if(file == 'stanza-lemmatizer.py') {
+							processStanza(output);
+						}
+						
+/* 						console.log('The exit code was: ' + code);
 						console.log('The exit signal was: ' + signal);
-						console.log('finished');
+						console.log('finished'); */
 					});
 				}
 			}))

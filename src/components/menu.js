@@ -1255,6 +1255,13 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  
+	   {
+		  label: "Stanza lemmatizer",
+		  click: () => {
+			  mainProcess.stanzaLemmatizer();
+		  }
+	  },
+	  
 	  {
 		  label: "Extract keywords (RAKE)",
 		  click: () => {

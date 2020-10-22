@@ -21,6 +21,13 @@ booktitle = "";
 
 setUpMousetrapShortcuts();
 
+function tokenizeWords(s) {
+	s=s.trim();
+	var words=s.split(/[\u0009\u000a\u000b\u000d\u0020\u00a0\u2000-\u2009\u200a\u2028\u2029\u202f\u3000\d\u2000-\u2069»:«,\.!)(\[\]\?;»«;:']+/u);
+	words=words.filter(function(n) { return n != ""});
+	return(words);
+}
+
 /* ipcRenderer.on('created-database-tables', (event) => {
 	var myNotification = new Notification('', {
 		body: 'initialized database tables'
@@ -224,6 +231,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		// document.getElementById("toc").selectedIndex = chapter;
 		require('electron').remote.getGlobal('sharedObject').language=language;
 		mainProcess.enableDictionaries();
+		mainProcess.buildPythonMenu();
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
 	  mainProcess.applyPassages();
@@ -440,9 +448,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
    		
 		rendition.hooks.content.register(function(contents, view) {
 			var currentChapter=contents.content.textContent;
-			var tokenizer = new nlp.WordTokenizer();
-			if(process.platform == 'win32') {
-				var tokens = tokenizer.tokenize(currentChapter).join('\r\n');
+			/* var tokenizer = new nlp.WordTokenizer();      Natural tokenizer doesn't work with accented characters!
+			var tokens = tokenizer.tokenize(currentChapter); */
+			var tokens = tokenizeWords(currentChapter);
+			tokens = _.uniq(tokens);
+			if(process.platform == 'win32') {				
+				tokens=tokens.join('\r\n');
 			} else if(process.platform == 'linux') {
 				var tokens = tokenizer.tokenize(currentChapter).join('\n');
 			}
