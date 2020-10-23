@@ -10,7 +10,7 @@ body {
   min-height: 800px;
 }
 
-#title {
+#title, #title2 {
   width: 900px;
   min-height: 20px;
   margin: 10px auto;
@@ -20,7 +20,7 @@ body {
   font-weight: 400;
 }
 
-#tocbox {
+#tocbox, #tocbox2 {
 	display: flex;
   justify-content: space-between;
 }
@@ -29,7 +29,7 @@ body {
   color: #777;
 }
 
-#viewer.spreads {
+#viewer.spreads, #viewer2.spreads {
   width: 900px;
   height: 600px;
   box-shadow: 0 0 4px #ccc;
@@ -41,11 +41,11 @@ body {
   top: calc(50vh - 400px);
 }
 
-#viewer.spreads .epub-view > iframe {
+#viewer.spreads .epub-view > iframe, #viewer2.spreads .epub-view > iframe {
     background: white;
 }
 
-#viewer.scrolled {
+#viewer.scrolled, #viewer2.scrolled {
   overflow: hidden;
   width: 800px;
   margin: 0 auto;
@@ -54,33 +54,35 @@ body {
 
 }
 
-#viewer.scrolled .epub-container {
+#viewer.scrolled .epub-container, #viewer2.scrolled .epub-container {
   background: white;
   box-shadow: 0 0 4px #ccc;
   margin: 10px;
   padding: 20px;
 }
 
-#viewer.scrolled .epub-view > iframe {
+#viewer.scrolled .epub-view > iframe, #viewer2.scrolled .epub-view > iframe {
     background: white;
 }
 
-#prev {
+#prev, #prev2 {
   left: 0;
 }
 
-#next {
+#		, #next2 {
   right: 0;
 }
 
-#toc {
+
+
+#toc, #toc2 {
   display: inline;
   margin: 10px auto;
   min-height: 18px;
 }
 
 @media (min-width: 1000px) {
-  #viewer.spreads:after {
+  #viewer.spreads:after,  #viewer2.spreads:after {
     position: absolute;
     width: 1px;
     border-right: 1px #000 solid;
@@ -94,7 +96,7 @@ body {
     content:  "";
   }
 
-  #viewer.spreads.single:after {
+  #viewer.spreads.single:after, #viewer2.spreads.single:after {
     display: none;
   }
 
@@ -105,6 +107,15 @@ body {
   #next {
     right: 40px;
   }
+  
+   #prev2 {
+    left: 540px;
+  }
+
+  #next2 {
+    right: 40px;
+  }
+ 
 }
 
 .arrow {
@@ -130,11 +141,11 @@ body {
   color: #ccc;
 }
 
-.arrow:hover, .navlink:hover {
+.arrow:hover, .navlink:hover, .arrow2:hover {
   color: #777;
 }
 
-.arrow:active, .navlink:hover {
+.arrow:active, .navlink:hover, .arrow2:active {
   color: #000;
 }
 
@@ -436,3 +447,15 @@ th {
 #context {
 	word-break: break-word;
 }
+
+.flex-container {
+    display: flex;
+}
+
+.flex-child {
+    flex: 1;
+}  
+
+.flex-child:first-child {
+    margin-right: 20px;
+} 

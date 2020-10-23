@@ -12,7 +12,9 @@ var Mousetrap = require('mousetrap');
 const nlp = require('natural') ;
 
 book = ePub();
+book2 = null;
 rendition = null;
+rendition2 = null;
 lastLocation = null;
 url = null;
 locations=[];
@@ -42,6 +44,74 @@ ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 		});
 	});
 })
+
+ipcRenderer.on('parallel-book-opened', (event, file, content) => {	
+	book2 = ePub(file, { encoding: "binary"});
+	book2.open(content, "binary");
+	rendition2 = book2.renderTo('viewer2', {
+      width: '100%',
+	  height: 650,
+      spread: 'always'
+	});
+	var position = 0; // need to get relative position from first book
+	var displayed2 = rendition2.display(position);
+    document.getElementById('viewer').style.width = "45%";
+    document.getElementById('viewer2').style.width = "45%";
+	document.getElementById('viewer2').style.display = "block";
+	document.getElementById('tocbox2').style.display = "block";
+	document.getElementById('title2').style.display = "block";
+	document.getElementById('prev2').style.display = "inline-block";
+	document.getElementById('next2').style.display = "inline-block";
+	document.getElementById('next').style.right = "550px";
+	book2.ready.then(() => {
+		var booktitle2=book2.package.metadata.title;
+		 var author2 = book2.package.metadata.creator;
+		var language2=book2.package.metadata.language;
+		language2=language2.substring(0, 2);
+		if(language2 == 'UN') {
+			language2 = require('electron').remote.getGlobal('sharedObject').native;
+		}
+		document.getElementById("title2").textContent=author2 + " - " + booktitle2 + " (" + language2 + ")";
+		var next2 = document.getElementById("next2");
+		next2.addEventListener("click", function(e){
+			rendition2.next();
+			e.preventDefault();
+		}, false);
+
+		var prev2 = document.getElementById("prev2");
+		prev2.addEventListener("click", function(e){
+			rendition2.prev();
+			e.preventDefault();
+		}, false);
+
+		
+	});
+	 rendition2.on("rendered", function(section){
+      var current2 = book2.navigation && book2.navigation.get(section.href);
+	  console.log(current2);
+      if (current2) {
+		  // title.textContent = current.label;
+        var $select2 = document.getElementById("toc2");
+		console.log($select2);
+        var $selected2 = $select2.querySelector("option[selected]");
+        if ($selected2) {
+          $selected2.removeAttribute("selected");
+        }
+
+        var $options2 = $select2.querySelectorAll("option");
+		
+        for (var i = 0; i < $options2.length; ++i) {
+          let selected2 = $options2[i].getAttribute("ref") === current.href;
+          if (selected2) {
+            $options2[i].setAttribute("selected", "");
+          }
+        }
+		//$select2.selectedIndex = chapter;
+      }
+
+    });
+})
+
 
 ipcRenderer.on('jump-to-search-result', (event, cfi) => {
 	rendition.display(cfi);
@@ -411,6 +481,14 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 					require('electron').remote.getGlobal('sharedObject').selection = text;
 					require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
+					var docpath = remote.app.getPath('documents');
+					var fn = path.join(docpath, 'Jorkens', 'selection.txt');
+					fs.writeFile(fn, text, function(err) {
+						if(err) {
+							return console.log(err);
+						} 				
+					});
+					
 					mainProcess.glossarySearch(text);	
 					
 				}
@@ -672,5 +750,3 @@ function doSearch(q) {
     ).then(results => Promise.resolve([].concat.apply([], results))); 
 };
 
-
-  

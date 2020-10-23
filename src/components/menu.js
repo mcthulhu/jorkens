@@ -1256,9 +1256,9 @@ module.exports = function(mainWindow){
 	  },
 	  
 	   {
-		  label: "Stanza lemmatizer",
+		  label: "Load second (parallel) book",
 		  click: () => {
-			  mainProcess.stanzaLemmatizer();
+			  mainProcess.loadParallelBook();
 		  }
 	  },
 	  

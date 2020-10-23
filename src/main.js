@@ -1763,6 +1763,7 @@ const WindowsTTS = exports.WindowsTTS = () => {
 
 const buildPythonMenu = exports.buildPythonMenu = () => {
 	var language = global.sharedObject.language;
+	var selection = global.sharedObject.selection;
 	var output = [];
 	var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
 	if(fs.existsSync(fn)) {
@@ -1783,7 +1784,7 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 		pythonPath: myPythonPath,
 		pythonOptions: ['-u'], // get print results in real-time
 		scriptPath: pythonScriptPath,
-		args: [language, chaptertext]
+		args: [language, selection]
 	};
 	var myMenu=Menu.getApplicationMenu();
 	var pythonmenu = myMenu.items[7].submenu.getMenuItemById('python').submenu;
@@ -1795,7 +1796,7 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 				label: file,
 				click() {
 					let pyshell = new PythonShell(file, options);
-					pyshell.send(chaptertext);
+					pyshell.send(selection);
 					pyshell.on('message', function (message) {
 						// received a message sent from the Python script (a simple "print" statement)
 						
@@ -1889,7 +1890,6 @@ const convertToEpub = exports.convertToEpub = (fn) => {
 const runAnki = exports.runAnki = () => {
 	var child = require('child_process').execFile;
 	var executablePath = "C:\\Program Files\\Anki\\anki-console.exe";
-	//var parameters = ["-b", "%APPDATA%\\Anki2\\User 1"];
 	var parameters = [];
 	child(executablePath, parameters, function(err, data) {
 		if(err){
@@ -1907,4 +1907,17 @@ const addHighlight = exports.addHighlight = () => {
 
 const jumpToSearchResult = exports.jumpToSearchResult = (cfi) => {
 	mainWindow.webContents.send('jump-to-search-result', cfi);
+}
+
+const loadParallelBook = exports.loadParallelBook = () => {
+		const files = dialog.showOpenDialogSync(mainWindow, {
+		properties: ['openFile'],
+		filters: [
+			{name: 'Epub books', extensions: ['epub']},
+		]
+		
+	});
+	const content = fs.readFileSync(files[0], "binary");
+    mainWindow.webContents.send('parallel-book-opened', files[0], content); 
+	
 }

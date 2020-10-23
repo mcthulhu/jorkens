@@ -41,16 +41,32 @@
         </script>
 		 </head>
     <body ondrop="dropHandler(event);">
-	<div id="title"></div>
-	<div id="tocbox">
-	<label for="toc">Table of Contents: <select id="toc"></select></label>
-	<span id="ttr"></span>
-	<span id="clock">00:00:00</span>
+	<div id="titles" class="flex-container">
+		<div id="title" class="flex-child"></div>
+		<div id="title2" class="flex-child" style="display: none;"></div>
 	</div>
-  <div id="viewer" class="spreads"></div>
-  <a id="prev" href="#prev" class="arrow">‹</a>
-  <a id="next" href="#next" class="arrow">›</a>
-   
+	<div id="tocboxes" class="flex-container">
+		<div id="tocbox">
+			<label for="toc">Table of Contents: <select id="toc"></select></label>
+			<span id="ttr"></span>
+			<span id="clock">00:00:00</span>
+		</div>
+		<div id="tocbox2" style="display: none;">
+			<label for="toc2"><select id="toc2"></select></label>
+		</div>
+	</div>
+	<div id="viewers" class="flex-container">
+		<div id="viewer" class="spreads flex-child">
+		
+		</div>
+		<a id="prev" href="#prev" class="arrow">‹</a>
+		<a id="next" href="#next" class="arrow">›</a>
+		<div id="viewer2" class="spreads flex-child" style="display: none;">
+		
+		</div>
+		<a id="prev2" href="#prev2" class="arrow" style="display: none;">‹</a>
+		<a id="next2" href="#next2" class="arrow" style="display: none;">›</a>
+	</div>  
 	  <div id="controls" style="display: flex; flex-direction: row; justify-content: space-around;">
 			<input id="current-percent" size="3" value="0" /> %
 			<span id="glosscount">Glossary: 0</span>
