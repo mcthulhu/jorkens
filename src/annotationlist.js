@@ -3,38 +3,34 @@ const { BrowserWindow } = require('electron').remote;
 const mainProcess = remote.require('./main.js');
 const fs = require("fs");
 const path = require('path');
-var table=document.querySelector('#searchresultlist');
+const storage = require('electron-json-storage');
+var table=document.querySelector('#notelist');
 
-ipcRenderer.on('search-results-data', (event, results) => {
+ipcRenderer.on('annotation-data', (event, data) => {
 	var html="";
-	var len = results.length;
+	var entries = data.split('\r\n');
+	var len = entries.length;
+	var sep = '</td><td>';
 	for(var i=0;i<len;i++) {
 		var newrow=document.createElement("tr");
-		var section = results[i].section;
-		var cfi=results[i].cfi;
-		var excerpt=results[i].excerpt;
-		var cell1=document.createElement("td");
-		cell1.textContent=section;
-		var cell2=document.createElement("td");
-		cell2.textContent=cfi;
-		cell2.style.display="none";
-		var cell3=document.createElement("td");
-		cell3.textContent=excerpt;
-		newrow.appendChild(cell1);
-		newrow.appendChild(cell2);
-		newrow.appendChild(cell3);
-		newrow.addEventListener('click', function () {
-			var location = this.getElementsByTagName("td")[1].textContent;
+		var fields = entries[i].split('\t');
+		var flen=fields.length;
+		for(var j=0;j<flen;j++) {
+			var newcell=document.createElement("td");
+			if(j==3) {
+				newcell.style.display="none";
+			}
+			newcell.textContent=fields[j];
+			newrow.addEventListener('click', function () {
+				var location = this.getElementsByTagName("td")[3].textContent;
 				mainProcess.jumpToSearchResult(location); 
-			
 				window.close();
 			});
-		
-	
+			newrow.appendChild(newcell);
+		}
 		table.getElementsByTagName('tbody')[0].appendChild(newrow);
 	}
 });
-
 // table filtering code from https://speedysense.com/filter-html-table-using-javascript/
      (function(document) {
             'use strict';
@@ -73,3 +69,7 @@ ipcRenderer.on('search-results-data', (event, results) => {
             });
 
         })(document);
+		
+function exportToCSV()	 {
+	
+}

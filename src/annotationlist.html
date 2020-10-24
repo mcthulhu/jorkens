@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+    <title>Bookmarked Passages</title>
+	<link rel="stylesheet" type="text/css" href="css/examples.css"/>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+   </head>
+<body class="mt32"> 
+ <div class="container mt32">
+        <h3>
+            <span>Bookmarks and notes</span>
+            <input type="search" placeholder="Search..." class="form-control search-input" data-table="annotation-list"/>
+        </h3>
+<table id="notelist" style = "width:100%" class="table table-striped mt32 annotation-list">
+<thead>
+<tr><th>Title</th><th>Excerpt</th><th>Notes</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+   <!-- <button id="export" onClick="exportToCSV()">Export</button> -->
+   <button id="close" onClick="window.close()">Quit</button>
+   </div>
+
+	<script src="annotationlist.js"></script>
+ </body>
+ </html>

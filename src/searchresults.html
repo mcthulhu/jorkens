@@ -4,16 +4,23 @@
 	<meta charset="utf-8">
     <title>Search results</title>
 	<link rel="stylesheet" type="text/css" href="css/examples.css"/>
-	
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">	
    </head>
-<body> 
-<h1>Results</h1>
-<table id="searchresultlist" style = "width:100%">
+<body class="mt32"> 
+ <div class="container mt32">
+        <h3>
+            <span>Search results</span>
+            <input type="search" placeholder="Search within results..." class="form-control search-input" data-table="search-result-list"/>
+        </h3>
+<table id="searchresultlist" style = "width:100%" class="table table-striped mt32 search-result-list">
+<thead>
 <tr><th>Chapter</th><th>Search term in context</th></tr>
+</thead>
+<tbody></tbody>
 </table>
  
    <button id="close" onClick="window.close()">Quit</button>
-
+</div>
 	<script src="searchresults.js"></script>
  </body>
  </html>

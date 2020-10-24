@@ -1230,9 +1230,16 @@ module.exports = function(mainWindow){
 	  },
 	  
 	  	  {
-		  label: "Mark passage",
+		  label: "Bookmark/annotate passage",
 		  click: () => {
 			  mainProcess.createAnnotationWindow();
+		  }
+	  },
+	  
+	   {
+		  label: "Show bookmarks/annotations",
+		  click: () => {
+			  mainProcess.listAnnotations();
 		  }
 	  },
 	  
@@ -1262,7 +1269,7 @@ module.exports = function(mainWindow){
 	  },
 	  
 	   {
-		  label: "Load second (parallel) book",
+		  label: "Open parallel book",
 		  click: () => {
 			  mainProcess.loadParallelBook();
 		  }

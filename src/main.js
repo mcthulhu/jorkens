@@ -188,6 +188,8 @@ mainWindow.on('close', () => {
 	fs.unlinkSync(fn);
 	fn = path.join(docpath, 'Jorkens', 'tokens.txt');
 	fs.unlinkSync(fn);
+	fn = path.join(docpath, 'Jorkens', 'selection.txt');
+	fs.unlinkSync(fn);
 	
   });
 };
@@ -973,6 +975,40 @@ const applyPassages = exports.applyPassages = () => {
 		}
 	);
 	
+}
+
+const listAnnotations = exports.listAnnotations = () => {
+		var title = global.sharedObject.booktitle;
+		var data = '';
+	db.each('SELECT * FROM passages WHERE title = ?', [title],
+		function (err, row) {
+			data += row.title + "\t" + row.passage + "\t" + row.notes + "\t" + row.cfiRange + "\r\n";
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+		var notewin = new BrowserWindow({
+		show: false,
+		width: 800,
+		height: 600,
+		frame: false,
+		alwaysOnTop: true,
+		webPreferences: {
+			nodeIntegration: true
+		}
+	});
+	notewin.loadFile(path.join(__dirname, 'annotationlist.html'));
+	notewin.webContents.once('did-finish-load', () => {
+		notewin.webContents.send('annotation-data', data);
+	});
+	notewin.once('ready-to-show', () => {		
+		notewin.show();		
+	});
+	notewin.on('closed', () => {
+		notewin = null;
+    });
+	});
 }
 
 const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
