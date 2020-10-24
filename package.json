@@ -1,7 +1,7 @@
 {
   "name": "jorkens",
   "productName": "jorkens",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "An Electron desktop epub reader",
   "main": "src/main.js",
   "scripts": {
