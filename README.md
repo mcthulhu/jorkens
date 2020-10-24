@@ -3,7 +3,7 @@ Jorkens is a desktop epub reader (an Electron application) based on epub.js and 
 
 ![screen shot](screenshot.JPG)
 
-![screen shot](screenshot2.JPG)
+![screen shot](screenshot2.jpg)
 
 Jorkens can search for definitions of foreign words in numerous online dictionaries, and also uses a SQLite database for a local glossary and translation memory. (Note: The  database is initially empty, and needs to be populated before search results can be returned.) A highlighted word or partial word will be automatically looked up in the glossary, and any matches will be displayed; if none are found, a concordance search will be done next (see next paragraph). Glossaries can be imported from and exported to text files. See the Wiki for some useful sources of dictionary/glossary data. 
 
