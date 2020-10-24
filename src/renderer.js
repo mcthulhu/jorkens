@@ -86,30 +86,30 @@ ipcRenderer.on('parallel-book-opened', (event, file, content) => {
 
 		
 	});
-	 rendition2.on("rendered", function(section){
-      var current2 = book2.navigation && book2.navigation.get(section.href);
-	  console.log(current2);
-      if (current2) {
-		  // title.textContent = current.label;
-        var $select2 = document.getElementById("toc2");
-		console.log($select2);
-        var $selected2 = $select2.querySelector("option[selected]");
-        if ($selected2) {
-          $selected2.removeAttribute("selected");
-        }
+	book2.loaded.navigation.then(function(toc){
+			var $select2 = document.getElementById("toc2"),
+					docfrag = document.createDocumentFragment();
 
-        var $options2 = $select2.querySelectorAll("option");
-		
-        for (var i = 0; i < $options2.length; ++i) {
-          let selected2 = $options2[i].getAttribute("ref") === current.href;
-          if (selected2) {
-            $options2[i].setAttribute("selected", "");
-          }
-        }
-		//$select2.selectedIndex = chapter;
-      }
+			toc.forEach(function(chapter) {
+				var option = document.createElement("option");
+				option.textContent = chapter.label;
+				option.ref = chapter.href;
 
-    });
+				docfrag.appendChild(option);
+			});
+
+			$select2.appendChild(docfrag);
+
+			$select2.onchange = function(){
+					var index = $select2.selectedIndex,
+							url = $select2.options[index].ref;
+					rendition2.display(url);
+					return false;
+			};
+
+
+		});
+
 })
 
 
