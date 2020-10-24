@@ -1248,6 +1248,12 @@ module.exports = function(mainWindow){
 			  mainProcess.saveUnknowns();
 		  }
 	  }, 
+	  	  {
+		  label: "Calculate Type-Token Ratio (text complexity)",
+		  click: () => {
+			  mainProcess.calculateTypeTokenRatio();
+		  }
+	  },
 	  {
 		  label: "Generate word frequency list",
 		  click: () => {

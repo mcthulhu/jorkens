@@ -1708,7 +1708,6 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 	var vocabSize=pairlist.length;
 	var textRich=vocabSize/len;
 	textRich=textRich.toFixed(2);
-	mainWindow.webContents.send('text-richness', textRich);
 	pairlist=pairlist.sort(function(a,b) 
 		{ 
 			if(a[1] < b[1]) return 1;
