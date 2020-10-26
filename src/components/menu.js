@@ -1275,6 +1275,13 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  
+	  	   {
+		  label: "Transliterate selection",
+		  click: () => {
+			  mainProcess.transliterateSelection();
+		  }
+	  },
+	  
 	  {
 		  label: "Extract keywords (RAKE)",
 		  click: () => {

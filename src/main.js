@@ -1956,3 +1956,9 @@ const loadParallelBook = exports.loadParallelBook = () => {
     mainWindow.webContents.send('parallel-book-opened', files[0], content); 
 	
 }
+
+const transliterateSelection = exports.transliterateSelection = () => {
+	const tr = require('transliteration');
+	var selection = global.sharedObject.selection;
+	mainWindow.webContents.send('message-box', tr.transliterate(selection));
+}

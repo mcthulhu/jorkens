@@ -71,6 +71,7 @@
     "sqlite3": "^5.0.0",
     "stopword": "^1.0.3",
     "sweetalert2": "^10.6.1",
+    "transliteration": "^2.1.11",
     "underscore": "^1.11.0",
     "wordpos": "^2.0.0",
     "xliff": "^5.3.1",

@@ -36,6 +36,10 @@ function tokenizeWords(s) {
 	});
 }); */
 
+ipcRenderer.on('message-box', (event, message) => {
+	Swal.fire(message);
+});
+
 ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 	rendition.annotations.add('highlight', cfiRange, {'annotation' : notes}, (e) => {
         var note = e.target.getAttribute("data-annotation");
