@@ -20,7 +20,23 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
+process.on('beforeExit', code => {
+  // Can make asynchronous calls
+  setTimeout(() => {
+    console.log(`Process will exit with code: ${code}`)
+    process.exit(code)
+  }, 100)
+})
 
+process.on('uncaughtException', err => {
+  console.log(`Uncaught Exception: ${err.message}`)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled rejection at ', promise, `reason: ${err.message}`)
+  process.exit(1)
+})
 
 global.sharedObject = {
 	native: 'en',
@@ -175,7 +191,12 @@ mainWindow.on('close', () => {
     mainWindow = null;
 	// console.log(JSON.stringify(config));
 	
-	db.close();
+	try {
+		db.close();
+	} catch(e) {
+		console.log("problem closing db");
+		console.log(e);
+	}
 	var docpath = app.getPath('documents');
 	try {
 		var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
@@ -189,7 +210,13 @@ mainWindow.on('close', () => {
 	fn = path.join(docpath, 'Jorkens', 'tokens.txt');
 	fs.unlinkSync(fn);
 	fn = path.join(docpath, 'Jorkens', 'selection.txt');
-	fs.unlinkSync(fn);
+	try {
+		fs.unlinkSync(fn);
+	} catch(e) {
+		console.log(e);
+	}
+
+
 	
   });
 };
@@ -197,7 +224,7 @@ mainWindow.on('close', () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-
+app.allowRendererProcessReuse = false;
 app.on('ready', createWindow);
 
 // Quit when all windows are closed.
@@ -1360,15 +1387,16 @@ const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () =
 	var fn = getInputFile();
 	var entries = {};
 	
-	fs.readFile(fn, "utf8", (err,data) => {
+	fs.readFile(fn, "utf8"
+	, (err,data) => {
 		if(err) throw err;
 		var lines=data.split(/[\r\n]+/);
 		var len=lines.length;
-		//console.log(len);
+		console.log("len is " + len);
 		for(var i=0;i<len;i++) {
-			console.log(lines[i]);
+			console.log(i, lines[i]);
 			if(lines[i] && lines[i].length > 2)  {
-				var pieces=lines[i].split(" ");
+				var pieces=lines[i].split(/[ \t]+/);
 				//console.log(pieces);
 			//console.log("working on " + pieces[0]);
 			if(pieces[0] != pieces[1]) {
@@ -1383,6 +1411,10 @@ const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () =
 			
 		}
 		//console.log(entries);
+		if(!entries) {
+			console.log("no entries found");
+			return;
+		}
 		var elen= Object.keys(entries).length;
 		console.log(elen + " entries found");
 		db.run("BEGIN TRANSACTION");
