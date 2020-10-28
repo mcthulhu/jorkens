@@ -471,3 +471,7 @@ h3 input.search-input {
 .mt32 {
     margin-top: 32px;
 }
+
+#viewer2:hover {
+	visibility: visible;
+}

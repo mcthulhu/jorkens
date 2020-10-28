@@ -49,7 +49,8 @@ ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 	});
 })
 
-ipcRenderer.on('parallel-book-opened', (event, file, content) => {	
+ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {	
+	console.log("opening parallel book: " + file, cfi2);
 	book2 = ePub(file, { encoding: "binary"});
 	book2.open(content, "binary");
 	rendition2 = book2.renderTo('viewer2', {
@@ -57,11 +58,11 @@ ipcRenderer.on('parallel-book-opened', (event, file, content) => {
 	  height: 650,
       spread: 'always'
 	});
-	var position = 0; // need to get relative position from first book
-	var displayed2 = rendition2.display(position);
+	var displayed2 = rendition2.display(cfi2);
     document.getElementById('viewer').style.width = "45%";
     document.getElementById('viewer2').style.width = "45%";
 	document.getElementById('viewer2').style.display = "block";
+	document.getElementById('viewer2').style.visibility = "hidden";
 	document.getElementById('tocbox2').style.display = "block";
 	document.getElementById('title2').style.display = "block";
 	document.getElementById('prev2').style.display = "inline-block";
@@ -113,7 +114,13 @@ ipcRenderer.on('parallel-book-opened', (event, file, content) => {
 
 
 		});
-
+	rendition2.on("relocated", function(){
+		var currentLocation2 = rendition2.currentLocation();
+		var cfi2 = currentLocation2.start.cfi;
+		mainProcess.updateParallelBookLocation(file, cfi2);
+	});
+	// need to adjust font and fontsize to match first book; try 
+	// window.getComputedStyle(el).fontSize 
 })
 
 

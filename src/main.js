@@ -92,6 +92,7 @@ function createTables() {
 		db.run('CREATE TABLE IF NOT EXISTS flashcards (term TEXT PRIMARY KEY, def TEXT, deck INTEGER DEFAULT 1, language TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');	
 		db.run('CREATE TABLE IF NOT EXISTS locations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
 		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
+		db.run('CREATE TABLE IF NOT EXISTS parallels (title1 TEXT PRIMARY KEY UNIQUE, location2 TEXT, cfi2 TEXT)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
@@ -962,6 +963,14 @@ const saveCurrentLocation = exports.saveCurrentLocation = (title, current_locati
 			console.log(err);
 		});
 } 
+
+const updateParallelBookLocation = exports.updateParallelBookLocation = (location2, cfi2) => {
+	db.run('UPDATE parallels SET cfi2 = ? WHERE location2 = ?', [cfi2, location2], 
+		function(err) {
+			console.log(err);
+		});
+	// console.log("updated parallel book position to " + cfi2);
+}
 
 const clearBook = exports.clearBook = () => {
 	global.sharedObject.booklocation = "";
@@ -1977,20 +1986,45 @@ const jumpToSearchResult = exports.jumpToSearchResult = (cfi) => {
 }
 
 const loadParallelBook = exports.loadParallelBook = () => {
-		const files = dialog.showOpenDialogSync(mainWindow, {
-		properties: ['openFile'],
-		filters: [
-			{name: 'Epub books', extensions: ['epub']},
-		]
-		
-	});
-	const content = fs.readFileSync(files[0], "binary");
-    mainWindow.webContents.send('parallel-book-opened', files[0], content); 
-	
+	var title1 = global.sharedObject.booktitle;
+	db.each('SELECT * FROM parallels WHERE title1 = ?', [title1],
+		function (err, row) {
+			var file = row.location2;
+			var cfi2 = row.cfi2;
+			console.log("record found: " + file, cfi2);
+			const content = fs.readFileSync(file, "binary");
+			mainWindow.webContents.send('parallel-book-opened', file, content, cfi2); 
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			if(len == 0) {
+				const files = dialog.showOpenDialogSync(mainWindow, {
+					properties: ['openFile'],
+					filters: [
+						{name: 'Epub books', extensions: ['epub']},
+					]
+				
+				});
+				var file = files[0];
+				var cfi2 = '0';
+				db.run("INSERT OR REPLACE INTO parallels(title1, location2, cfi2) VALUES(?,?,?)", [title1, file, cfi2]);
+				const content = fs.readFileSync(file, "binary");
+				mainWindow.webContents.send('parallel-book-opened', file, content, cfi2); 
+			}
+		}
+	);	
 }
 
 const transliterateSelection = exports.transliterateSelection = () => {
+	var language = global.sharedObject.language;
 	const tr = require('transliteration');
 	var selection = global.sharedObject.selection;
-	mainWindow.webContents.send('message-box', tr.transliterate(selection));
+	if(language == 'ja') {
+		
+	} else {
+		mainWindow.webContents.send('message-box', tr.transliterate(selection));
+	}
+	
 }
