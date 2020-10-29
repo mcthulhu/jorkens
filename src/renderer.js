@@ -56,10 +56,11 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 	rendition2 = book2.renderTo('viewer2', {
       width: '100%',
 	  height: 650,
-      spread: 'always'
+      spread: 'none'
 	});
 	var displayed2 = rendition2.display(cfi2);
-    document.getElementById('viewer').style.width = "45%";
+    document.getElementById('viewer').style.width = "400px";
+	rendition.resize(520);
     document.getElementById('viewer2').style.width = "45%";
 	document.getElementById('viewer2').style.display = "block";
 	document.getElementById('viewer2').style.visibility = "hidden";
@@ -119,8 +120,23 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 		var cfi2 = currentLocation2.start.cfi;
 		mainProcess.updateParallelBookLocation(file, cfi2);
 	});
-	// need to adjust font and fontsize to match first book; try 
-	// window.getComputedStyle(el).fontSize 
+
+	 rendition2.themes.default({
+      h2: {
+        'font-size': '32px',
+        color: 'purple'
+      },
+      p: {
+        "margin": '10px'
+      }
+    });
+	if(require('electron').remote.getGlobal('sharedObject').theme) {
+		rendition2.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
+	} else {
+		rendition2.themes.select("sepia");
+	}
+    
+    rendition2.themes.fontSize("120%");
 })
 
 
@@ -290,7 +306,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
   rendition = book.renderTo("viewer", {
       width: "100%",
       height: 650,
-	  spread: "always"
+	  spread: "auto"
     });
 
     var displayed = rendition.display(position);

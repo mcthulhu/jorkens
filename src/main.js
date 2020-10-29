@@ -840,7 +840,7 @@ const treeTagger = exports.treeTagger = () => {
 		}
 		// console.log(lemmas);
 	});
-	stanzaLemmatizer();
+	// stanzaLemmatizer();
 }
 
 const chooseBook = exports.chooseBook = () => {
