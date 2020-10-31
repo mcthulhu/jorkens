@@ -336,7 +336,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
-				// console.log(stored);
 				return book.locations.load(stored);			
 			} else {
 				console.log("generating book locations");
@@ -344,17 +343,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			}
 	 })
 			.then(function(locations){
-				// console.log(booktitle, locations);
 				mainProcess.saveLocations(booktitle, locations);
 				require('electron').remote.getGlobal('sharedObject').firstLocation = locations[0];
-				//console.log(locations[0]);
 				require('electron').remote.getGlobal('sharedObject').lastLocation = locations[locations.length - 1];
-				//console.log(locations[locations.length - 1]);
 				controls.style.display = "block";
 				slider.setAttribute("type", "range");
 				slider.setAttribute("min", 0);
 				slider.setAttribute("max", 100);
-				// slider.setAttribute("max", book.locations.total+1);
 				slider.setAttribute("step", 1);
 				slider.setAttribute("value", 0);
 
@@ -392,17 +387,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				require('electron').remote.getGlobal('sharedObject').locations = locations;
 
 		});
-		/*  book.getRange("epubcfi(/6/14[xchapter_001]!/4/2,/2/2/2[c001s0000]/1:0,/8/2[c001p0003]/1:663)").then(function(range) {
-        let text = range.toString()
-        console.log(text);
-		 }); */
-		 
-
-      //});
-
-      
-
-   // })
 
     var title = document.getElementById("title");
 	mainProcess.getBookContents();
@@ -410,7 +394,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
       var current = book.navigation && book.navigation.get(section.href);
 	  
       if (current) {
-		  // title.textContent = current.label;
         var $select = document.getElementById("toc");
         var $selected = $select.querySelector("option[selected]");
         if ($selected) {
@@ -425,7 +408,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
             $options[i].setAttribute("selected", "");
           }
         }
-		//$select.selectedIndex = chapter;
       }
 
     });
@@ -455,24 +437,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         prev.style.visibility = "visible";
       }
 		lastLocation=rendition.currentLocation().start.cfi;
-		// console.log("lastlocation is " + lastLocation);
 		mainProcess.updateConfigLocation(url, lastLocation);
 		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
 		
-		 // the following seems to result in a severe memory leak
-		 
-		/* console.log("about to update location - booktitle is " + booktitle + " and lastLocation is " + lastLocation);
-		try {
-			mainProcess.saveCurrentLocation(title, lastLocation);
-		} catch(err) {
-			console.log(err);
-		}
-		 */
 		let spineItem = book.spine.get(lastLocation);
         let navItem = book.navigation.get(spineItem.href);
-		//console.log(navItem);
 		var navpoint = navItem.id.split('-')[1].trim();
-		//console.log(navpoint);
 		document.getElementById('toc').selectedIndex = navpoint - 1;
 		
     });
@@ -491,10 +461,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 	var checkGlossary = function(cfiRange, contents) {
 		book.getRange(cfiRange).then((range) => {
-			// console.log(contents);
                 if (range) {
                     let text = range.toString();
-					// let startOffset = range.startOffset;
                     let paragraph = range.startContainer.data;
 					var regexp = /[^\.\!\?]*[\.\!\?]/g;
 					var sentences = paragraph.match(regexp);
@@ -502,7 +470,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 					for(var i=0;i<senlen;i++) {
 						if(sentences[i].includes(text)) {
 							require('electron').remote.getGlobal('sharedObject').contextSentence = sentences[i];
-							// console.log(sentences[i]);
 						}
 					}
 
@@ -551,7 +518,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 		});
    		
-		rendition.hooks.content.register(function(contents, view) {
+	rendition.hooks.content.register(function(contents, view) {
+			var language = require('electron').remote.getGlobal('sharedObject').language;
 			var currentChapter=contents.content.textContent;
 			/* var tokenizer = new nlp.WordTokenizer();      Natural tokenizer doesn't work with accented characters!
 			var tokens = tokenizer.tokenize(currentChapter); */
@@ -575,7 +543,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				if(err) {
 					return console.log(err);
 				} else {
-					mainProcess.treeTagger();
+					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
+					if(stanzalanguages.includes(language)) {
+						mainProcess.stanzaLemmatizer();
+					} else {
+						mainProcess.treeTagger();
+					}
+
 				}				
 			});
 			

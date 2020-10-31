@@ -109,24 +109,11 @@ function createTables() {
 				 db.run('ALTER TABLE flashcards ADD COLUMN context TEXT');
 			 }
 		 });
-		 
-		// console.log("created database tables");
 	});
-  
-	
-	  
-	 /*  try {
-		  db.run('ALTER TABLE library ADD COLUMN author TEXT');
-	  } catch (e) {
-		  console.log(e);
-	  }
-	   */
+
 	   
   }
   
-  
-//});
-
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -144,8 +131,6 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 	mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-	//const defaultDataPath = storage.getDefaultDataPath();
-	 //console.log("data path is " + defaultDataPath);
 	 storage.has('config', function(error, hasKey) {
   if (error) throw error;
 
@@ -190,14 +175,8 @@ mainWindow.on('close', () => {
     // when you should delete the corresponding element.
 	
     mainWindow = null;
-	// console.log(JSON.stringify(config));
 	
-	try {
-		db.close();
-	} catch(e) {
-		console.log("problem closing db");
-		console.log(e);
-	}
+
 	var docpath = app.getPath('documents');
 	try {
 		var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
@@ -211,16 +190,22 @@ mainWindow.on('close', () => {
 	fn = path.join(docpath, 'Jorkens', 'tokens.txt');
 	fs.unlinkSync(fn);
 	fn = path.join(docpath, 'Jorkens', 'selection.txt');
-	try {
+	if(fs.existsSync(fn)) {
 		fs.unlinkSync(fn);
-	} catch(e) {
-		console.log(e);
-	}
-
+	} 
 
 	
   });
 };
+
+process.on('SIGINT', () => {
+	console.log("closing database");
+	try {
+		db.close();
+	} catch(e) {
+		console.log("error on closing database", e);
+	}
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -264,13 +249,11 @@ const saveUnknowns = exports.saveUnknowns = () => {
 }
 
 const createGlossWindow = exports.createGlossWindow = () => {
-	// if(glossWindow) return;
 	var term = global.sharedObject.selection;
 	term=term.trim().toLowerCase();
 	if(lemmas[term]) {
 		term = lemmas[term];
 	}
-	// console.log("createglosswindow: " + term);
 	glossWindow = new BrowserWindow({
 	show: false,
     width: 600,
@@ -308,7 +291,6 @@ const createAnnotationWindow = exports.createAnnotationWindow = () => {
 	});
 	annotationWindow.loadFile(path.join(__dirname, 'annotation.html'));
 	
-	// annotationWindow.webContents.openDevTools();
 	annotationWindow.once('ready-to-show', () => {
 		annotationWindow.show();
 		annotationWindow.webContents.insertText(passage);
@@ -333,7 +315,6 @@ const createTMWindow = exports.createTMWindow = () => {
 	});
 	tmWindow.loadFile(path.join(__dirname, 'tm_add.html'));
 	
-	// tmWindow.webContents.openDevTools();
 	tmWindow.once('ready-to-show', () => {
 		tmWindow.show();
 		tmWindow.webContents.insertText(source);
@@ -358,12 +339,10 @@ const createFlashcardWindow = exports.createFlashcardWindow = () => {
 	});
 	flashWindow.loadFile(path.join(__dirname, 'flash.html'));
 	
-	// glossWindow.webContents.openDevTools();
 	flashWindow.once('ready-to-show', () => {
 		flashWindow.show();
 		flashWindow.webContents.insertText(term);
 		flashWindow.webContents.executeJavaScript('document.getElementById("def").focus()');
-		// flashWindow.openDevTools();
 	});
 	flashWindow.on('closed', () => {
 		flashWindow = null;
@@ -777,6 +756,7 @@ function getFullLanguageName(digraph) {
 }
 
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
+	console.time();
 	var language = global.sharedObject.language;
 	console.log("running stanza lemmatizer for " + language);
 	var output = [];
@@ -802,6 +782,7 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	pyshell.end(function (err) {
 		if (err) throw err;
 		processStanza(output);
+		console.timeEnd();
 	});	
 }
 
@@ -838,7 +819,6 @@ const treeTagger = exports.treeTagger = () => {
 			var items = line.split('\t');
 			lemmas[items[0]] = items[2];
 		}
-		// console.log(lemmas);
 	});
 	// stanzaLemmatizer();
 }
@@ -937,7 +917,6 @@ const saveNativeLanguage = exports.saveNativeLanguage = (newlanguage) => {
 
 const saveForeignLanguage = exports.saveForeignLanguage = (newlanguage) => {
 	global.sharedObject.language = newlanguage;
-	console.log("global language setting is " + global.sharedObject.language);
 	config.language = newlanguage;
 	storage.set('config', config);
 }
@@ -969,7 +948,6 @@ const updateParallelBookLocation = exports.updateParallelBookLocation = (locatio
 		function(err) {
 			console.log(err);
 		});
-	// console.log("updated parallel book position to " + cfi2);
 }
 
 const clearBook = exports.clearBook = () => {
@@ -1056,10 +1034,7 @@ const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 }
 
 const addFlashcard = exports.addFlashcard = (term, def, context, language, tags) => {
-	// console.log(term, def, context, language, tags);
-	//if(term && def && language && tags) {
-		db.run("INSERT OR REPLACE INTO flashcards(term, def, context, language, tags) VALUES(?,?,?,?,?)", [term, def, context, language, tags]);
-	//}
+	db.run("INSERT OR REPLACE INTO flashcards(term, def, context, language, tags) VALUES(?,?,?,?,?)", [term, def, context, language, tags]);
 	updateDBCounts();
 }
 
@@ -1079,7 +1054,6 @@ const reviewFlashcards = exports.reviewFlashcards = () => {
 			if(err) {
 				return console.log(err);
 			}
-			// console.log(len + " flashcards: " + data);
 			
 			mainWindow.webContents.send('start-flashcard-review', data);
 		}
@@ -1153,7 +1127,6 @@ const addToSecretShelf = exports.addToSecretShelf = () => {
 }
 
 const displaySearchResults = exports.displaySearchResults = (results) => {
-	// console.log(results);
 	var searchresultswin = new BrowserWindow({
 		show: false,
 		width: 800,
@@ -1396,36 +1369,27 @@ const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () =
 	var fn = getInputFile();
 	var entries = {};
 	
-	fs.readFile(fn, "utf8"
-	, (err,data) => {
+	fs.readFile(fn, "utf8", (err,data) => {
 		if(err) throw err;
 		var lines=data.split(/[\r\n]+/);
 		var len=lines.length;
-		console.log("len is " + len);
 		for(var i=0;i<len;i++) {
-			console.log(i, lines[i]);
 			if(lines[i] && lines[i].length > 2)  {
 				var pieces=lines[i].split(/[ \t]+/);
-				//console.log(pieces);
-			//console.log("working on " + pieces[0]);
 			if(pieces[0] != pieces[1]) {
 				if(pieces[0].length > 0 && !entries[pieces[0]]) {
 					entries[pieces[0]] = [];
 				} 
 				if(pieces[1].length > 0 && Array.isArray(entries[pieces[0]])) { entries[pieces[0]].push(pieces[1]); }
-					//console.log(pieces[0] + " = " + entries[pieces[0]]);
 			}
 			
 			}
 			
 		}
-		//console.log(entries);
 		if(!entries) {
-			console.log("no entries found");
 			return;
 		}
 		var elen= Object.keys(entries).length;
-		console.log(elen + " entries found");
 		db.run("BEGIN TRANSACTION");
 		for(var term in entries) {
 			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", lang,  term, entries[term].join(", "));
@@ -1443,7 +1407,6 @@ const importDictionary = exports.importDictionary = () => {
 		if(err) throw err;
 		var lines=data.split(/[\r\n]+/);
 		var len=lines.length;
-		console.log(len + " entries found");
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<len;i++) {
 			var pieces=lines[i].split("\t");
@@ -1460,11 +1423,8 @@ const importDictionary = exports.importDictionary = () => {
 
 const enableDictionaries = exports.enableDictionaries = () => {
 	var language = global.sharedObject.language;
-	// console.log(language);
 	var myMenu=Menu.getApplicationMenu();	
-	myMenu.items[3].submenu.getMenuItemById(language).visible = true;
-	// myMenu.items[8].submenu.items[0].visible = false;
-	
+	myMenu.items[3].submenu.getMenuItemById(language).visible = true;	
 }
 
 const importTM = exports.importTM = () => {
@@ -1485,19 +1445,16 @@ const importTM = exports.importTM = () => {
 		var doc = new DOMParser().parseFromString(data, 'text/xml');
 		var tus=doc.getElementsByTagName('tu');
 		var tulen=tus.length;
-		console.log(tulen + " tus");
 		
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<tulen;i++) {
 			var tuvs=tus[i].getElementsByTagName("tuv");
 			if(tuvs[0].getAttribute("xml:lang") == language && tuvs[1].getAttribute("xml:lang") == native) {
-				// console.log("first tuv has lang " + tuvs[0].getAttribute("xml:lang"));
 				var src=tuvs[0].getElementsByTagName("seg")[0].textContent;
 				var tgt=tuvs[1].getElementsByTagName("seg")[0].textContent;
 				flag=1;
 			} else if(tuvs[1].getAttribute("xml:lang") == language && tuvs[0].getAttribute("xml:lang") == native) {
 				
-					// console.log("second tuv has lang " + tuvs[1].getAttribute("xml:lang"));
 				var src=tuvs[1].getElementsByTagName("seg")[0].textContent;
 				var tgt=tuvs[0].getElementsByTagName("seg")[0].textContent;
 				flag=1;
@@ -1529,7 +1486,6 @@ const importTabDelimitedSentences = exports.importTabDelimitedSentences = () => 
 		if(err) throw err;
 		var lines=data.split(/[\r\n]+/);
 		var len=lines.length;
-		console.log(len + " entries found");
 		db.run("BEGIN TRANSACTION");
 		for(var i=0;i<len;i++) {
 			var pieces=lines[i].split("\t");
@@ -1955,9 +1911,7 @@ const convertToEpub = exports.convertToEpub = (fn) => {
 			console.error(err);
 			return;
 		}
- 
-		console.log(data.toString());
-		openFile(output, 0);
+ 		openFile(output, 0);
 	});	
 	
 	
@@ -1991,7 +1945,6 @@ const loadParallelBook = exports.loadParallelBook = () => {
 		function (err, row) {
 			var file = row.location2;
 			var cfi2 = row.cfi2;
-			console.log("record found: " + file, cfi2);
 			const content = fs.readFileSync(file, "binary");
 			mainWindow.webContents.send('parallel-book-opened', file, content, cfi2); 
 		}, 
