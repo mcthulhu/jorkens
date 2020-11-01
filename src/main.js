@@ -613,6 +613,23 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		url += "&langprefix=en%2F&searchMode=WORD_PREFIX&viewMode=full&ignoreAccents=0";
 	}
 	
+	if(mode == 'amszotar') {
+		var url = "https://angol-magyar-szotar.hu/#forditInput=" + term + "&korra=0&from=hu&to=en&version=4";
+	}
+	
+	if(mode == 'hudictzone') {
+		var url = "https://dictzone.com/magyar-angol-szotar/" + term;
+	}
+	
+	if(mode == 'hubabla') {
+		var url = "https://en.bab.la/dictionary/hungarian-english/" + term;
+	}
+	
+	if(mode == 'hudictcc') {
+		var url = "https://enhu.dict.cc/?s=" + term + "+";
+	}
+	
+	
 	if(mode == 'hindi-english') {
 		var url = "https://hindi-english.com/hitoen/" + term;
 	}

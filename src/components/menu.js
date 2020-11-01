@@ -539,10 +539,39 @@ module.exports = function(mainWindow){
 	id: "hu",
 	visible: false,
 	submenu: [
+	
+	{ label: 'Search Dict.cc (HU)',
+	accelerator: '',
+	click: () => {
+          	mainProcess.createSearchWindow('hudictcc');
+       	 }
+    },
+	
+	{ label: 'Search Bab.la (HU)',
+	accelerator: '',
+	click: () => {
+          	mainProcess.createSearchWindow('hubabla');
+       	 }
+    },
+	
+	{ label: 'Search DictZone (HU)',
+	accelerator: '',
+	click: () => {
+          	mainProcess.createSearchWindow('hudictzone');
+       	 }
+    },
+	
 	{ label: 'Search SZTAKI',
 	accelerator: '',
 	click: () => {
           	mainProcess.createSearchWindow('sztaki');
+       	 }
+    },
+	
+	{ label: 'Search Angol-Magyar Szotar',
+	accelerator: '',
+	click: () => {
+          	mainProcess.createSearchWindow('amszotar');
        	 }
     },
 	
