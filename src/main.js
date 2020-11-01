@@ -241,11 +241,14 @@ const saveUnknowns = exports.saveUnknowns = () => {
 		
 	});
 	var data = unknowns.join('\r\n');
-	fs.writeFile(fn, data, function(err) {
-		if(err) {
-			return console.log(err);
-		}
-	});
+	if(fn) {
+		fs.writeFile(fn, data, function(err) {
+			if(err) {
+				return console.log(err);
+			}
+		});
+	}
+
 }
 
 const createGlossWindow = exports.createGlossWindow = () => {
@@ -788,6 +791,7 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 
 const processStanza = exports.processStanza = (results) => {
 	var len = results.length;
+	console.log(len + " stanza results");
 	for(var i = 0; i<len; i++) {
 		var pieces = results[i].split('\t');
 		lemmas[pieces[0] = pieces[1]];

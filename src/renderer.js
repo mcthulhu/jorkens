@@ -519,16 +519,47 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		});
    		
 	rendition.hooks.content.register(function(contents, view) {
+			rendition.themes.register("dark", "css/themes.css");
+		rendition.themes.register("light", "css/themes.css");
+		rendition.themes.register("sepia", "css/themes.css");
+		rendition.themes.register("lavender", "css/themes.css");
+		rendition.themes.register("lavenderonblue", "css/themes.css");
+		rendition.themes.register("nord", "css/themes.css");
+		rendition.themes.register("rubyblue", "css/themes.css");
+		rendition.themes.register("greenonblack", "css/themes.css");
+
+		rendition.themes.default({
+			h2: {
+				'font-size': '32px',
+			color: 'purple'
+		},
+		p: {
+			"margin": '10px'
+		}
+		});
+	if(require('electron').remote.getGlobal('sharedObject').theme) {
+		rendition.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
+	} else {
+		rendition.themes.select("sepia");
+	}
+    
+    rendition.themes.fontSize("120%");
+	
+	
 			var language = require('electron').remote.getGlobal('sharedObject').language;
 			var currentChapter=contents.content.textContent;
 			/* var tokenizer = new nlp.WordTokenizer();      Natural tokenizer doesn't work with accented characters!
 			var tokens = tokenizer.tokenize(currentChapter); */
 			var tokens = tokenizeWords(currentChapter);
 			tokens = _.uniq(tokens);
+			if(tokens.length == 0) {
+				console.log("no tokens found");
+				return;
+			}
 			if(process.platform == 'win32') {				
 				tokens=tokens.join('\r\n');
 			} else if(process.platform == 'linux') {
-				var tokens = tokenizer.tokenize(currentChapter).join('\n');
+				var tokens = tokens.join('\n');
 			}
 			
 			var docpath = remote.app.getPath('documents');
@@ -543,7 +574,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				if(err) {
 					return console.log(err);
 				} else {
-					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
+					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
 					if(stanzalanguages.includes(language)) {
 						mainProcess.stanzaLemmatizer();
 					} else {
@@ -583,31 +614,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			
 		});
 		
-	rendition.themes.register("dark", "css/themes.css");
-    rendition.themes.register("light", "css/themes.css");
-    rendition.themes.register("sepia", "css/themes.css");
-	rendition.themes.register("lavender", "css/themes.css");
-	rendition.themes.register("lavenderonblue", "css/themes.css");
-	rendition.themes.register("nord", "css/themes.css");
-	rendition.themes.register("rubyblue", "css/themes.css");
-	rendition.themes.register("greenonblack", "css/themes.css");
 
-    rendition.themes.default({
-      h2: {
-        'font-size': '32px',
-        color: 'purple'
-      },
-      p: {
-        "margin": '10px'
-      }
-    });
-	if(require('electron').remote.getGlobal('sharedObject').theme) {
-		rendition.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
-	} else {
-		rendition.themes.select("sepia");
-	}
-    
-    rendition.themes.fontSize("120%");
 	
 });
 
