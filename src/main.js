@@ -809,10 +809,9 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 
 const processStanza = exports.processStanza = (results) => {
 	var len = results.length;
-	console.log(len + " stanza results");
 	for(var i = 0; i<len; i++) {
 		var pieces = results[i].split('\t');
-		lemmas[pieces[0] = pieces[1]];
+		lemmas[pieces[0]] = pieces[1];
 	}
 }
      
