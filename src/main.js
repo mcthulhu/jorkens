@@ -607,6 +607,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'kamus') {
 		var url = "https://www.kamus.net/indonesia/" + term;
 	}
+	// Hungarian
 	
 	if(mode == 'sztaki') {
 		var url = "http://szotar.sztaki.hu/en/search?fromlang=eng&tolang=hun&searchWord=" + term;
