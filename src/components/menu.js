@@ -102,7 +102,6 @@ module.exports = function(mainWindow){
        	 }
     },
 	{ label: 'Search Wordreference',
-	accelerator: 'CmdOrCtrl+Shift+W',
 	click: () => {
           	mainProcess.createSearchWindow('wf');
        	 }
@@ -122,6 +121,14 @@ module.exports = function(mainWindow){
           	mainProcess.createSearchWindow('gl');
        	 }
     },
+	
+		{ label: 'Search Glosbe Dictionary',
+	accelerator: 'CmdOrCtrl+Shift+W',
+	click: () => {
+          	mainProcess.searchGlosbeDictionary();
+       	 }
+    },
+	
 	{ label: 'Search Google Images',
 	click: () => {
 		
@@ -683,7 +690,12 @@ module.exports = function(mainWindow){
           	mainProcess.createSearchWindow('zkorean');
        	 }
     },
-	// krdict.korean.go.kr/eng  -- https://krdict.korean.go.kr/eng/dicSearch/search?nation=eng&nationCode=6&ParaWordNo=&mainSearchWord=%EC%9D%B4%EC%A0%84%EC%97%90+
+	
+	{ label: 'Search Korean-English Learner\'s Dictionary',
+	click: () => {
+          	mainProcess.createSearchWindow('krdict');
+       	 }
+    },
 	
 	]	
 	},

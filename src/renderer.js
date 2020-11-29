@@ -40,6 +40,13 @@ ipcRenderer.on('message-box', (event, message) => {
 	Swal.fire(message);
 });
 
+ipcRenderer.on('message-box-html', (event, html) => {
+	Swal.fire({
+		html: html,
+		timer: 2000
+	});
+});
+
 ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 	rendition.annotations.add('highlight', cfiRange, {'annotation' : notes}, (e) => {
         var note = e.target.getAttribute("data-annotation");
@@ -93,6 +100,7 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 		
 	});
 	book2.loaded.navigation.then(function(toc){
+		console.log(toc);
 			var $select2 = document.getElementById("toc2"),
 					docfrag = document.createDocumentFragment();
 
@@ -441,9 +449,15 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
 		
 		let spineItem = book.spine.get(lastLocation);
+		console.log(book.navigation.get(spineItem));
         let navItem = book.navigation.get(spineItem.href);
-		var navpoint = navItem.id.split('-')[1].trim();
-		document.getElementById('toc').selectedIndex = navpoint - 1;
+		console.log("navItem is " + navItem);
+		if(navItem.id) {
+			var navpoint = navItem.id.split('-')[1].trim();
+			document.getElementById('toc').selectedIndex = navpoint - 1;
+		}
+		
+		
 		
     });
 
@@ -489,7 +503,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			});
 	}
 	
-	rendition.on("selected", _.debounce(checkGlossary, 500));
+	rendition.on("selected", _.throttle(checkGlossary, 500));
 	
     window.addEventListener("unload", function () {
       this.book.destroy();
@@ -585,20 +599,22 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			});
 			
 			var range, textNode, offset;
-			const el2 = rendition.getContents()[0].documentElement;
-			//console.log(el2.textContent);
-			el2.addEventListener('mousemove', e => {
-				// console.log(e.clientX, e.clientY);
-				/* range = document.caretRangeFromPoint(e.clientX, e.clientY);
-				//console.log(range);
+			const el2 = document.querySelectorAll("iframe[id^='epubjs-view']")[0];
+			// console.log(el2.contentWindow.document.body.innerHTML);
+			// need to add delay - something like
+			// onmouseover="var myTimer=setTimeout('myFunct()', 1000);"
+			// onmouseout="clearTimeout(myTimer);"
+			
+			var checkMouseMove = function(e) {
+				
+			
+			range = el2.contentWindow.document.caretRangeFromPoint(e.clientX, e.clientY);
             textNode = range.startContainer;
-			//console.log(textNode);
             offset = range.startOffset;
 			var data = textNode.data,
             i = offset,
             begin,
             end;
-			console.log("data is " + data);
 			//Find the begin of the word (space)
         while (i > 0 && data[i] !== " ") { --i; };
         begin = i;
@@ -607,13 +623,14 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         i = offset;
         while (i < data.length && data[i] !== " ") { ++i; };
         end = i;
-		console.log(begin, end);
         //Return the word under the mouse cursor
-        console.log(data.substring(begin, end)); */
-			}); 
-			
-		});
-		
+		var hoveredWord = data.substring(begin, end);
+		console.log(hoveredWord);
+        mainProcess.glossarySearch(hoveredWord);
+			} 
+		//});	
+	// setTimeout(function() {el2.contentWindow.onmousemove = _.throttle(checkMouseMove, 3000)}, 5000);
+	});
 
 	
 });
@@ -756,5 +773,4 @@ function doSearch(q) {
     return Promise.all(
         book.spine.spineItems.map(item => item.load(book.load.bind(book)).then(item.find.bind(item, q)).finally(item.unload.bind(item)))
     ).then(results => Promise.resolve([].concat.apply([], results))); 
-};
-
+}

@@ -10,6 +10,7 @@ const _ = require('underscore');
 const {PythonShell} = require('python-shell');
 const home = app.getPath('home');
 const nlp = require('natural') ;
+const fetch = require("node-fetch");
 
 var lemmas = [];
 var unknowns = [];
@@ -30,7 +31,7 @@ process.on('beforeExit', code => {
 
 process.on('uncaughtException', err => {
   console.log(`Uncaught Exception: ${err.message}`)
-  process.exit(1)
+  // process.exit(1)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -460,6 +461,9 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		url+="&x=34&y=12&query=" + term;
 		url+="&target=endic&ie=utf8&query_utf=&isOnlyViewEE=N";
 	}
+	if(mode=='krdict') {
+		var url = 'https://krdict.korean.go.kr/eng/dicSearch/search?nation=eng&nationCode=6&ParaWordNo=&mainSearchWord=' + term;
+	}
 	if(mode == 'milog') {
 		var url = "https://milog.co.il/" + term;
 	}
@@ -787,7 +791,9 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	} else if(process.platform == 'linux') {
 		var myPythonPath = '/usr/bin/python3';
 	}
-
+	
+	// add check for Stanza here
+	
 	let options = {
 		mode: 'text',
 		pythonPath: myPythonPath,
@@ -1247,8 +1253,10 @@ const glossarySearch = exports.glossarySearch = (term) => {
 		
 		var re = new RegExp(term, "g");
 		html=html.replace(re, "<span style='background-color:yellow'>" + term + "</span>");
-		fs.writeFileSync(path.join(__dirname, 'concordance.html'), html);
-		tmWindow = new BrowserWindow({
+		fs.writeFileSync(path.join(__dirname, 'glresults.html'), html);
+		mainWindow.webContents.send('message-box-html', html);
+		
+/* 		glWindow = new BrowserWindow({
 			show: false,
 			width: 600,
 			height: 400,
@@ -1256,14 +1264,14 @@ const glossarySearch = exports.glossarySearch = (term) => {
 				nodeIntegration: true
 			}
 		});
-		tmWindow.loadFile(path.join(__dirname, 'concordance.html'));
-	tmWindow.once('ready-to-show', () => {
-		tmWindow.setMenu(null);
-		tmWindow.show();
+		glWindow.loadFile(path.join(__dirname, 'glresults.html'));
+	glWindow.once('ready-to-show', () => {
+		glWindow.setMenu(null);
+		glWindow.show();
 	});
-	tmWindow.on('closed', () => {
-		tmWindow = null;
-    });
+	glWindow.on('closed', () => {
+		glWindow = null;
+    }); */
 	});
 }
 
@@ -1271,7 +1279,7 @@ const concordance = exports.concordance = () => {
 		var term = getSelectedText();
 		
 	if(!term) {
-		alert("Nothing highlighted!");
+		mainWindow.webContents.send('message-box', "Nothing highlighted!");
 		return;
 	}
 	var html="<!DOCTYPE html><html><head><title>Concordance search results</title>";
@@ -1295,7 +1303,8 @@ const concordance = exports.concordance = () => {
 		
 		var re = new RegExp(term, "g");
 		html=html.replace(re, "<span style='background-color:yellow'>" + term + "</span>");
-		fs.writeFileSync(path.join(__dirname, 'concordance.html'), html);
+		mainWindow.webContents.send('message-box-html', html);
+/* 		fs.writeFileSync(path.join(__dirname, 'concordance.html'), html);
 		tmWindow = new BrowserWindow({
 			show: false,
 			width: 600,
@@ -1311,7 +1320,7 @@ const concordance = exports.concordance = () => {
 	});
 	tmWindow.on('closed', () => {
 		tmWindow = null;
-    });
+    }); */
 	});
 }
 
@@ -2000,5 +2009,44 @@ const transliterateSelection = exports.transliterateSelection = () => {
 	} else {
 		mainWindow.webContents.send('message-box', tr.transliterate(selection));
 	}
+	
+} 
+
+const searchGlosbeDictionary = exports.searchGlosbeDictionary = () => {
+	var language= global.sharedObject.language;
+	var lang=getISOLanguageCodeTrigraph(language);
+	var term = global.sharedObject.selection;
+	if(lemmas[term]) {
+		term = lemmas[term];
+	}
+	term = term.trim();
+	var url="https://glosbe.com/gapi/translate?from=" + lang;
+	url += "&dest=eng&format=json&phrase=" + term + "&pretty=true";
+	fetch(url) 
+     .then((resp) => resp.json())
+     .then(function(json) {
+		parseGlosbeTranslation(json);
+   })
+  .catch(function(error) {
+    console.log(error);
+  }); 
+}
+
+function parseGlosbeTranslation(json) {
+	var meanings=[];
+	var entries=json.tuc;
+	var len=entries.length;
+	for(var i=0;i<len;i++) {
+		if(entries[i].phrase) {
+			meanings.push(entries[i].phrase.text);
+		}
+	}
+	meanings=_.uniq(meanings);
+	mainWindow.webContents.send('message-box', meanings.join(", "));
+}
+
+
+function parseGlosbe(term) {
+	var language = global.sharedObject.language;
 	
 }
