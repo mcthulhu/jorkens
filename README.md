@@ -1,9 +1,19 @@
-# jorkens
+# jorkens #
 Jorkens is a desktop epub reader (an Electron application) based on epub.js and intended for foreign language learners. If Calibre is installed (recommended), Jorkens can also use Calibre's conversion tool to convert other ebook formats to epub transparently before opening them. Users can also add their own Python scripts to add functionality to Jorkens. 
+
+## Prequisites (Important) ##
+
+Jorkens relies on the Stanza NLP library for lemmatization, so it expects to find Python 3.8 and Stanza installed. You also need to install the Stanza data for the language you're reading, and the Python script for lemmatization (see below under Lemmatization). For a few languages, TreeTagger may need to be installed instead of Stanza. 
+
+As noted above, you should install Calibre for ebook format conversion (if needed - if you are only reading epubs, this is not necessary). 
+
+##Screen Shots (single and parallel books) ##
 
 ![screen shot](screenshot.JPG)
 
 ![screen shot](screenshot2.jpg)
+
+## Functionality ##
 
 Jorkens can search for definitions of foreign words in numerous online dictionaries, and also uses a SQLite database for a local glossary and translation memory. (Note: The  database is initially empty, and needs to be populated before search results can be returned.) A highlighted word or partial word will be automatically looked up in the glossary, and any matches will be displayed; if none are found, a concordance search will be done next (see next paragraph). Glossaries can be imported from and exported to text files. See the Wiki for some useful sources of dictionary/glossary data. 
 
@@ -37,4 +47,7 @@ Jorkens is also using TreeTagger from https://www.cis.uni-muenchen.de/~schmid/to
 
 For Linux, Jorkens will expect the TreeTagger executable to be at ~/TreeTagger/bin/tree-tagger.
 
+## Licenses ##
+
+* epub.js - Free BSD 
 

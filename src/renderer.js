@@ -101,7 +101,7 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 		
 	});
 	book2.loaded.navigation.then(function(toc){
-		console.log(toc);
+		// console.log(toc);
 			var $select2 = document.getElementById("toc2"),
 					docfrag = document.createDocumentFragment();
 
@@ -402,7 +402,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	
     rendition.on("rendered", function(section){
 		var currentChapter= rendition.getContents()[0].content.textContent;
-		console.log("about to call lemmatize from on rendered");
+		// console.log("about to call lemmatize from on rendered");
 		lemmatize(currentChapter);
       var current = book.navigation && book.navigation.get(section.href);
 	  
@@ -454,10 +454,10 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
 		
 		let spineItem = book.spine.get(lastLocation);
-		console.log(book.navigation.get(spineItem));
+		// console.log(book.navigation.get(spineItem));
         let navItem = book.navigation.get(spineItem.href);
-		console.log("navItem is " + navItem);
-		if(navItem.id) {
+		// console.log("navItem is " + navItem);
+		if(navItem && navItem.id) {
 			var navpoint = navItem.id.split('-')[1].trim();
 			document.getElementById('toc').selectedIndex = navpoint - 1;
 		}
@@ -545,7 +545,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		});
    		
 	rendition.hooks.content.register(function(contents, view) {
-		console.log("running content.register for " + contents.content.textContent.substr(0,100));
+		// console.log("running content.register for " + contents.content.textContent.substr(0,100));
 		rendition.themes.register("dark", "css/themes.css");
 		rendition.themes.register("light", "css/themes.css");
 		rendition.themes.register("sepia", "css/themes.css");
@@ -678,7 +678,7 @@ ipcRenderer.on('get-book-contents', () => {
 	var docpath = remote.app.getPath('documents');
 	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
 	book.loaded.spine.then((spine) => {
-		console.log(spine.length + " spine items");
+		// console.log(spine.length + " spine items");
 		spine.each((item) => {
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
@@ -692,7 +692,7 @@ ipcRenderer.on('get-book-contents', () => {
 					null
 				).iterateNext();
 				if(el) {
-//					console.log(el);
+//					// console.log(el);
 					fs.appendFileSync(fn, el.textContent);
 				}
 			
@@ -755,7 +755,7 @@ function doSearch(q) {
 function lemmatize(currentChapter) {
 			var language = require('electron').remote.getGlobal('sharedObject').language;
 			// var currentChapter=contents.content.textContent;
-			console.log("about to start lemmatization for " + currentChapter.length + " characters");
+			// console.log("about to start lemmatization for " + currentChapter.length + " characters");
 
 			var tokens = tokenizeWords(currentChapter);
 			tokens = _.uniq(tokens);
