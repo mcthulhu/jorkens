@@ -43,7 +43,8 @@ ipcRenderer.on('message-box', (event, message) => {
 ipcRenderer.on('message-box-html', (event, html) => {
 	Swal.fire({
 		html: html,
-		timer: 2000
+		showConfirmButton: false,
+		timer: 3000
 	});
 });
 
@@ -398,7 +399,11 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
     var title = document.getElementById("title");
 	mainProcess.getBookContents();
+	
     rendition.on("rendered", function(section){
+		var currentChapter= rendition.getContents()[0].content.textContent;
+		console.log("about to call lemmatize from on rendered");
+		lemmatize(currentChapter);
       var current = book.navigation && book.navigation.get(section.href);
 	  
       if (current) {
@@ -457,10 +462,17 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			document.getElementById('toc').selectedIndex = navpoint - 1;
 		}
 		
+		// put lemmatization here
 		
 		
     });
-
+	
+	book.spine.hooks.serialize.register((output, section) => {
+		// section.output = output.replace("Los", "LosLos"); // test
+		//console.log("serialize hook: about to call lemmatize");
+		//lemmatize(section.output);
+	});
+	
     rendition.on("layout", function(layout) {
       let viewer = document.getElementById("viewer");
 
@@ -533,7 +545,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		});
    		
 	rendition.hooks.content.register(function(contents, view) {
-			rendition.themes.register("dark", "css/themes.css");
+		console.log("running content.register for " + contents.content.textContent.substr(0,100));
+		rendition.themes.register("dark", "css/themes.css");
 		rendition.themes.register("light", "css/themes.css");
 		rendition.themes.register("sepia", "css/themes.css");
 		rendition.themes.register("lavender", "css/themes.css");
@@ -560,43 +573,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
     rendition.themes.fontSize("120%");
 	
 	
-			var language = require('electron').remote.getGlobal('sharedObject').language;
-			var currentChapter=contents.content.textContent;
-			/* var tokenizer = new nlp.WordTokenizer();      Natural tokenizer doesn't work with accented characters!
-			var tokens = tokenizer.tokenize(currentChapter); */
-			var tokens = tokenizeWords(currentChapter);
-			tokens = _.uniq(tokens);
-			if(tokens.length == 0) {
-				console.log("no tokens found");
-				return;
-			}
-			if(process.platform == 'win32') {				
-				tokens=tokens.join('\r\n');
-			} else if(process.platform == 'linux') {
-				var tokens = tokens.join('\n');
-			}
-			
-			var docpath = remote.app.getPath('documents');
-			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
-			fs.writeFile(fn, currentChapter, function(err) {
-				if(err) {
-					return console.log(err);
-				} 				
-			});
-			var fn = path.join(docpath, 'Jorkens', 'tokens.txt');
-			fs.writeFile(fn, tokens, function(err) {
-				if(err) {
-					return console.log(err);
-				} else {
-					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
-					if(stanzalanguages.includes(language)) {
-						mainProcess.stanzaLemmatizer();
-					} else {
-						mainProcess.treeTagger();
-					}
 
-				}				
-			});
 			
 			var range, textNode, offset;
 			const el2 = document.querySelectorAll("iframe[id^='epubjs-view']")[0];
@@ -773,4 +750,44 @@ function doSearch(q) {
     return Promise.all(
         book.spine.spineItems.map(item => item.load(book.load.bind(book)).then(item.find.bind(item, q)).finally(item.unload.bind(item)))
     ).then(results => Promise.resolve([].concat.apply([], results))); 
+}
+
+function lemmatize(currentChapter) {
+			var language = require('electron').remote.getGlobal('sharedObject').language;
+			// var currentChapter=contents.content.textContent;
+			console.log("about to start lemmatization for " + currentChapter.length + " characters");
+
+			var tokens = tokenizeWords(currentChapter);
+			tokens = _.uniq(tokens);
+			if(tokens.length == 0) {
+				console.log("no tokens found");
+				return;
+			}
+			if(process.platform == 'win32') {				
+				tokens=tokens.join('\r\n');
+			} else if(process.platform == 'linux') {
+				var tokens = tokens.join('\n');
+			}
+			
+			var docpath = remote.app.getPath('documents');
+			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
+			fs.writeFile(fn, currentChapter, function(err) {
+				if(err) {
+					return console.log(err);
+				} 				
+			});
+			var fn = path.join(docpath, 'Jorkens', 'tokens.txt');
+			fs.writeFile(fn, tokens, function(err) {
+				if(err) {
+					return console.log(err);
+				} else {
+					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
+					if(stanzalanguages.includes(language)) {
+						mainProcess.stanzaLemmatizer();
+					} else {
+						mainProcess.treeTagger();
+					}
+
+				}				
+			});
 }

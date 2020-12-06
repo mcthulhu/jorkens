@@ -781,7 +781,7 @@ function getFullLanguageName(digraph) {
 }
 
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
-	console.time();
+	console.time('stanzaTimer');
 	var language = global.sharedObject.language;
 	console.log("running stanza lemmatizer for " + language);
 	var output = [];
@@ -793,6 +793,14 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	}
 	
 	// add check for Stanza here
+	const os = require('os');
+	var home = os.homedir();
+	
+	var stanzaResourcePath = path.join(home, 'stanza_resources', language);
+	if(!fs.existsSync(stanzaResourcePath)) {
+		mainWindow.webContents.send('message-box', "can't find Stanza resources for " + language);
+			return;
+	}
 	
 	let options = {
 		mode: 'text',
@@ -809,12 +817,14 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	pyshell.end(function (err) {
 		if (err) throw err;
 		processStanza(output);
-		console.timeEnd();
+		output = null;
+		console.timeEnd('stanzaTimer');
 	});	
 }
 
 const processStanza = exports.processStanza = (results) => {
 	var len = results.length;
+	console.log(len + " Stanza results found");
 	for(var i = 0; i<len; i++) {
 		var pieces = results[i].split('\t');
 		lemmas[pieces[0]] = pieces[1];
@@ -875,11 +885,23 @@ const chooseBook = exports.chooseBook = () => {
 	}
 	global.sharedObject.booklocation = file;
 	// search of locations table goes here
-	if(config[file]) {
-		position = config[file];
-	} else {
-		position = 0;
-	}
+	db.each('SELECT current_location FROM locations WHERE title = ? LIMIT 1', [title],
+		function (err, row) {
+			position = row.current_location;
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+		if(len == 0) {
+				if(config[file]) {
+					position = config[file];
+				} else {
+					position = 0;
+				}
+		}
+	});
+
 
 	if (files) { openFile(files[0], position) } // removed config.chapter argument
 };
@@ -1927,8 +1949,8 @@ const convertToEpub = exports.convertToEpub = (fn) => {
 	if(!fn) {
 		const files = dialog.showOpenDialogSync(mainWindow, {
 			properties: ['openFile']
-	});
-	var fn = files[0];
+		});
+		var fn = files[0];
 	} 
 	var ext = path.extname(fn);
 	var output = fn.replace(ext, '.epub');
