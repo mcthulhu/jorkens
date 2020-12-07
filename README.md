@@ -7,7 +7,7 @@ Jorkens relies on the Stanza NLP library for lemmatization, so it expects to fin
 
 As noted above, you should install Calibre for ebook format conversion (if needed - if you are only reading epubs, this is not necessary). 
 
-##Screen Shots (single and parallel books) ##
+## Screen Shots (single and parallel books) ##
 
 ![screen shot](screenshot.JPG)
 
