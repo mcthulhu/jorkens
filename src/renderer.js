@@ -10,7 +10,7 @@ const Swal = require('sweetalert2')
 const _ = require('underscore');
 var Mousetrap = require('mousetrap');
 const nlp = require('natural') ;
-
+var timer;
 book = ePub();
 book2 = null;
 rendition = null;
@@ -276,7 +276,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
    if(sliders.length == 1) {
 	    var slider = document.createElement("input");
    }
-   // console.log(sliders);
 	var slide = function(){
 		var cfi = book.locations.cfiFromPercentage(slider.value / 100);
 		rendition.display(cfi);
@@ -341,7 +340,8 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
 	  mainProcess.applyPassages();
-	  var timer=setInterval(updateTimer, 1000);
+	   timer=setInterval(updateTimer, 1000);
+	   
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
@@ -376,7 +376,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 						var currentLocation = rendition.currentLocation();
 						// Get the Percentage (or location) from that CFI
 						var currentPage = book.locations.percentageFromCfi(currentLocation.start.cfi);
-						// console.log("currentPage is " + currentPage);
 						slider.value = currentPage;
 						currentPage.value = currentPage;
 				});
@@ -613,6 +612,10 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 });
 
 ipcRenderer.on('clear-book', () => {
+	clearInterval(timer);
+	document.getElementById("current-percent").value = 0;
+    document.getElementsByTagName("input")[0].value = 0;
+	document.getElementById("clock").textContent='00:00:00';
 	book.destroy();
 	var divs=document.querySelectorAll("div[id^='epubjs-container']");
 	if(divs) {
@@ -622,6 +625,7 @@ ipcRenderer.on('clear-book', () => {
 	}
 	var $select = document.getElementById("toc");
 	$select.options.length = 0;
+	locations = [];
 	// todo: set lastLocation back to beginning and save
 });
 

@@ -1957,6 +1957,10 @@ const convertToEpub = exports.convertToEpub = (fn) => {
 	var language = global.sharedObject.language;
 	var child = require('child_process').execFile;
 	var executablePath = "C:\\Program Files (x86)\\Calibre2\\ebook-convert.exe";
+	if(!fs.existsSync(executablePath)) {
+		mainWindow.webContents.send('message-box', 'Calibre converter utility not found');
+		return;
+	}
 	var parameters = [fn, output, "--language", language];
 	child(executablePath, parameters, function(err, data) {
 		if(err){
