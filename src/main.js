@@ -2040,34 +2040,37 @@ const transliterateSelection = exports.transliterateSelection = () => {
 
 const searchGlosbeDictionary = exports.searchGlosbeDictionary = () => {
 	var language= global.sharedObject.language;
-	var lang=getISOLanguageCodeTrigraph(language);
+	var native=global.sharedObject.native;
 	var term = global.sharedObject.selection;
 	if(lemmas[term]) {
 		term = lemmas[term];
 	}
+	if(language!= 'de') {
+		term=term.toLowerCase();
+	}
 	term = term.trim();
-	var url="https://glosbe.com/gapi/translate?from=" + lang;
-	url += "&dest=eng&format=json&phrase=" + term + "&pretty=true";
+	var url="https://glosbe.com/" + language + "/" + native + "/" + term;
 	fetch(url) 
-     .then((resp) => resp.json())
-     .then(function(json) {
-		parseGlosbeTranslation(json);
+     .then((resp) => resp.text())
+     .then(function(text) {
+		parseGlosbeTranslation(text);
    })
   .catch(function(error) {
     console.log(error);
   }); 
 }
 
-function parseGlosbeTranslation(json) {
-	var meanings=[];
-	var entries=json.tuc;
-	var len=entries.length;
-	for(var i=0;i<len;i++) {
-		if(entries[i].phrase) {
-			meanings.push(entries[i].phrase.text);
-		}
+function parseGlosbeTranslation(text) {
+	var meanings = [];
+	const jsdom = require("jsdom");
+	const { JSDOM } = jsdom;
+	const dom = new JSDOM(text);
+	var doc = dom.window.document;
+	var results = doc.querySelectorAll('strong.phr');
+	for(var i=0;i<results.length;i++) {
+		meanings.push(results[i].textContent);
 	}
-	meanings=_.uniq(meanings);
+	meanings = _.uniq(meanings);
 	mainWindow.webContents.send('message-box', meanings.join(", "));
 }
 

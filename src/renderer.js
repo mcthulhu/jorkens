@@ -101,6 +101,7 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 		
 	});
 	book2.loaded.navigation.then(function(toc){
+
 		// console.log(toc);
 			var $select2 = document.getElementById("toc2"),
 					docfrag = document.createDocumentFragment();
@@ -453,11 +454,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
 		
 		let spineItem = book.spine.get(lastLocation);
-		// console.log(book.navigation.get(spineItem));
+		console.log("spineitem is " + spineItem.idref, spineItem.index, spineItem.href, spineItem.url, spineItem.canonical, spineItem.properties);
+		// console.log(book.navigation.get(spineItem)); TypeError 
         let navItem = book.navigation.get(spineItem.href);
-		// console.log("navItem is " + navItem);
+		console.log("navItem is " + navItem);
 		if(navItem && navItem.id) {
-			var navpoint = navItem.id.split('-')[1].trim();
+			console.log(navItem.id);	
+			var navpoint = navItem.id.split('-')[1].trim(); // doesn't work for navpoint without -
 			document.getElementById('toc').selectedIndex = navpoint - 1;
 		}
 		
@@ -521,6 +524,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
     });
 
     book.loaded.navigation.then(function(toc){
+				parshToc(book);
 			var $select = document.getElementById("toc"),
 				docfrag = document.createDocumentFragment();
 
@@ -528,6 +532,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				var option = document.createElement("option");
 				option.textContent = chapter.label;
 				option.setAttribute("ref", chapter.href);
+				console.log(option);
 				docfrag.appendChild(option);
 			});
 
@@ -794,4 +799,101 @@ function lemmatize(currentChapter) {
 
 				}				
 			});
+}
+
+// function from https://github.com/Janglee123/eplee/blob/93797e87de7fc9f25d2b3c97e77ac4d3b2e90219/src/shared/dbUtilis.js#L54
+function parshToc(book) {  
+  console.log("parshToc");
+  const { toc } = book.navigation;
+  const { spine } = book;
+  
+  /**
+   * some epubs not uese standerd href or epubjs fails to process them
+   * @param {String} href  The href to validate
+   * @returns {String} href
+   */
+  const validateHref = href => {
+    if (href.startsWith('..')) {
+      href = href.substring(2);
+    }
+    if (href.startsWith('/')) {
+      href = href.substring(1);
+    }
+    return href;
+  };
+
+  /** 
+   * Return spin part from href 
+   * 
+   * TL;DR
+   * Toc item points exact postion of chapter or subChapter by using hase ID
+   * in href. In more genrale href looks like ch001#title.
+   * The ch001 is spine item and title is element id for which tocitem is.
+   * We can get cfi of toc from this two item.
+   * 
+   * @param {String} href - The herf to get spine component 
+   * @returns {String} - The Spine item href
+   */
+  const getSpineComponent = href => { 
+    return href.split('#')[0];
+  }
+
+  /**
+   * Returns elementId part of href 
+   * @param {String} href 
+   */
+  const getPositonComponent = href => { 
+    return href.split('#')[1];
+  }
+
+  const tocTree = [];
+
+  /**
+   * recursively go through toc and parsh it
+   * @param {toc} toc
+   * @param {parrent} parrent
+   */
+  const createTree = (toc, parrent) => {
+    for (let i = 0; i < toc.length; i += 1) {
+
+      // get clean href
+      const href = validateHref(toc[i].href);
+      
+      // get spin and elementId part from href
+      const spineComponent = getSpineComponent(href);   
+      const positonComponent = getPositonComponent(href);
+
+      // get spinItem from href
+      const spineItem = spine.get(spineComponent);
+      
+      // load spin item
+      spineItem.load(book.load.bind(book)).then(() => {
+
+        // get element by positionComponent which is basically elementId
+        const el = spineItem.document.getElementById(positonComponent);
+        // get cfi from element
+        const cfi = spineItem.cfiFromElement(el);
+        // get percent from cfi
+        const percentage = book.locations.percentageFromCfi(cfi);
+        
+        // toc item which has
+        parrent[i] = {
+          label: toc[i].label.trim(),
+          children: [],
+          href,
+          cfi,
+          percentage,
+        };
+
+        // if toc has subitems recursively parsh it
+        if (toc[i].subitems) {
+          createTree(toc[i].subitems, parrent[i].children);
+        }
+
+      });
+    }
+  };
+
+  createTree(toc, tocTree);
+  console.log(tocTree);
 }

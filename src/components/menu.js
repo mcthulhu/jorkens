@@ -116,13 +116,8 @@ module.exports = function(mainWindow){
           	mainProcess.createSearchWindow('freed');
        	 }
     },
-	{ label: 'Search Glosbe',
-	click: () => {
-          	mainProcess.createSearchWindow('gl');
-       	 }
-    },
 	
-		{ label: 'Search Glosbe Dictionary',
+		{ label: 'Search Glosbe',
 	accelerator: 'CmdOrCtrl+Shift+W',
 	click: () => {
           	mainProcess.searchGlosbeDictionary();
