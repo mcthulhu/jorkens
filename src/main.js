@@ -1724,7 +1724,22 @@ const googleTranslate = exports.googleTranslate = () => {
 }
 
 const myMemory = exports.myMemory = () => {
-	
+	var text=getSelectedText();
+		var url="http://api.mymemory.translated.net/get?q=" + text;
+	url+="&langpair=" + global.sharedObject.language + "|en";
+/* 	if(preferences.email) {
+		url+="&de=" + preferences.email;
+	} */
+	console.log(url);
+	fetch(url) 
+     .then((resp) => resp.json())
+     .then(function(json) {
+		mainWindow.webContents.send('message-box', json.responseData.translatedText);
+
+   })
+  .catch(function(error) {
+    console.log(error);
+  }); 
 }
 
 function tokenizeWords(s) {

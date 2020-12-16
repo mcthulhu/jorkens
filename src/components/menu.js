@@ -1093,12 +1093,12 @@ module.exports = function(mainWindow){
           	mainProcess.concordance();
        	 }
 	  },
-	  {
+/* 	  {
 		  label: "MyMemory search",
 		  click: () => {
           	mainProcess.myMemory();
        	 }
-	  },
+	  }, */
 	  {
 		  label: "Glosbe TM search",
 		  click: () => {
@@ -1198,12 +1198,12 @@ module.exports = function(mainWindow){
           	mainProcess.amazonTranslate();
        	 }
 	  },
-	  {
+/* 	  {
 		  label: "MyMemory translation",
 		 click: () => {
           	mainProcess.myMemory();
        	 }
-	  },
+	  }, */
 	  
 	  ]
   },
