@@ -36,6 +36,12 @@ function tokenizeWords(s) {
 	});
 }); */
 
+ipcRenderer.on('load-datatable', (event, data) => {
+	console.log(data[0]);
+	
+	
+});
+
 ipcRenderer.on('message-box', (event, message) => {
 	Swal.fire(message);
 });

@@ -1723,6 +1723,75 @@ const googleTranslate = exports.googleTranslate = () => {
 	translateText();
 }
 
+function toArray(row) {
+		// from https://github.com/mapbox/node-sqlite3/issues/854
+	var rowArray = [];
+
+	Object.keys(row).forEach(function(element, key){
+		rowArray.push(row[element]);
+	})
+
+	return rowArray;
+}
+
+const editDatabase = exports.editDatabase = (table) => {
+	var language = global.sharedObject.language;
+	var collist = [];
+	var results = [];
+	db.all("PRAGMA table_info('" + table + "')", (err, rows) => {
+		if (err) throw err;
+
+		rows.forEach((row)=>collist.push(row.name));
+		console.log("collist is " + collist);
+	 });
+	if(table == 'dictionary') {
+		var sql = "SELECT * from " + table + " WHERE lang = '" + language + "' LIMIT 100000";
+	} else if(table == 'tm') {
+		var sql = "SELECT * from " + table + " WHERE srclang = '" + language + "' LIMIT 100000";
+	} else {
+		var sql = "SELECT * from " + table + " WHERE language = '" + language + "' LIMIT 100000";
+	}
+	
+	
+	db.each(sql, [],
+		function (err, row) {
+			results.push(toArray(row));
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			console.log(len + " results from database");
+			if(len > 0) {
+					var databasewin = new BrowserWindow({
+						show: false,
+						width: 800,
+						height: 600,
+						frame: false,
+						alwaysOnTop: true,
+						webPreferences: {
+							nodeIntegration: true,
+							enableRemoteModule: true
+						}
+					});
+					databasewin.movable = true;
+					databasewin.loadFile(path.join(__dirname, 'databaseeditor.html'));
+					databasewin.webContents.once('did-finish-load', () => {
+						databasewin.webContents.send('load-datatable', table, collist, results);
+					});
+					databasewin.once('ready-to-show', () => {		
+						// databasewin.webContents.openDevTools();
+						databasewin.show();		
+					});
+					databasewin.on('closed', () => {
+						databasewin = null;
+					});
+			}
+					
+		}
+	);	
+}
+
 const myMemory = exports.myMemory = () => {
 	var text=getSelectedText();
 		var url="http://api.mymemory.translated.net/get?q=" + text;

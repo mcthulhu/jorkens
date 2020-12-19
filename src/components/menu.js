@@ -49,6 +49,7 @@ module.exports = function(mainWindow){
 		mainProcess.getSearchTerm();
        	 }		 
     },
+
       { role: 'undo' },
       { role: 'redo' },
       { type: 'separator' },
@@ -89,6 +90,12 @@ module.exports = function(mainWindow){
 	click: () => {
           	mainProcess.importDictionary();
        	 }
+    },
+	{
+	label: 'Edit dictionary database',
+	click: () => {
+		mainProcess.editDatabase('dictionary');
+       	 }		 
     },
 	{ label: 'Import Facebook MUSE dictionary',
 	click: () => {
@@ -1093,6 +1100,12 @@ module.exports = function(mainWindow){
           	mainProcess.concordance();
        	 }
 	  },
+	  {
+	  	label: 'Edit TM database',
+	click: () => {
+		mainProcess.editDatabase('tm');
+       	 }		 
+    },
 /* 	  {
 		  label: "MyMemory search",
 		  click: () => {
@@ -1169,7 +1182,13 @@ module.exports = function(mainWindow){
 		  click: () => {
           	mainProcess.exportForAnki();
        	 }
-		}
+		},
+			  {
+	  	label: 'Edit flashcard database',
+	click: () => {
+		mainProcess.editDatabase('flashcards');
+       	 }		 
+    },
 	  ]
   },
   {
@@ -1271,6 +1290,12 @@ module.exports = function(mainWindow){
 			  mainProcess.createAnnotationWindow();
 		  }
 	  },
+	  	  {
+	  	label: 'Edit annotation database',
+	click: () => {
+		mainProcess.editDatabase('passages');
+       	 }		 
+    },
 	  
 	   {
 		  label: "Show bookmarks/annotations",
