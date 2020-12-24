@@ -80,6 +80,7 @@
     "sqlite3": "^5.0.0",
     "stopword": "^1.0.3",
     "sweetalert2": "^10.8.1",
+    "tabulator-tables": "^4.9.3",
     "transliteration": "^2.2.0",
     "underscore": "^1.11.0",
     "wordpos": "^2.0.0",

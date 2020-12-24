@@ -1217,6 +1217,13 @@ module.exports = function(mainWindow){
           	mainProcess.amazonTranslate();
        	 }
 	  },
+	  
+	  	  {
+		  label: "Libre Translate",
+		 click: () => {
+          	mainProcess.libreTranslate();
+       	 }
+	  },
 /* 	  {
 		  label: "MyMemory translation",
 		 click: () => {

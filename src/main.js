@@ -1683,6 +1683,36 @@ const playPolly = exports.playPolly = () => {
 	});
 }
 
+async function getLibreTranslate(language, nativelang, words) {
+	try {
+		
+	
+			const res = await fetch("https://libretranslate.com/translate", {
+				method: "POST",
+				body: JSON.stringify({
+					q: words,
+					source: language,
+					target: nativelang
+				}),
+				headers: {
+					"Content-Type": "application/json"
+				}
+			});
+			var resp = await res.json();
+			mainWindow.webContents.send('got-translation', resp.translatedText);
+
+	} catch (error) {
+		console.log(error);
+	}
+}
+	
+const libreTranslate = exports.libreTranslate = () => {
+	var language = global.sharedObject.language;
+	var nativelang = global.sharedObject.native;
+	var words=getSelectedText();
+	getLibreTranslate(language, nativelang, words);
+}
+
 const amazonTranslate = exports.amazonTranslate = () => {
 	var words=getSelectedText();
 	if(words.length > 1500) {

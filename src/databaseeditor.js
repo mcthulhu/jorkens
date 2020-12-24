@@ -21,13 +21,17 @@ ipcRenderer.on('load-datatable', (event, table, collist, dataset) => {
 		obj.title=collist[i];
 		columns.push(obj);
 	}
-	console.log(JSON.stringify(columns));
+	// console.log(JSON.stringify(columns));
 	$(document).ready(function() {
-		$('#database').DataTable({
+		var table = $('#database').DataTable({
 			data: dataset,
-			columns: columns
+			columns: columns,
+			select: {
+				items: 'cell',
+				info: false
+			}
 		});
 	} );
-	
+	table.select.style( 'os' );
 
 });
