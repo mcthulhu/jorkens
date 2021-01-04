@@ -693,13 +693,11 @@ ipcRenderer.on('get-book-contents', () => {
 	var docpath = remote.app.getPath('documents');
 	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
 	book.loaded.spine.then((spine) => {
-		// console.log(spine.length + " spine items");
 		spine.each((item) => {
 			const thisitem = book.spine.get(item.href);
 			thisitem.load(book.load.bind(book)).then(() => {
 				const doc=thisitem.document;
 				const el = doc.evaluate(
-					// '/html/body',
 					"//*[name() = 'body']", // the name function avoids the namespace problem
 					doc,
 					prefix => prefix === 'epub' ? 'http://www.idpf.org/2007/ops' : null,
@@ -707,7 +705,6 @@ ipcRenderer.on('get-book-contents', () => {
 					null
 				).iterateNext();
 				if(el) {
-//					// console.log(el);
 					fs.appendFileSync(fn, el.textContent);
 				}
 			

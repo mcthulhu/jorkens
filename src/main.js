@@ -1764,6 +1764,44 @@ function toArray(row) {
 	return rowArray;
 }
 
+function getKnownWords() {
+	
+}
+
+const updateDBRow = exports.updateDBRow = (table, newValue, rowValues) => {
+	var language = global.sharedObject.language;
+	// console.log(rowValues.term);
+	var changedField = "";
+	Object.entries(rowValues).forEach(([key, value]) => {
+		// console.log(`${key}: ${value}`);
+		if(value ==  newValue) {
+			changedField = key;
+		}
+	});
+	if(table == 'flashcards') {
+		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
+		sql += " WHERE language = '" + language + "' AND term = '" + rowValues.term + "'";		
+	}
+	if(table == 'dictionary') {
+		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
+		sql += " WHERE lang = '" + language + "' AND term = '" + rowValues.term + "'";		
+	}
+	if(table == 'tm') {
+		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
+		sql += " WHERE srclang = '" + language + "' AND source = '" + rowValues.source + "'";		
+	}
+	
+	if(table == 'passages') {
+		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
+		sql += " WHERE title = '" + rowValues.title + "' AND passage = '" + rowValues.passage + "'";		
+	}
+	
+	db.run(sql, [], 
+		function(err) {
+			console.log(err);
+		});
+}
+
 const editDatabase = exports.editDatabase = (table) => {
 	var language = global.sharedObject.language;
 	var collist = [];
@@ -1772,14 +1810,14 @@ const editDatabase = exports.editDatabase = (table) => {
 		if (err) throw err;
 
 		rows.forEach((row)=>collist.push(row.name));
-		console.log("collist is " + collist);
+		// console.log("collist is " + collist);
 	 });
 	if(table == 'dictionary') {
 		var sql = "SELECT * from " + table + " WHERE lang = '" + language + "' LIMIT 100000";
 	} else if(table == 'tm') {
 		var sql = "SELECT * from " + table + " WHERE srclang = '" + language + "' LIMIT 100000";
-	} else {
-		var sql = "SELECT * from " + table + " WHERE language = '" + language + "' LIMIT 100000";
+	} else if(table == 'passages'){
+		var sql = "SELECT * from " + table + " LIMIT 100000";
 	}
 	
 	
@@ -1791,7 +1829,7 @@ const editDatabase = exports.editDatabase = (table) => {
 			if(err) {
 				return console.log(err);
 			}
-			console.log(len + " results from database");
+			// console.log(len + " results from database");
 			if(len > 0) {
 					var databasewin = new BrowserWindow({
 						show: false,
