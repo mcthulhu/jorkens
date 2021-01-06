@@ -1,5 +1,5 @@
 # jorkens #
-Jorkens is a desktop epub reader (an Electron application) based on epub.js and intended for foreign language learners. If Calibre is installed (recommended), Jorkens can also use Calibre's conversion tool to convert other ebook formats to epub transparently before opening them. Users can also add their own Python scripts to add functionality to Jorkens. 
+Jorkens is a desktop epub reader (an Electron application) based on epub.js and intended for foreign language learners. If Calibre is installed (recommended), Jorkens can also use Calibre's conversion tool to convert other ebook formats to epub transparently before opening them. Users can also add their own Python scripts to add functionality to Jorkens. In addition to this page and the Wiki, a subreddit, r/Jorkens, has been created on Reddit for discussions of Jorkens, though bug reports should be submitted as issues here.
 
 ## Prequisites (Important) ##
 
@@ -51,3 +51,6 @@ For Linux, Jorkens will expect the TreeTagger executable to be at ~/TreeTagger/b
 
 * epub.js - Free BSD 
 
+* sweetalert2 - MIT
+
+* Tabulator - MIT
