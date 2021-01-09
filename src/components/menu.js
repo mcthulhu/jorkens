@@ -1224,6 +1224,13 @@ module.exports = function(mainWindow){
           	mainProcess.libreTranslate();
        	 }
 	  },
+	  
+	    	  {
+		  label: "Apertium",
+		 click: () => {
+          	mainProcess.createSearchWindow('apertium');
+       	 }
+	  },
 /* 	  {
 		  label: "MyMemory translation",
 		 click: () => {

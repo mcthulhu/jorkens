@@ -369,6 +369,11 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		}
 	});
 	
+	if(mode=='apertium') {
+		var url = "https://www.apertium.org/index.eng.html?dir=" + getISOLanguageCodeTrigraph(language) + "-";
+		url += getISOLanguageCodeTrigraph(native) + "&q=" + encodeURIComponent(term);
+	}
+	
 	if(mode == 'google-translate') {
 		//var url = "https://translate.google.pn/translate_a/t?client=dict-chrome-ex&sl=auto&tl=" + native + "&q=" + term + "&ie=UTF-8&oe=UTF-8";
 		var url = "https://translate.google.pn/#view=home&op=translate&sl=auto&tl=" + native + "&text=" + term; 
