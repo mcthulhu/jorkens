@@ -1,6 +1,8 @@
 # jorkens #
 Jorkens is a desktop epub reader (an Electron application) based on epub.js and intended for foreign language learners. If Calibre is installed (recommended), Jorkens can also use Calibre's conversion tool to convert other ebook formats to epub transparently before opening them. Users can also add their own Python scripts to add functionality to Jorkens. In addition to this page and the Wiki, a subreddit, r/Jorkens, has been created on Reddit for discussions of Jorkens, though bug reports should be submitted as issues here.
 
+A binary installer can be downloaded from the releases page. The source code is likely to be more current, however, and can be run as described below.
+
 ## Prequisites (Important) ##
 
 Jorkens relies on the Stanza NLP library for lemmatization, so it expects to find Python 3.8 and Stanza installed. You also need to install the Stanza data for the language you're reading, and the Python script for lemmatization (see below under Lemmatization). For a few languages, TreeTagger may need to be installed instead of Stanza. 
@@ -9,7 +11,11 @@ As noted above, you should install Calibre for ebook format conversion (if neede
 
 ## Screen Shots (single and parallel books) ##
 
+### single book (Italian) ###
+
 ![screen shot](screenshot.JPG)
+
+### parallel books side by side (Spanish and English) ###
 
 ![screen shot](screenshot2.jpg)
 
