@@ -497,17 +497,20 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		book.getRange(cfiRange).then((range) => {
                 if (range) {
                     let text = range.toString();
-                    let paragraph = range.startContainer.data;
-					var regexp = /[^\.\!\?]*[\.\!\?]/g;
-					var sentences = paragraph.match(regexp);
-					var senlen = sentences.length;
-					for(var i=0;i<senlen;i++) {
-						if(sentences[i].includes(text)) {
-							require('electron').remote.getGlobal('sharedObject').contextSentence = sentences[i];
-						}
-					}
-
+					console.log("selected text is " + text);
 					require('electron').remote.getGlobal('sharedObject').selection = text;
+                    let paragraph = range.startContainer.data;
+					var regexp = /[^\.\!\?。、「」『』〜・？！（）【】]*[\.\!\?。、「」『』〜・？！（）【】]/g;
+					var sentences = paragraph.match(regexp);
+					if(sentences) {
+						var senlen = sentences.length;
+						for(var i=0;i<senlen;i++) {
+							if(sentences[i].includes(text)) {
+								require('electron').remote.getGlobal('sharedObject').contextSentence = sentences[i];
+							}
+						}
+					}					
+					
 					require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
 					var docpath = remote.app.getPath('documents');
 					var fn = path.join(docpath, 'Jorkens', 'selection.txt');

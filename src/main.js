@@ -1387,6 +1387,19 @@ function getInputFile() {
 	return(fn);
 }
 
+function getZipFile() {
+	const files = dialog.showOpenDialogSync(mainWindow, {
+		properties: ['openFile'],
+		filters: [
+			{name: 'Zip files', extensions: ['zip']}
+		]
+		
+	});
+	
+	if (files) { var fn = files[0] }
+	return(fn);
+}
+
 const wordNetLookup = exports.wordNetLookup = () => {
 	var output = [];
 	var txt = getSelectedText();
@@ -1420,6 +1433,92 @@ const wordNetLookup = exports.wordNetLookup = () => {
 	
 }
 
+function arr2str(arr) {
+  // or [].slice.apply(arr)
+  var utf8 = Array.from(arr).map(function (item) {
+    return String.fromCharCode(item);
+  }).join('');
+  
+  return decodeURIComponent(escape(utf8));
+}
+
+const importKoboDictionary = exports.importKoboDictionary = () => {
+	var native = global.sharedObject.native;
+	var fn = getZipFile();
+	var DOMParser = require('xmldom').DOMParser;
+	var AdmZip = require('adm-zip');
+	var zip = new AdmZip(fn);
+	var zipEntries = zip.getEntries();
+	zipEntries.forEach(function(zipEntry) {
+		var entryName = zipEntry.entryName;
+
+	    console.log(zipEntry.toString()); // outputs zip entries information
+		console.log(zip.readFile(entry));
+		console.log(zip.readAsText(zipEntry)); 
+		// to get the data you use the method getData() and for the compressedData there are two methods actually. getCompressedData() and getCompressedDataAsync(fn).
+		//var data = zipEntry.getData();
+		//var newzip = new AdmZip(data);
+		//var newzipEntries = newzip.getEntries();
+		//newzipEntries.forEach(function(newzipEntry) {
+	    //console.log(newzipEntry.toString()); // outputs zip entries information
+		// console.log(newzipEntry.getData().toString('utf8'));
+	//});
+	});
+	
+}
+
+const importYomichanDictionary = exports.importYomichanDictionary = () => {
+	var fn = getZipFile();
+	var JSZip = require("jszip");
+	var data = fs.readFileSync(fn, 'binary');
+	JSZip.loadAsync(data).then(function (zip) {							
+		
+		files = Object.keys(zip.files);
+		for(i=0; i< files.length; i++) {
+		  let thisfile = files[i];
+		  console.log(thisfile);
+		  if(thisfile.startsWith('index') || thisfile.startsWith('tag')) {
+			  console.log("skipping " + thisfile);
+			  continue;
+		  }
+		   zip.file(files[i]).async("string").then(function (data) {
+			   db.run("BEGIN TRANSACTION");
+			   var jsondata = JSON.parse(data);
+			   if(jsondata && jsondata.length) {
+				
+				   var len = jsondata.length;
+				   console.log(len + " entries found in " + thisfile);
+				   for(var j=0;j<len;j++) {
+					   var term = jsondata[j][0];
+					   if(thisfile.startsWith('term')) {
+						   var def = jsondata[j][5]+ '; ';
+						   var med = jsondata[j].slice(1,5).filter(el => {return el != '';}).join('; ').trim();
+						  if(med != '') {
+							  def += med + '; ';
+						  }
+						   def += jsondata[j].slice(6,).filter(el => {return el != '';}).join('; ').trim();
+					   }
+					  else {
+						  var def = jsondata[j][4] + '; ';
+						  var med = jsondata[j].slice(1,4).filter(el => {return el != '';}).join('; ').trim();
+						  if(med != '') {
+							  def += med + '; ';
+						  }
+						  def += JSON.stringify(jsondata[j][5]);
+					  }
+					  db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", 'ja',  term, def);
+				   }
+				    
+			   }
+				db.run("COMMIT");
+		updateDBCounts();
+			});
+		}
+		
+	});
+	
+	
+}
 
 const importFacebookMUSEDictionary = exports.importFacebookMUSEDictionary = () => {
 	var lang = global.sharedObject.language;

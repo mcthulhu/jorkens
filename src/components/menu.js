@@ -86,22 +86,46 @@ module.exports = function(mainWindow){
           	mainProcess.createGlossWindow();
        	 }
     },
-	{ label: 'Import dictionary',
+	
+		{
+	label: "Import dictionary",
+	submenu: [
+	
+	{ label: 'Import tab-delimited text dictionary',
 	click: () => {
           	mainProcess.importDictionary();
        	 }
     },
+	
+		{ label: 'Import Facebook MUSE dictionary',
+	click: () => {
+          	mainProcess.importFacebookMUSEDictionary();
+       	 }
+    },
+	
+			{ label: 'Import Kobo dictionary (not working yet)',
+	click: () => {
+          	mainProcess.importKoboDictionary();
+       	 }
+    },
+	
+		{ label: 'Import Yomichan dictionary',
+	click: () => {
+          	mainProcess.importYomichanDictionary();
+       	 }
+    },
+	
+	]	
+	},
+	
+	
 	{
 	label: 'Edit dictionary database',
 	click: () => {
 		mainProcess.editDatabase('dictionary');
        	 }		 
     },
-	{ label: 'Import Facebook MUSE dictionary',
-	click: () => {
-          	mainProcess.importFacebookMUSEDictionary();
-       	 }
-    },
+
 	{ label: 'Export dictionary',
 	accelerator: '',
 	click: () => {
