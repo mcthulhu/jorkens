@@ -1378,7 +1378,8 @@ function getInputFile() {
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
 		filters: [
-			{name: 'Text files', extensions: ['txt']}
+			{name: 'Text files', extensions: ['txt']},
+			{name: 'JSON files', extensions: ['json']},
 		]
 		
 	});
@@ -1466,6 +1467,25 @@ const importKoboDictionary = exports.importKoboDictionary = () => {
 	});
 	
 }
+
+const importMigakuDictionary = exports.importMigakuDictionary = () => {
+	var lang = global.sharedObject.language;
+	var fn = getInputFile();
+	var data = fs.readFileSync(fn, 'utf8');
+	var entries=JSON.parse(data);
+	if(entries) {
+		db.run("BEGIN TRANSACTION");
+		var len=entries.length;
+		for(var i=0;i<len;i++) {
+			// console.log(entries[i].term + ' = ' + entries[i].definition);
+			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", lang,  entries[i].term, entries[i].definition);
+		}
+		db.run("COMMIT");
+		updateDBCounts();
+	}
+
+}
+
 
 const importYomichanDictionary = exports.importYomichanDictionary = () => {
 	var fn = getZipFile();

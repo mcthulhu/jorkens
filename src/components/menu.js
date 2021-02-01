@@ -115,6 +115,12 @@ module.exports = function(mainWindow){
        	 }
     },
 	
+			{ label: 'Import Migaku (single JSON file) dictionary',
+	click: () => {
+          	mainProcess.importMigakuDictionary();
+       	 }
+    },
+	
 	]	
 	},
 	
