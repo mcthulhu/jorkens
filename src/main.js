@@ -1444,29 +1444,64 @@ function arr2str(arr) {
 }
 
 const importKoboDictionary = exports.importKoboDictionary = () => {
-	var native = global.sharedObject.native;
 	var fn = getZipFile();
-	var DOMParser = require('xmldom').DOMParser;
-	var AdmZip = require('adm-zip');
-	var zip = new AdmZip(fn);
-	var zipEntries = zip.getEntries();
-	zipEntries.forEach(function(zipEntry) {
-		var entryName = zipEntry.entryName;
-
-	    console.log(zipEntry.toString()); // outputs zip entries information
-		console.log(zip.readFile(entry));
-		console.log(zip.readAsText(zipEntry)); 
-		// to get the data you use the method getData() and for the compressedData there are two methods actually. getCompressedData() and getCompressedDataAsync(fn).
-		//var data = zipEntry.getData();
-		//var newzip = new AdmZip(data);
-		//var newzipEntries = newzip.getEntries();
-		//newzipEntries.forEach(function(newzipEntry) {
-	    //console.log(newzipEntry.toString()); // outputs zip entries information
-		// console.log(newzipEntry.getData().toString('utf8'));
-	//});
-	});
-	
+	var JSZip = require("jszip");
+	const zlib = require("zlib"); 
+	fs.readFile(fn, function(err, data) {
+		if (err) throw err;
+		JSZip.loadAsync(data).then(function (zip) {
+			files = Object.keys(zip.files);
+			for(i=0; i< files.length; i++) {
+				let thisfile = files[i];
+				if(thisfile.endsWith('html')) {
+					console.log(thisfile);
+					zip.file(files[i]).async("arraybuffer").then(function (data) {
+						var html=zlib.gunzipSync(new Buffer.from(data)).toString();
+						parseKoboDictionaryHTML(html, thisfile);
+					});
+				}
+				// sleep(1000);
+			}			
+		});
+	});	
+	console.log("done importing Kobo dictionary " + fn);
 }
+
+function parseKoboDictionaryHTML(html, fn) {
+	const { htmlToText } = require('html-to-text');
+	var DOMParser = require('xmldom').DOMParser;
+	var language = global.sharedObject.language;
+	var doc = new DOMParser().parseFromString(html, 'text/xml');
+	var entries=doc.getElementsByTagName('w');
+	var wlen = entries.length;
+	if(wlen==0) {
+		return;
+	}
+	// console.log(wlen + " entries found in Kobo file " + fn);
+	db.run("BEGIN TRANSACTION");
+	for(var i=0;i<wlen;i++) {
+		try {
+			var term=entries[i].getElementsByTagName('b')[0].textContent;
+			var def = htmlToText(entries[i]);
+			def=def.replace(term, '').trim();
+		} catch(e) {
+			console.log(e);
+		}
+				
+		// console.log(term + " = " + def + "\n\n");
+		db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", language,  term, def);
+	}
+	db.run("COMMIT");
+	updateDBCounts();
+
+}
+
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
 
 const importMigakuDictionary = exports.importMigakuDictionary = () => {
 	var lang = global.sharedObject.language;
@@ -1491,8 +1526,7 @@ const importYomichanDictionary = exports.importYomichanDictionary = () => {
 	var fn = getZipFile();
 	var JSZip = require("jszip");
 	var data = fs.readFileSync(fn, 'binary');
-	JSZip.loadAsync(data).then(function (zip) {							
-		
+	JSZip.loadAsync(data).then(function (zip) {									
 		files = Object.keys(zip.files);
 		for(i=0; i< files.length; i++) {
 		  let thisfile = files[i];
@@ -1531,7 +1565,7 @@ const importYomichanDictionary = exports.importYomichanDictionary = () => {
 				    
 			   }
 				db.run("COMMIT");
-		updateDBCounts();
+				updateDBCounts();
 			});
 		}
 		

@@ -103,7 +103,7 @@ module.exports = function(mainWindow){
        	 }
     },
 	
-			{ label: 'Import Kobo dictionary (not working yet)',
+			{ label: 'Import Kobo dictionary',
 	click: () => {
           	mainProcess.importKoboDictionary();
        	 }
