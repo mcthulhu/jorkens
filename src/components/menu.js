@@ -45,6 +45,7 @@ module.exports = function(mainWindow){
     submenu: [
 		 {
 	label: 'Search',
+	accelerator: 'CmdOrCtrl+F',
 	click: () => {
 		mainProcess.getSearchTerm();
        	 }		 

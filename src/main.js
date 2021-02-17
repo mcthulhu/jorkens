@@ -141,7 +141,12 @@ const createWindow = () => {
   config = data;
 	var booklocation = path.normalize(config.lastBook);
 	global.sharedObject.booklocation = booklocation; 
-	var position = config[booklocation];
+	if(config[booklocation]) {
+		var position = config[booklocation];
+	} else {
+		var position = 0;
+	}
+	
 	if(config.theme) {
 		global.sharedObject.theme = config.theme;
 	}

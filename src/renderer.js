@@ -428,7 +428,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
           }
         }
       }
-
+		setUpContextMenu();
     });
 
     rendition.on("relocated", function(location){
@@ -589,7 +589,9 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 
 			
 			var range, textNode, offset;
-			const el2 = document.querySelectorAll("iframe[id^='epubjs-view']")[0];
+			const el2 = document.querySelector("div div div div iframe");
+			setTimeout(function() {el2.contentWindow.onmousemove = _.throttle(checkMouseMove, 3000)}, 5000);
+			// console.log(el2);
 			// console.log(el2.contentWindow.document.body.innerHTML);
 			// need to add delay - something like
 			// onmouseover="var myTimer=setTimeout('myFunct()', 1000);"
@@ -598,29 +600,29 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			var checkMouseMove = function(e) {
 				
 			
-			range = el2.contentWindow.document.caretRangeFromPoint(e.clientX, e.clientY);
-            textNode = range.startContainer;
-            offset = range.startOffset;
-			var data = textNode.data,
-            i = offset,
-            begin,
-            end;
-			//Find the begin of the word (space)
-        while (i > 0 && data[i] !== " ") { --i; };
-        begin = i;
+				range = el2.contentWindow.document.caretRangeFromPoint(e.clientX, e.clientY);
+				textNode = range.startContainer;
+				offset = range.startOffset;
+				var data = textNode.data,
+				i = offset,
+				begin,
+				end;
+				//Find the begin of the word (space)
+				while (i > 0 && data[i] !== " ") { --i; };
+				begin = i;
 
-        //Find the end of the word
-        i = offset;
-        while (i < data.length && data[i] !== " ") { ++i; };
-        end = i;
-        //Return the word under the mouse cursor
-		var hoveredWord = data.substring(begin, end);
-		console.log(hoveredWord);
-        mainProcess.glossarySearch(hoveredWord);
+					//Find the end of the word
+				i = offset;
+				while (i < data.length && data[i] !== " ") { ++i; };
+				end = i;
+				//Return the word under the mouse cursor
+				var hoveredWord = data.substring(begin, end);
+				console.log(hoveredWord);
+				// mainProcess.glossarySearch(hoveredWord);
 			} 
-		//});	
-	// setTimeout(function() {el2.contentWindow.onmousemove = _.throttle(checkMouseMove, 3000)}, 5000);
-	});
+		});	
+	 
+	//});
 
 	
 });
@@ -643,16 +645,22 @@ ipcRenderer.on('clear-book', () => {
 	// todo: set lastLocation back to beginning and save
 });
 
-const cmenu = new Menu()
-// todo: add option to get current selection, search dictionary
-cmenu.append(new MenuItem({ label: 'MenuItem1', click() { console.log('item 1 clicked') } }))
-cmenu.append(new MenuItem({ type: 'separator' }))
-cmenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
+function setUpContextMenu() {
+	const cmenu = new Menu()
+	// todo: add option to get current selection, search dictionary
+	let rightClickPosition = null;
+	cmenu.append(new MenuItem({ label: 'Mark as known', click() { console.log('item 1 clicked') } }))
+	cmenu.append(new MenuItem({ type: 'separator' }))
+	cmenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
+	var iframe = document.querySelector("div div div div iframe");
+	// console.log(iframe);
+	
+	iframe.contentDocument.addEventListener('contextmenu', (e) => {
+		e.preventDefault();
+		rightClickPosition = {x: e.x, y: e.y};
+		cmenu.popup(remote.getCurrentWindow())}, false);
+}
 
-window.addEventListener('contextmenu', (e) => {
-  e.preventDefault()
-  cmenu.popup({ window: remote.getCurrentWindow() })
-}, false);
 
 const makeRangeCfi = (a, b) => {
 	// from johnfactotum
