@@ -49,8 +49,8 @@ ipcRenderer.on('message-box', (event, message) => {
 ipcRenderer.on('message-box-html', (event, html) => {
 	Swal.fire({
 		html: html,
-		showConfirmButton: false,
-		timer: 3000
+		showConfirmButton: true,
+		// timer: 3000
 	});
 });
 
@@ -497,7 +497,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		book.getRange(cfiRange).then((range) => {
                 if (range) {
                     let text = range.toString();
-					console.log("selected text is " + text);
+					// console.log("selected text is " + text);
 					require('electron').remote.getGlobal('sharedObject').selection = text;
                     let paragraph = range.startContainer.data;
 					var regexp = /[^\.\!\?。、「」『』〜・？！（）【】]*[\.\!\?。、「」『』〜・？！（）【】]/g;
@@ -526,7 +526,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			});
 	}
 	
-	rendition.on("selected", _.throttle(checkGlossary, 500));
+	rendition.on("selected", checkGlossary);
 	
     window.addEventListener("unload", function () {
       this.book.destroy();
@@ -588,38 +588,11 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	
 
 			
-			var range, textNode, offset;
+		
 			const el2 = document.querySelector("div div div div iframe");
-			setTimeout(function() {el2.contentWindow.onmousemove = _.throttle(checkMouseMove, 3000)}, 5000);
-			// console.log(el2);
-			// console.log(el2.contentWindow.document.body.innerHTML);
-			// need to add delay - something like
-			// onmouseover="var myTimer=setTimeout('myFunct()', 1000);"
-			// onmouseout="clearTimeout(myTimer);"
+			// el2.contentWindow.oncontextmenu = checkRightClick;
 			
-			var checkMouseMove = function(e) {
-				
 			
-				range = el2.contentWindow.document.caretRangeFromPoint(e.clientX, e.clientY);
-				textNode = range.startContainer;
-				offset = range.startOffset;
-				var data = textNode.data,
-				i = offset,
-				begin,
-				end;
-				//Find the begin of the word (space)
-				while (i > 0 && data[i] !== " ") { --i; };
-				begin = i;
-
-					//Find the end of the word
-				i = offset;
-				while (i < data.length && data[i] !== " ") { ++i; };
-				end = i;
-				//Return the word under the mouse cursor
-				var hoveredWord = data.substring(begin, end);
-				console.log(hoveredWord);
-				// mainProcess.glossarySearch(hoveredWord);
-			} 
 		});	
 	 
 	//});
@@ -646,21 +619,85 @@ ipcRenderer.on('clear-book', () => {
 });
 
 function setUpContextMenu() {
+	var language = require('electron').remote.getGlobal('sharedObject').language;
 	const cmenu = new Menu()
 	// todo: add option to get current selection, search dictionary
-	let rightClickPosition = null;
-	cmenu.append(new MenuItem({ label: 'Mark as known', click() { console.log('item 1 clicked') } }))
-	cmenu.append(new MenuItem({ type: 'separator' }))
-	cmenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
+	// let rightClickPosition = null;
+	cmenu.append(new MenuItem({ 
+		label: 'Google Translate', 
+		click: () => {
+          	mainProcess.createSearchWindow('google-translate');
+       	 }
+	}));
+	cmenu.append(new MenuItem({ 
+		label: 'Glosbe', 
+		click: () => {
+          	mainProcess.createSearchWindow('gl');
+       	 }
+	}));
+	cmenu.append(new MenuItem({ 
+		label: 'Add to glossary', 
+		click: () => {
+          	mainProcess.createGlossWindow();
+       	 }
+	}));
+	cmenu.append(new MenuItem({ type: 'separator' }));
+	var mainmenu = Menu.getApplicationMenu();
+	cmenu.append(mainmenu.getMenuItemById(language));
+	cmenu.append(new MenuItem({ type: 'separator' }));
+	cmenu.append(new MenuItem({ 
+		label: 'Mark word\'s status (not working yet)', 
+		submenu: [
+			{
+				label: 'unknown',
+				click() { console.log('word is unknown') } 
+			},
+			{
+				label: 'unsure',
+				click() { console.log('word is unsure') } 
+			},
+			{
+				label: 'known',
+				click() { console.log('word is known') } 
+			},	
+		]
+	}));
+		
+	
+	// cmenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
 	var iframe = document.querySelector("div div div div iframe");
-	// console.log(iframe);
 	
 	iframe.contentDocument.addEventListener('contextmenu', (e) => {
 		e.preventDefault();
-		rightClickPosition = {x: e.x, y: e.y};
+		var range, textNode, offset;
+			
+				range = iframe.contentWindow.document.caretRangeFromPoint(e.clientX, e.clientY);
+				textNode = range.startContainer;
+				offset = range.startOffset;
+				var data = textNode.data,
+				i = offset,
+				begin,
+				end;
+				//Find the begin of the word (space)
+				while (i > 0 && data[i] !== " ") { --i; };
+				begin = i;
+
+					//Find the end of the word
+				i = offset;
+				while (i < data.length && data[i] !== " ") { ++i; };
+				end = i;
+				//Return the word under the mouse cursor
+				var hoverword = data.substring(begin, end);
+				console.log("right click on " + hoverword);
+				require('electron').remote.getGlobal('sharedObject').selection = hoverword;
+			
 		cmenu.popup(remote.getCurrentWindow())}, false);
 }
 
+function saveWordStatus(level) {
+	var word = require('electron').remote.getGlobal('sharedObject').selection;
+	
+}
 
 const makeRangeCfi = (a, b) => {
 	// from johnfactotum
