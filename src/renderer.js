@@ -722,6 +722,18 @@ function configureToolbarButtons() {
 	document.getElementById('forvobutton').addEventListener("click", function() {
 		mainProcess.createSearchWindow('forvo');
 	});
+	document.getElementById('ttsbutton').addEventListener("click", function() {
+		mainProcess.WindowsTTS();
+	});
+	document.getElementById('verbixbutton').addEventListener("click", function() {
+		 mainProcess.createSearchWindow('verbix');
+	});
+	document.getElementById('wiktbutton').addEventListener("click", function() {
+		mainProcess.createSearchWindow('wik');
+	});
+	document.getElementById('parbutton').addEventListener("click", function() {
+		mainProcess.loadParallelBook();
+	});
 }
 
 const makeRangeCfi = (a, b) => {

@@ -492,6 +492,7 @@ h3 input.search-input {
 	width: 20px;
 	height: 20px;
 	border-radius: 5px;
+	margin: auto 10px;
 }
 
 #wfbutton {
@@ -500,6 +501,22 @@ h3 input.search-input {
 
 #glbutton {
 	background: url('../img/glosbe-16x16.png') no-repeat;
+}
+
+#parbutton {
+	background: url('../img/parallel.png') no-repeat;
+}
+
+#verbixbutton {
+	background: url('../img/verbix.png') no-repeat;
+}
+
+#wiktbutton {
+	background: url('../img/wiktionary.png') no-repeat;
+}
+
+#ttsbutton {
+	background: url('../img/tts.png') no-repeat;
 }
 
 #forvobutton {
