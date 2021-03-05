@@ -41,6 +41,16 @@
         </script>
 		 </head>
     <body ondrop="dropHandler(event);">
+	<div id="toolbar">
+		<button id="openbutton" title="Open file"></button>
+		<button id="addbutton" title="Add to glossary"></button>
+		<button id="findbutton" title="Search book"></button>
+		<button id="wfbutton" title="WordReference"></button>
+		<button id="glbutton" title="Glosbe"></button>
+		<button id="gtbutton" title="Google Translate"></button>
+		<button id="forvobutton" title="Forvo pronunciation"></button>
+	</div>
+
 	<div id="titles" class="flex-container">
 		<div id="title" class="flex-child"></div>
 		<div id="title2" class="flex-child" style="display: none;"></div>
@@ -49,7 +59,7 @@
 		<div id="tocbox">
 			<label for="toc">Table of Contents: <select id="toc"></select></label>
 			<span id="ttr"></span>
-			<span id="clock">00:00:00</span>
+			<span id="clock" title="Elapsed time this session">00:00:00</span>
 		</div>
 		<div id="tocbox2" style="display: none;">
 			<label for="toc2"><select id="toc2"></select></label>
@@ -69,9 +79,9 @@
 	</div>  
 	  <div id="controls" style="display: flex; flex-direction: row; justify-content: space-around;">
 			<input id="current-percent" size="3" value="0" /> %
-			<span id="glosscount">Glossary: 0</span>
-			<span id="tmcount">TM: 0</span>
-			<span id="fccount">Flashcards: 0</span>
+			<span id="glosscount" title="Glossary size">Glossary: 0</span>
+			<span id="tmcount" title="Translation Memory size">TM: 0</span>
+			<span id="fccount" title="Flashcard database size">Flashcards: 0</span>
 			
 	</div>
 <script>

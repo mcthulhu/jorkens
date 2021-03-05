@@ -429,6 +429,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         }
       }
 		setUpContextMenu();
+		configureToolbarButtons();
     });
 
     rendition.on("relocated", function(location){
@@ -697,6 +698,30 @@ function setUpContextMenu() {
 function saveWordStatus(level) {
 	var word = require('electron').remote.getGlobal('sharedObject').selection;
 	
+}
+
+function configureToolbarButtons() {
+	document.getElementById('wfbutton').addEventListener("click", function() {
+		mainProcess.createSearchWindow('wf');
+	});
+	document.getElementById('addbutton').addEventListener("click", function() {
+		mainProcess.createGlossWindow();
+	});
+	document.getElementById('openbutton').addEventListener("click", function() {
+		mainProcess.chooseBook();
+	});
+	document.getElementById('findbutton').addEventListener("click", function() {
+		mainProcess.getSearchTerm();
+	});
+	document.getElementById('glbutton').addEventListener("click", function() {
+		mainProcess.searchGlosbeDictionary();
+	});
+	document.getElementById('gtbutton').addEventListener("click", function() {
+		mainProcess.createSearchWindow('google-translate');
+	});
+	document.getElementById('forvobutton').addEventListener("click", function() {
+		mainProcess.createSearchWindow('forvo');
+	});
 }
 
 const makeRangeCfi = (a, b) => {

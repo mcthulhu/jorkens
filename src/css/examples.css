@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  margin-top: 35px;
   background: #fafafa;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #333;
@@ -474,4 +475,49 @@ h3 input.search-input {
 
 #viewer2:hover {
 	visibility: visible;
+}
+
+#toolbar {
+    position: fixed;
+    width: 100%;
+    height: 25px;
+    top: 0;
+    left: 0;
+    padding: 5px 10px; /* some styling, please note overall height of the object will be 35px due to 5px padding on top/bottom. */
+    background: #ccc; /* some styling */
+    border-bottom: 1px solid #333; /* some styling */
+}
+
+#toolbar button {
+	width: 20px;
+	height: 20px;
+	border-radius: 5px;
+}
+
+#wfbutton {
+	background: url('../img/wordreference16x16.png') no-repeat;
+}
+
+#glbutton {
+	background: url('../img/glosbe-16x16.png') no-repeat;
+}
+
+#forvobutton {
+	background: url('../img/forvo.png') no-repeat;
+}
+
+#gtbutton {
+	background: url('../img/google-translate.png') no-repeat;
+}
+
+#findbutton {
+	background: url('../img/find.png') no-repeat;
+}
+
+#openbutton {
+	background: url('../img/book_open.png') no-repeat;
+}
+
+#addbutton {
+	background: url('../img/add.png') no-repeat;
 }
