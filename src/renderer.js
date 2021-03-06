@@ -54,6 +54,12 @@ ipcRenderer.on('message-box-html', (event, html) => {
 	});
 });
 
+ipcRenderer.on('show-notification', (event, message) => {
+	const myNotification = new Notification('', {
+			body: message
+		});
+});
+
 ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 	rendition.annotations.add('highlight', cfiRange, {'annotation' : notes}, (e) => {
         var note = e.target.getAttribute("data-annotation");
@@ -274,6 +280,7 @@ ipcRenderer.on('get-search-term', async (event) => {
 });
 
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
+	console.log('ipc file-opened, position = ' + position);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
@@ -615,7 +622,16 @@ ipcRenderer.on('clear-book', () => {
 	}
 	var $select = document.getElementById("toc");
 	$select.options.length = 0;
-	locations = [];
+	book = ePub();
+	book2 = null;
+	rendition = null;
+	rendition2 = null;
+	lastLocation = null;
+	url = null;
+	locations=[];
+	language = "";
+	booktitle = "";
+	document.getElementById("title").textContent='';
 	// todo: set lastLocation back to beginning and save
 });
 

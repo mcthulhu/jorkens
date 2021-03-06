@@ -54,9 +54,7 @@ global.sharedObject = {
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow, dictWindow;
-let book;
-let url;
+let mainWindow, dictWindow, book, url, position;
 let config = {};
 
 const setNativeLanguage = exports.setNativeLanguage = () => {
@@ -142,15 +140,15 @@ const createWindow = () => {
 	var booklocation = path.normalize(config.lastBook);
 	global.sharedObject.booklocation = booklocation; 
 	if(config[booklocation]) {
-		var position = config[booklocation];
+		position = config[booklocation];
 	} else {
-		var position = 0;
+	    position = 0;
 	}
 	
 	if(config.theme) {
 		global.sharedObject.theme = config.theme;
 	}
-	
+	console.log("createwindow: about to open file with position = " + position);
   openFile(booklocation, position);
 });
   } else {
@@ -842,6 +840,7 @@ const processStanza = exports.processStanza = (results) => {
 		var pieces = results[i].split('\t');
 		lemmas[pieces[0]] = pieces[1];
 	}
+	mainWindow.webContents.send('show-notification', 'lemmatization complete');
 }
      
 const treeTagger = exports.treeTagger = () => {
@@ -914,7 +913,6 @@ const chooseBook = exports.chooseBook = () => {
 				}
 		}
 	});
-
 
 	if (files) { openFile(files[0], position) } // removed config.chapter argument
 };
@@ -1643,6 +1641,8 @@ const enableDictionaries = exports.enableDictionaries = () => {
 	var language = global.sharedObject.language;
 	var myMenu=Menu.getApplicationMenu();	
 	myMenu.items[3].submenu.getMenuItemById(language).visible = true;	
+	// var items=myMenu.items[3].submenu.getMenuItemById(language).items;
+	// console.log(items);
 }
 
 const importTM = exports.importTM = () => {
