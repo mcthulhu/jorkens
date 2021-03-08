@@ -407,6 +407,18 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'wik') {
 		var url="https://" + language + ".wiktionary.org/wiki/" + encodeURIComponent(term);
 	}
+	if(mode == 't.a.ru') {
+		var url="https://translate.academic.ru/" + encodeURIComponent(term) + "/ru/" + native + "/";
+	}
+	if(mode == 'russiandict') {
+		var url="https://www.russiandict.net/translate/" + encodeURIComponent(term);
+	}
+	if(mode == 'lingvolive') {
+		var url="https://www.lingvolive.com/en-us/translate/ru-" + native + "/" + encodeURIComponent(term);
+	}
+	if(mode == 'multitran') {
+		var url="https://www.multitran.com/m.exe?s=" + encodeURIComponent(term) + "&l1=2&l2=1";
+	}
 	if(mode == 'gl') {
 		var url="https://glosbe.com/" + language + "/" + global.sharedObject.native + "/";
 		url += encodeURIComponent(term);
@@ -591,7 +603,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	}
 	
 	if(mode == 'openrussian') {
-		var url = "https://en.openrussian.org/";
+		var url = "https://en.openrussian.org/ru/" + encodeURIComponent(term);
 	}
 	
 	if(mode == 'gufo') {

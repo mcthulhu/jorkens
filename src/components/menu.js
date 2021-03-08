@@ -881,11 +881,32 @@ module.exports = function(mainWindow){
 	id: "ru",
 	visible: false,
 	submenu: [
+	{ label: 'Search Multitran',
+		click: () => {
+          	mainProcess.createSearchWindow('multitran');
+       	 }
+    },
+		{ label: 'Search LingvoLive',
+		click: () => {
+          	mainProcess.createSearchWindow('lingvolive');
+       	 }
+    },
+		{ label: 'Search RussianDict.net',
+		click: () => {
+          	mainProcess.createSearchWindow('russiandict');
+       	 }
+    },
+	{ label: 'Search translate.academic.ru',
+	click: () => {
+          	mainProcess.createSearchWindow('t.a.ru');
+       	 }
+    },
 	{ label: 'Search Gramota',
 	click: () => {
           	mainProcess.createSearchWindow('gramota');
        	 }
     },
+
 	{ label: 'Search OpenRussian.org',
 	click: () => {
           	mainProcess.createSearchWindow('openrussian');
