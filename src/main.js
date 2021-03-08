@@ -148,8 +148,7 @@ const createWindow = () => {
 	if(config.theme) {
 		global.sharedObject.theme = config.theme;
 	}
-	console.log("createwindow: about to open file with position = " + position);
-  openFile(booklocation, position);
+   openFile(booklocation, position);
 });
   } else {
 	  config.lastBook = "";
@@ -1641,8 +1640,7 @@ const enableDictionaries = exports.enableDictionaries = () => {
 	var language = global.sharedObject.language;
 	var myMenu=Menu.getApplicationMenu();	
 	myMenu.items[3].submenu.getMenuItemById(language).visible = true;	
-	// var items=myMenu.items[3].submenu.getMenuItemById(language).items;
-	// console.log(items);
+	mainWindow.webContents.send('make-toolbar-buttons', language);
 }
 
 const importTM = exports.importTM = () => {

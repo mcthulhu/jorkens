@@ -279,8 +279,26 @@ ipcRenderer.on('get-search-term', async (event) => {
 	})
 });
 
+ipcRenderer.on('make-toolbar-buttons', (event, language) => {
+	var myMenu=Menu.getApplicationMenu();
+	var langmenu=myMenu.items[3].submenu.getMenuItemById(language);
+	var items= langmenu.submenu.items;
+	for(let i=0;i<items.length;i++) {
+		let thismenuitem = items[i];
+		var btn=document.createElement('button');
+		btn.title = items[i].label;
+		btn.textContent=(i+1).toString();
+		btn.onclick = function() {
+			var win = BrowserWindow.getFocusedWindow();
+			var wc = win.webContents;
+			thismenuitem.click(event, win, wc);
+		}
+		var tbar = document.getElementById('toolbar');
+		tbar.appendChild(btn);
+	}	
+});
+
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
-	console.log('ipc file-opened, position = ' + position);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
