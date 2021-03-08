@@ -1405,6 +1405,19 @@ function getInputFile() {
 	return(fn);
 }
 
+function getJSONFile() {
+	const files = dialog.showOpenDialogSync(mainWindow, {
+		properties: ['openFile'],
+		filters: [
+			{name: 'JSON files', extensions: ['json']},
+		]
+		
+	});
+	
+	if (files) { var fn = files[0] }
+	return(fn);
+}
+
 function getZipFile() {
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
@@ -1519,10 +1532,26 @@ function ab2str(buf) {
   return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
 
+const importKaikkiDictionary = exports.importKaikkiDictionary = () => {
+	var lang = global.sharedObject.language;
+	var fn = getJSONFile();
+	var data = fs.readFileSync(fn, 'utf8');
+	data = data.trim();
+	var lines=data.split(/[\r\n]+/);
+	var len=lines.length;
+	db.run("BEGIN TRANSACTION");
+	for(var i=0;i<len;i++) {
+		var obj = JSON.parse(lines[i]);
+		db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", lang,  obj.word, obj.senses[0].glosses);
+	}
+	db.run("COMMIT");
+	updateDBCounts();
+}
+
 
 const importMigakuDictionary = exports.importMigakuDictionary = () => {
 	var lang = global.sharedObject.language;
-	var fn = getInputFile();
+	var fn = getJSONFile();
 	var data = fs.readFileSync(fn, 'utf8');
 	var entries=JSON.parse(data);
 	if(entries) {

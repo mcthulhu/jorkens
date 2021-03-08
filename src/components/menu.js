@@ -122,6 +122,12 @@ module.exports = function(mainWindow){
        	 }
     },
 	
+		{ label: 'Import Kaikki (Wiktionary) dictionary',
+	click: () => {
+          	mainProcess.importKaikkiDictionary();
+       	 }
+    },
+	
 	]	
 	},
 	
