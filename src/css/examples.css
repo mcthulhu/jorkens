@@ -538,3 +538,7 @@ h3 input.search-input {
 #addbutton {
 	background: url('../img/add.png') no-repeat;
 }
+
+.hidden {
+	display: none;
+}
