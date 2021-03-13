@@ -16,11 +16,6 @@ var lemmas = [];
 var unknowns = [];
 var title;
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
-  app.quit();
-}
-
 process.on('beforeExit', code => {
   // Can make asynchronous calls
   setTimeout(() => {
