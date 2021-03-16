@@ -105,25 +105,25 @@ module.exports = function(mainWindow){
     },
 	
 			{ label: 'Import Kobo dictionary',
-	click: () => {
+		click: () => {
           	mainProcess.importKoboDictionary();
        	 }
     },
 	
 		{ label: 'Import Yomichan dictionary',
-	click: () => {
+		click: () => {
           	mainProcess.importYomichanDictionary();
        	 }
     },
 	
-			{ label: 'Import Migaku (single JSON file) dictionary',
-	click: () => {
+		{ label: 'Import Migaku (single JSON file) dictionary',
+		click: () => {
           	mainProcess.importMigakuDictionary();
        	 }
     },
 	
-		{ label: 'Import Kaikki (Wiktionary) dictionary',
-	click: () => {
+	{ label: 'Import Kaikki (Wiktionary) dictionary',
+		click: () => {
           	mainProcess.importKaikkiDictionary();
        	 }
     },
@@ -912,7 +912,6 @@ module.exports = function(mainWindow){
           	mainProcess.createSearchWindow('gramota');
        	 }
     },
-
 	{ label: 'Search OpenRussian.org',
 	click: () => {
           	mainProcess.createSearchWindow('openrussian');
@@ -1452,6 +1451,13 @@ module.exports = function(mainWindow){
 		  label: "Add to secret shelf",
 		  click: () => {
 			  mainProcess.addToSecretShelf();
+		  }
+	  },
+	  
+	  {
+		  label: "Replace words in text",
+		  click: () => {
+			  mainProcess.doReplacements();
 		  }
 	  },
 	  ]

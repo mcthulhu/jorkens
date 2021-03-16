@@ -16,6 +16,11 @@ var lemmas = [];
 var unknowns = [];
 var title;
 
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
+  app.quit();
+}
+
 process.on('beforeExit', code => {
   // Can make asynchronous calls
   setTimeout(() => {
@@ -143,7 +148,7 @@ const createWindow = () => {
 	if(config.theme) {
 		global.sharedObject.theme = config.theme;
 	}
-   openFile(booklocation, position);
+  openFile(booklocation, position);
 });
   } else {
 	  config.lastBook = "";
@@ -156,11 +161,6 @@ const createWindow = () => {
   });
 
 Menu.setApplicationMenu(menu(mainWindow));
-
-
-
-
-  // Open the DevTools.
   // mainWindow.webContents.openDevTools();
 
 mainWindow.on('close', () => {
@@ -174,7 +174,6 @@ mainWindow.on('close', () => {
 	
     mainWindow = null;
 	
-
 	var docpath = app.getPath('documents');
 	try {
 		var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
@@ -414,6 +413,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'multitran') {
 		var url="https://www.multitran.com/m.exe?s=" + encodeURIComponent(term) + "&l1=2&l2=1";
 	}
+	
 	if(mode == 'gl') {
 		var url="https://glosbe.com/" + language + "/" + global.sharedObject.native + "/";
 		url += encodeURIComponent(term);
@@ -837,6 +837,23 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 		output = null;
 		console.timeEnd('stanzaTimer');
 	});	
+}
+
+const doReplacements = exports.doReplacements = () => {
+	var fn = path.join(docpath, "Jorkens", "replacements.txt");
+	var replacements=[];
+	if(fs.existsSync(fn)) {
+		var data = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+		var lines = data.trim().split(/[\r\n]+/);
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i];
+			var items = line.split('\t');
+			replacements.push(items);
+		}
+		if(replacements.length>0) {
+			mainWindow.webContents.send('replace-words', replacements);
+		}		
+	}	
 }
 
 const processStanza = exports.processStanza = (results) => {
@@ -1406,9 +1423,9 @@ function getJSONFile() {
 		filters: [
 			{name: 'JSON files', extensions: ['json']},
 		]
-		
+
 	});
-	
+
 	if (files) { var fn = files[0] }
 	return(fn);
 }
@@ -1542,7 +1559,6 @@ const importKaikkiDictionary = exports.importKaikkiDictionary = () => {
 	db.run("COMMIT");
 	updateDBCounts();
 }
-
 
 const importMigakuDictionary = exports.importMigakuDictionary = () => {
 	var lang = global.sharedObject.language;

@@ -279,6 +279,17 @@ ipcRenderer.on('get-search-term', async (event) => {
 	})
 });
 
+ipcRenderer.on('replace-words', (event, replacements) => {
+	var iframe = document.querySelector("div div div div iframe");	
+	var html=iframe.contentDocument.documentElement.innerHTML;
+	var len=replacements.length;
+	for(var i=0;i<len;i++) {
+		var re = new RegExp(" " + replacements[i][0] + " ", "gi");
+		html=html.replace(re, " " + replacements[i][1] + " ");
+	}
+	iframe.contentDocument.documentElement.innerHTML = html;		
+})
+
 ipcRenderer.on('make-toolbar-buttons', (event, language) => {
 	var myMenu=Menu.getApplicationMenu();
 	var langmenu=myMenu.items[3].submenu.getMenuItemById(language);
@@ -299,6 +310,7 @@ ipcRenderer.on('make-toolbar-buttons', (event, language) => {
 });
 
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
+	console.log('ipc file-opened, position = ' + position);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }

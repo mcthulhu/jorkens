@@ -19,12 +19,6 @@ ipcRenderer.on('library-data', (event, data) => {
 		var fields = entries[i].split('\t');
 		if(fields[0] != lastlang) {
 			lastlang=fields[0];
-/* 			var details=document.createElement('details');
-			details.setAttribute('id', lastlang);	
-			details.className="table table-striped mt32 book-list";
-			var summary = document.createElement('summary');
-			summary.textContent=lastlang;
-			details.appendChild(summary); */
 			var langrow=document.createElement('tr');
 			var langcell=document.createElement('td');
 			langcell.textContent=lastlang;
