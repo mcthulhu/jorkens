@@ -1707,6 +1707,9 @@ const enableDictionaries = exports.enableDictionaries = () => {
 		myMenu.items[5].submenu.items[2].enabled=false;
 		myMenu.items[8].submenu.items[1].enabled=false;
 	}
+	if(process.platform == 'linux') {
+		myMenu.items[5].submenu.items[1].enabled=false;
+	}
 }
 
 const importTM = exports.importTM = () => {
@@ -2357,7 +2360,11 @@ const convertToEpub = exports.convertToEpub = (fn) => {
 
 const runAnki = exports.runAnki = () => {
 	var child = require('child_process').execFile;
-	var executablePath = "C:\\Program Files\\Anki\\anki-console.exe";
+	if(process.platform == 'win32') {
+		var executablePath = "C:\\Program Files\\Anki\\anki.exe";
+	} else if(process.platform == 'linux') {
+		var executablePath = '/usr/bin/anki';
+	}
 	var parameters = [];
 	child(executablePath, parameters, function(err, data) {
 		if(err){

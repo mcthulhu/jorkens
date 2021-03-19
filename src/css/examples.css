@@ -539,6 +539,10 @@ h3 input.search-input {
 	background: url('../img/add.png') no-repeat;
 }
 
+#ankibutton {
+	background: url('../img/anki.png') no-repeat;
+}
+
 .hidden {
 	display: none;
 }

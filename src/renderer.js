@@ -780,6 +780,9 @@ function configureToolbarButtons() {
 	document.getElementById('parbutton').addEventListener("click", function() {
 		mainProcess.loadParallelBook();
 	});
+	document.getElementById('ankibutton').addEventListener("click", function() {
+		mainProcess.runAnki();
+	});
 }
 
 const makeRangeCfi = (a, b) => {
