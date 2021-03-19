@@ -175,17 +175,18 @@ mainWindow.on('close', () => {
     mainWindow = null;
 	
 	var docpath = app.getPath('documents');
-	try {
-		var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	if(fs.existsSync(fn)) {
 		fs.unlinkSync(fn);
-	} catch(e) {
-		console.log(e);
-	}
-	
+	} 
 	fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
-	fs.unlinkSync(fn);
+	if(fs.existsSync(fn)) {
+		fs.unlinkSync(fn);
+	} 
 	fn = path.join(docpath, 'Jorkens', 'tokens.txt');
-	fs.unlinkSync(fn);
+	if(fs.existsSync(fn)) {
+		fs.unlinkSync(fn);
+	} 
 	fn = path.join(docpath, 'Jorkens', 'selection.txt');
 	if(fs.existsSync(fn)) {
 		fs.unlinkSync(fn);
@@ -1810,7 +1811,6 @@ const getSelectedText = exports.getSelectedText = () => {
 }
    
 const playPolly = exports.playPolly = () => {
-	console.log(AWSCredentialsExist());
 	var words=getSelectedText();
 	if(words.length > 1500) {
 		words=words.substring(0, 1500);
@@ -1944,7 +1944,6 @@ const libreTranslate = exports.libreTranslate = () => {
 }
 
 const amazonTranslate = exports.amazonTranslate = () => {
-	console.log(AWSCredentialsExist());
 	var words=getSelectedText();
 	if(words.length > 1500) {
 		words=words.substring(0, 1500);
