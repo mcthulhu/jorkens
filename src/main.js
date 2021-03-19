@@ -797,6 +797,15 @@ function getFullLanguageName(digraph) {
 	return(lang);
 }
 
+function AWSCredentialsExist() {
+	var awscredsPath = path.join(home, '.aws', 'credentials');
+	if(fs.existsSync(awscredsPath)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	console.time('stanzaTimer');
 	var language = global.sharedObject.language;
@@ -1693,6 +1702,10 @@ const enableDictionaries = exports.enableDictionaries = () => {
 	var myMenu=Menu.getApplicationMenu();	
 	myMenu.items[3].submenu.getMenuItemById(language).visible = true;	
 	mainWindow.webContents.send('make-toolbar-buttons', language);
+	if(!AWSCredentialsExist()) {
+		myMenu.items[5].submenu.items[2].enabled=false;
+		myMenu.items[8].submenu.items[1].enabled=false;
+	}
 }
 
 const importTM = exports.importTM = () => {
@@ -1797,6 +1810,7 @@ const getSelectedText = exports.getSelectedText = () => {
 }
    
 const playPolly = exports.playPolly = () => {
+	console.log(AWSCredentialsExist());
 	var words=getSelectedText();
 	if(words.length > 1500) {
 		words=words.substring(0, 1500);
@@ -1930,6 +1944,7 @@ const libreTranslate = exports.libreTranslate = () => {
 }
 
 const amazonTranslate = exports.amazonTranslate = () => {
+	console.log(AWSCredentialsExist());
 	var words=getSelectedText();
 	if(words.length > 1500) {
 		words=words.substring(0, 1500);
