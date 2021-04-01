@@ -258,6 +258,15 @@ ipcRenderer.on('get-user-email', async (event, oldaddress) => {
     }
 });
 
+ipcRenderer.on('get-global-voices-url', async(event) => {
+	const { value: url } = await Swal.fire({
+		title: 'Enter the URL of a Global Voices article',
+		input: 'text',
+		showCancelButton: true
+	})
+	mainProcess.globalVoices(url);
+});
+
 ipcRenderer.on('get-search-term', async (event) => {
 	const { value: searchTerm } = await Swal.fire({
 		title: 'Enter your search term',
@@ -311,6 +320,7 @@ ipcRenderer.on('make-toolbar-buttons', (event, language) => {
 
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
 	console.log('ipc file-opened, position = ' + position);
+	console.log('content length is ' + content.length);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
@@ -352,7 +362,9 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	  };
    
   url = file;
+  console.log(url); 
   book=ePub(file, { encoding: "binary"});
+  console.log(book);
   book.open(content, "binary");
   
   rendition = book.renderTo("viewer", {

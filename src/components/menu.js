@@ -1407,6 +1407,13 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  
+	  {
+		  label: "Open parallel GlobaL Voices articles",
+		  click: () => {
+			  mainProcess.getGlobalVoicesURL();
+		  }
+	  },
+	  
 	  	   {
 		  label: "Transliterate selection",
 		  click: () => {

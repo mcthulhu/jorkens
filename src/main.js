@@ -21,6 +21,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
+process.env.NODE_NO_WARNINGS = 1;
+
 process.on('beforeExit', code => {
   // Can make asynchronous calls
   setTimeout(() => {
@@ -808,9 +810,8 @@ function AWSCredentialsExist() {
 }
 
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
-	console.time('stanzaTimer');
+	//console.time('stanzaTimer');
 	var language = global.sharedObject.language;
-	console.log("running stanza lemmatizer for " + language);
 	var output = [];
 	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
 	if(process.platform == 'win32') {
@@ -845,7 +846,7 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 		if (err) throw err;
 		processStanza(output);
 		output = null;
-		console.timeEnd('stanzaTimer');
+		// console.timeEnd('stanzaTimer');
 	});	
 }
 
@@ -868,12 +869,12 @@ const doReplacements = exports.doReplacements = () => {
 
 const processStanza = exports.processStanza = (results) => {
 	var len = results.length;
-	console.log(len + " Stanza results found");
+	// console.log(len + " Stanza results found");
 	for(var i = 0; i<len; i++) {
 		var pieces = results[i].split('\t');
 		lemmas[pieces[0]] = pieces[1];
 	}
-	mainWindow.webContents.send('show-notification', 'lemmatization complete');
+	// mainWindow.webContents.send('show-notification', 'lemmatization complete');
 }
      
 const treeTagger = exports.treeTagger = () => {
@@ -953,6 +954,8 @@ const chooseBook = exports.chooseBook = () => {
 const openFile = exports.openFile = (file, position) => { // removed chapter argument
   clearBook();
   const content = fs.readFileSync(file, "binary");
+  console.log(content.length);
+  console.log("opened " + file);
   url = file;
   global.sharedObject.booklocation = file;
   config.lastBook=file;
@@ -1078,7 +1081,7 @@ const applyPassages = exports.applyPassages = () => {
 			if(err) {
 				return console.log(err);
 			}
-			console.log(len + " passages found");
+			// console.log(len + " passages found");
 		}
 	);
 	
@@ -2091,6 +2094,164 @@ const editDatabase = exports.editDatabase = (table) => {
 					
 		}
 	);	
+}
+
+const getGlobalVoicesURL = exports.getGlobalVoicesURL = () => {
+	mainWindow.webContents.send('get-global-voices-url');
+}
+
+const globalVoices = exports.globalVoices = (url) => {
+	var native=global.sharedObject.native;
+	const jsdom = require("jsdom");
+	const { JSDOM } = jsdom;
+	fetch(url) 
+     .then((resp) => resp.text())
+     .then(function(text) {
+		
+	const dom = new JSDOM(text);
+	var doc = dom.window.document;
+	var lang=doc.querySelector('html').getAttribute('lang');
+	console.log("lang is " + lang);
+	var title= doc.querySelector('title').textContent;
+	var postdate = doc.querySelector('span.post-date a').textContent;
+	var datepieces=postdate.split('/');
+	datepieces.reverse();
+	var pubdate = datepieces.join('-');
+	var credits=doc.querySelectorAll('.contributor-name a');
+	var authors=[];
+	for(var i=0;i<credits.length;i++) {
+		authors.push(credits[i].getAttribute('title'));
+		authors=_.uniq(authors);
+	}
+	var author=authors.join(', ');
+	console.log("author is " + author);
+	var single=doc.getElementById('single');
+	var paras1 = single.querySelectorAll('p:not([dir])');
+	
+	console.log(paras1.length + " paragraphs in " + url);
+	
+	var results = doc.querySelectorAll('span.post-translation-' + native);
+	var span=results[0];
+	var link=span.getElementsByTagName('a')[0];
+	var url2 = link.href;
+	fetch(url2) 
+     .then((resp2) => resp2.text())
+     .then(function(text) {
+		 const dom2 = new JSDOM(text);
+	var doc2 = dom2.window.document;
+	var single2=doc2.getElementById('single');
+	var paras2 = single2.querySelectorAll('p');
+	/* var paras2 = [];
+	for(var i=10;i<paras.length;i++) {
+		paras2.push(paras[i]);
+	} */
+		console.log(paras2.length + " paragraphs in " + url2);
+		generateGlobalVoicesBook(lang, title, author, pubdate, url, url2, paras1, paras2);
+	 })
+	 .catch(function(error2) {
+		 console.log(error2);
+	 });
+
+   })
+  .catch(function(error) {
+    console.log(error);
+  }); 
+}
+
+function generateGlobalVoicesBook(lang, title, author, pubdate, url1, url2, paras1, paras2) {
+	var len = paras1.length;
+	// console.log(len, paras2.length);
+	if(paras2.length != len) {
+		console.log("paragraph arrays not of equal length");
+		// return;
+	}
+/* 	try {
+		fs.accessSync(path.join(docpath, 'Jorkens', 'generated_books'));
+	} catch (e) {
+			fs.mkdirSync(path.join(docpath, 'Jorkens', 'generated_books'));
+	}
+	
+	var nodepub = require("nodepub");
+	var metadata = {
+		id: '00000',
+		cover: './src/img/gv-logo.png',
+		title: title,
+		series: 'Global Voices',
+		sequence: 1,
+		author: author,
+		fileAs: 'unknown',
+		genre: 'Non-Fiction',
+		tags: 'News',
+		copyright: 'Global Voices, 2021',
+		publisher: 'Global Voices',
+		published: pubdate,
+		language: lang,
+		description: 'parallel text from Global Voices article',
+		contents: 'Table of Contents',
+		source: url1 + ' & ' + url2,
+		images: []
+	};
+	var epub = nodepub.document(metadata);
+	epub.addCSS('p { text-indent: 30px !important; margin-top: 2em; margin-bottom: 2em; } .translation {opacity: .15; color: blue; background-color: #cdcdcd; } .original:hover + .translation { opacity: 1; }'); */
+	var html = '<h3>' + title + '</h3>' + '<h6>' + author + '</h6>';
+	html += '<a href="' + url1 + '">original</a><br/>' + '<a href="' + url2 + '">translation</a><br/><hr/><br/>';
+	for(var i=0;i<len;i++) {
+		paras1[i].className='original';
+		paras2[i].className='translation';
+		html += paras1[i].outerHTML + '\n';
+		html +=paras2[i].outerHTML + '\n';
+	}
+	
+	var re= new RegExp('<br>', "g");
+	html = html.replace(re, "<br/>");
+	var content = [];
+	var chapter = {};
+	chapter.title = title;
+	chapter.data = html;
+	content.push(chapter);
+	generateEpub(title, author, cover, lang, content);
+	// console.log(html);
+/* 	epub.addSection(title, html);
+	(async () => {
+		try {
+			console.log('Generating a stand-alone EPUB.');
+			let bookpath = path.join(docpath, 'Jorkens', 'generated_books');
+			await epub.writeEPUB(bookpath, title).then(() => {
+				console.log("finished generating book " + path.join(bookpath, title + '.epub'));
+				openFile(path.join(bookpath, title + '.epub'), 0);
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	})(); */
+}
+
+function generateEpub(title, author, cover, lang, content) {
+	const epub = require('epub-gen');
+		try {
+		fs.accessSync(path.join(docpath, 'Jorkens', 'generated_books'));
+	} catch (e) {
+			fs.mkdirSync(path.join(docpath, 'Jorkens', 'generated_books'));
+	}
+	var output = path.join(docpath, 'Jorkens', 'generated_books', title + '.epub');
+	const options = {
+	title: title,
+	author: author,
+	output: output,
+	cover: cover,
+	css: `
+		p { text-indent: 30px !important; margin-top: 2em; margin-bottom: 2em; } 
+		.translation {opacity: .15 !important; color: blue; background-color: #cdcdcd; } 
+		.original:hover + .translation { opacity: 1 !important; }
+  `,
+    lang: lang,
+	content: content // array with each entry representing one chapter - object with title and data (HTML) keys
+	};
+	new epub(options).promise.then(() => {
+		console.log(output + ' generated');
+		openFile(output, 0);
+	});
+	
 }
 
 const myMemory = exports.myMemory = () => {
