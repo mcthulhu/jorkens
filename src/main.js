@@ -2193,7 +2193,7 @@ function generateGlobalVoicesBook(lang, title, author, pubdate, url1, url2, para
 	};
 	var epub = nodepub.document(metadata);
 	epub.addCSS('p { text-indent: 30px !important; margin-top: 2em; margin-bottom: 2em; } .translation {opacity: .15; color: blue; background-color: #cdcdcd; } .original:hover + .translation { opacity: 1; }'); */
-	var html = '<h3>' + title + '</h3>' + '<h6>' + author + '</h6>';
+	var html = '<h6>' + author + '</h6>';
 	html += '<a href="' + url1 + '">original</a><br/>' + '<a href="' + url2 + '">translation</a><br/><hr/><br/>';
 	for(var i=0;i<len;i++) {
 		paras1[i].className='original';
@@ -2206,9 +2206,10 @@ function generateGlobalVoicesBook(lang, title, author, pubdate, url1, url2, para
 	html = html.replace(re, "<br/>");
 	var content = [];
 	var chapter = {};
-	chapter.title = title;
+	// chapter.title = title;
 	chapter.data = html;
 	content.push(chapter);
+	var cover = 'https://github.com/mcthulhu/jorkens/blob/master/src/img/gv-logo.png';
 	generateEpub(title, author, cover, lang, content);
 	// console.log(html);
 /* 	epub.addSection(title, html);
@@ -2228,12 +2229,13 @@ function generateGlobalVoicesBook(lang, title, author, pubdate, url1, url2, para
 
 function generateEpub(title, author, cover, lang, content) {
 	const epub = require('epub-gen');
-		try {
-		fs.accessSync(path.join(docpath, 'Jorkens', 'generated_books'));
+	var bookpath = path.join(docpath, 'Jorkens', 'generated_books');
+	try {
+		fs.accessSync(bookpath);
 	} catch (e) {
-			fs.mkdirSync(path.join(docpath, 'Jorkens', 'generated_books'));
+		fs.mkdirSync(bookpath);
 	}
-	var output = path.join(docpath, 'Jorkens', 'generated_books', title + '.epub');
+	var output = path.join(bookpath, title + '.epub');
 	const options = {
 	title: title,
 	author: author,
@@ -2245,7 +2247,8 @@ function generateEpub(title, author, cover, lang, content) {
 		.original:hover + .translation { opacity: 1 !important; }
   `,
     lang: lang,
-	content: content // array with each entry representing one chapter - object with title and data (HTML) keys
+	content: content, 
+	verbose: true
 	};
 	new epub(options).promise.then(() => {
 		console.log(output + ' generated');

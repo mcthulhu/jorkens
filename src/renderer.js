@@ -319,8 +319,7 @@ ipcRenderer.on('make-toolbar-buttons', (event, language) => {
 });
 
 ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
-	console.log('ipc file-opened, position = ' + position);
-	console.log('content length is ' + content.length);
+	// console.log('ipc file-opened, position = ' + position);
   if(file.endsWith('epub')) {
 	  // console.log("this is an epub"); -- works
   }
@@ -362,9 +361,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	  };
    
   url = file;
-  console.log(url); 
   book=ePub(file, { encoding: "binary"});
-  console.log(book);
   book.open(content, "binary");
   
   rendition = book.renderTo("viewer", {
