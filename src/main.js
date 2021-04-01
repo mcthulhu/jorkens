@@ -954,8 +954,6 @@ const chooseBook = exports.chooseBook = () => {
 const openFile = exports.openFile = (file, position) => { // removed chapter argument
   clearBook();
   const content = fs.readFileSync(file, "binary");
-  console.log(content.length);
-  console.log("opened " + file);
   url = file;
   global.sharedObject.booklocation = file;
   config.lastBook=file;
@@ -2127,7 +2125,12 @@ const globalVoices = exports.globalVoices = (url) => {
 	console.log("author is " + author);
 	var single=doc.getElementById('single');
 	var paras1 = single.querySelectorAll('p:not([dir])');
-	
+	var sourceparas = Array.from(paras1).filter(function(p) {
+		if(p.querySelector('em')) {
+			return false;
+		}
+		return true;
+	});
 	console.log(paras1.length + " paragraphs in " + url);
 	
 	var results = doc.querySelectorAll('span.post-translation-' + native);
@@ -2138,15 +2141,17 @@ const globalVoices = exports.globalVoices = (url) => {
      .then((resp2) => resp2.text())
      .then(function(text) {
 		 const dom2 = new JSDOM(text);
-	var doc2 = dom2.window.document;
-	var single2=doc2.getElementById('single');
-	var paras2 = single2.querySelectorAll('p');
-	/* var paras2 = [];
-	for(var i=10;i<paras.length;i++) {
-		paras2.push(paras[i]);
-	} */
+		var doc2 = dom2.window.document;
+		var single2=doc2.getElementById('single');
+		var paras2 = single2.querySelectorAll('p');
+		var targetparas = Array.from(paras2).filter(function(p) {
+			if(p.querySelector('em')) {
+				return false;
+			}
+			return true;
+		});
 		console.log(paras2.length + " paragraphs in " + url2);
-		generateGlobalVoicesBook(lang, title, author, pubdate, url, url2, paras1, paras2);
+		generateGlobalVoicesBook(lang, title, author, pubdate, url, url2, sourceparas, targetparas);
 	 })
 	 .catch(function(error2) {
 		 console.log(error2);
@@ -2159,72 +2164,38 @@ const globalVoices = exports.globalVoices = (url) => {
 }
 
 function generateGlobalVoicesBook(lang, title, author, pubdate, url1, url2, paras1, paras2) {
+	title=title.replace(/\?/, '');
 	var len = paras1.length;
-	// console.log(len, paras2.length);
+
 	if(paras2.length != len) {
 		console.log("paragraph arrays not of equal length");
 		// return;
 	}
-/* 	try {
-		fs.accessSync(path.join(docpath, 'Jorkens', 'generated_books'));
-	} catch (e) {
-			fs.mkdirSync(path.join(docpath, 'Jorkens', 'generated_books'));
-	}
-	
-	var nodepub = require("nodepub");
-	var metadata = {
-		id: '00000',
-		cover: './src/img/gv-logo.png',
-		title: title,
-		series: 'Global Voices',
-		sequence: 1,
-		author: author,
-		fileAs: 'unknown',
-		genre: 'Non-Fiction',
-		tags: 'News',
-		copyright: 'Global Voices, 2021',
-		publisher: 'Global Voices',
-		published: pubdate,
-		language: lang,
-		description: 'parallel text from Global Voices article',
-		contents: 'Table of Contents',
-		source: url1 + ' & ' + url2,
-		images: []
-	};
-	var epub = nodepub.document(metadata);
-	epub.addCSS('p { text-indent: 30px !important; margin-top: 2em; margin-bottom: 2em; } .translation {opacity: .15; color: blue; background-color: #cdcdcd; } .original:hover + .translation { opacity: 1; }'); */
+
 	var html = '<h6>' + author + '</h6>';
 	html += '<a href="' + url1 + '">original</a><br/>' + '<a href="' + url2 + '">translation</a><br/><hr/><br/>';
 	for(var i=0;i<len;i++) {
+		if(paras1[i].querySelector('em')) {
+			continue;
+		}
 		paras1[i].className='original';
-		paras2[i].className='translation';
 		html += paras1[i].outerHTML + '\n';
-		html +=paras2[i].outerHTML + '\n';
+		if(paras2[i]) {
+			paras2[i].className='translation';
+			html +=paras2[i].outerHTML + '\n';
+		}
 	}
 	
 	var re= new RegExp('<br>', "g");
 	html = html.replace(re, "<br/>");
 	var content = [];
 	var chapter = {};
-	// chapter.title = title;
+	chapter.title = title;
 	chapter.data = html;
 	content.push(chapter);
-	var cover = 'https://github.com/mcthulhu/jorkens/blob/master/src/img/gv-logo.png';
+	var cover = 'https://github.com/mcthulhu/jorkens/raw/master/src/img/gv-logo.jpg';
 	generateEpub(title, author, cover, lang, content);
-	// console.log(html);
-/* 	epub.addSection(title, html);
-	(async () => {
-		try {
-			console.log('Generating a stand-alone EPUB.');
-			let bookpath = path.join(docpath, 'Jorkens', 'generated_books');
-			await epub.writeEPUB(bookpath, title).then(() => {
-				console.log("finished generating book " + path.join(bookpath, title + '.epub'));
-				openFile(path.join(bookpath, title + '.epub'), 0);
-			});
-		} catch (e) {
-			console.log(e);
-		}
-	})(); */
+
 }
 
 function generateEpub(title, author, cover, lang, content) {
