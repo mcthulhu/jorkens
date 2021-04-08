@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
 const mainProcess = remote.require('./main.js');
 document.getElementById('term').focus();
+document.getElementById('context').value = require('electron').remote.getGlobal('sharedObject').contextSentence;
 document.getElementById("cancel-btn").addEventListener("click", (e) => {
                     window.close();
                 });

@@ -2212,6 +2212,7 @@ function generateEpub(title, author, cover, lang, content) {
 	author: author,
 	output: output,
 	cover: cover,
+	version: '2',
 	css: `
 		p { text-indent: 30px !important; margin-top: 2em; margin-bottom: 2em; } 
 		.translation {opacity: .15 !important; color: blue; background-color: #cdcdcd; } 

@@ -492,7 +492,7 @@ h3 input.search-input {
 	width: 20px;
 	height: 20px;
 	border-radius: 5px;
-	margin: auto 10px;
+	margin: auto 5px;
 }
 
 #wfbutton {
@@ -542,6 +542,20 @@ h3 input.search-input {
 #ankibutton {
 	background: url('../img/anki.png') no-repeat;
 }
+
+#unknownbutton {
+	background: url('../img/tag_blue.png') no-repeat;
+}
+
+#unsurebutton {
+	background: url('../img/tag_yellow.png') no-repeat;
+}
+
+#knownbutton {
+	background: url('../img/tag_green.png') no-repeat;
+}
+
+
 
 .hidden {
 	display: none;
