@@ -58,5 +58,8 @@ function processFlashcard(resp) {
 	}
 	total_asked++;
 	getEl("fcright").textContent=total_known + "/" + total_asked;
+	var score = total_known/total_asked;
+	score = score.toFixed(2);
+	require('electron').remote.getGlobal('sharedObject').flashRight = score;
 	getNextFlashcard();
 }

@@ -11,6 +11,8 @@ const {PythonShell} = require('python-shell');
 const home = app.getPath('home');
 const nlp = require('natural') ;
 const fetch = require("node-fetch");
+const ipc = require('electron').ipcMain
+const dayjs = require('dayjs');
 
 var lemmas = [];
 var unknowns = [];
@@ -50,7 +52,12 @@ global.sharedObject = {
 	booklocation: '',
 	lastLocation: [],
 	cfiRange: '', 
-	contextSentence: ''
+	contextSentence: '',
+	textRead: '',
+	newGloss: 0,
+	newFlash: 0,
+	flashRight: 0,
+	vocabSize: 0
 }
 
 
@@ -80,6 +87,9 @@ try {
 } catch (e) {
 	fs.mkdirSync(path.join(docpath, 'Jorkens', 'Python'));
 }
+
+// to do - maybe test for stanza-lemmatizer.py here
+
 const dbPath = path.join(docpath, 'Jorkens', 'db', 'jorkens.db');
 var exists = fs.existsSync(dbPath);
 
@@ -94,6 +104,7 @@ function createTables() {
 		db.run('CREATE TABLE IF NOT EXISTS locations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
 		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
 		db.run('CREATE TABLE IF NOT EXISTS parallels (title1 TEXT PRIMARY KEY UNIQUE, location2 TEXT, cfi2 TEXT)');
+		db.run('CREATE TABLE IF NOT EXISTS sessionstats(date DATETIME DEFAULT CURRENT_TIMESTAMP, lang TEXT, minutes INTEGER DEFAULT 0, words_read INTEGER DEFAULT 0, words_searched TEXT, new_gloss INTEGER DEFAULT 0, new_flashcards INTEGER DEFAULT 0, flashcards_right REAL, vocab_size INTEGER DEFAULT 0, sent_length INTEGER DEFAULT 0, ttr REAL)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
@@ -167,7 +178,9 @@ Menu.setApplicationMenu(menu(mainWindow));
 
 mainWindow.on('close', () => {
 	saveCurrentLocation(global.sharedObject.booktitle, global.sharedObject.lastLocation);
+	saveSessionStats();
 });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
@@ -249,6 +262,54 @@ const saveUnknowns = exports.saveUnknowns = () => {
 		});
 	}
 
+}
+
+function simplifyUnknowns() {
+	var simpler = [];
+	for(var i=0;i<unknowns.length;i++) {
+		simpler.push(unknowns[i].split('\t')[0]);
+	}
+	simpler = _.uniq(simpler);
+	return(simpler);
+}
+
+const saveSessionStats = exports.saveSessionStats = () => {
+	console.log("saving session statistics");
+	// 		db.run('CREATE TABLE IF NOT EXISTS sessionstats(date DATETIME DEFAULT CURRENT_TIMESTAMP, lang TEXT, minutes INTEGER DEFAULT 0, words_read INTEGER DEFAULT 0, words_searched TEXT, new_gloss INTEGER DEFAULT 0, new_flashcards INTEGER DEFAULT 0, flashcards_right REAL, vocab_size INTEGER DEFAULT 0, sent_length INTEGER DEFAULT 0, ttr REAL)');
+
+	var tr= global.sharedObject.textRead;
+	var wr = tr.split(/\s/).length;
+	var regexp = /[^\.\!\?。、「」『』〜・？！（）【】]*[\.\!\?。、「」『』〜・？！（）【】]/g;
+	var sentences = tr.match(regexp);
+	if(sentences) {
+		var senlen = sentences.length;
+		var total = 0;
+		for(var i=0;i<senlen;i++) {
+			total += sentences[i].split(/\s/).length;
+		}
+		var sl = total/senlen;
+	} else {
+		var sl = null;
+	}
+	var l = global.sharedObject.language;
+	var ng = global.sharedObject.newGloss;
+	var nf = global.sharedObject.newFlash;
+	var fr = global.sharedObject.flashRight;
+	var textStats= getTTR(tr);
+	var vs = textStats.vocabSize;
+	var ttr = textStats.textRich;
+	ipc.on('session-stats', (event, stats) => {
+		var t = stats.readingTime.split(':');
+		var min = parseInt(t[0]) * 60;
+		min += parseInt(t[1]);
+		if(min < 1) {
+			min = 1;
+		}
+		// console.log("reading time in minutes is " + min);
+		var unk = simplifyUnknowns();
+		db.run("INSERT INTO sessionstats(lang, minutes, words_read, words_searched, new_gloss, new_flashcards, flashcards_right, vocab_size, sent_length, ttr) VALUES(?,?,?,?,?,?,?,?,?,?)", [l, min, wr, unk, ng, nf, fr, vs, sl, ttr]);
+	});
+	mainWindow.webContents.send('get-session-stats');	
 }
 
 const createGlossWindow = exports.createGlossWindow = () => {
@@ -1058,6 +1119,7 @@ const addToDictionary = exports.addToDictionary = (term, def, context, lang, add
 		addFlashcard(term, def, context, lang, tags);
 	}
 	updateDBCounts();
+	global.sharedObject.newGloss++;
 };
 
 const addToPassages = exports.addToPassages = (passage, notes) => {
@@ -1130,6 +1192,7 @@ const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 const addFlashcard = exports.addFlashcard = (term, def, context, language, tags) => {
 	db.run("INSERT OR REPLACE INTO flashcards(term, def, context, language, tags) VALUES(?,?,?,?,?)", [term, def, context, language, tags]);
 	updateDBCounts();
+	global.sharedObject.newFlash++;
 }
 
 const reviewFlashcards = exports.reviewFlashcards = () => {
@@ -2255,15 +2318,13 @@ function tokenizeWords(s) {
 	return(words);
 }
 
-const calculateTypeTokenRatio = exports.calculateTypeTokenRatio = () => {
+function getTTR(txt) {
+	var textStats = {};
 	const sw = require('stopword');
 	var language = global.sharedObject.language;
 	var filter = eval(`sw.${language}`);
 	var freqs={};
-	var docpath = app.getPath('documents');
-	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
-	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
-	var words=tokenizeWords(booktext);
+	var words=tokenizeWords(txt);
 	words = sw.removeStopwords(words, filter);
 	
 	var len=words.length;
@@ -2281,9 +2342,18 @@ const calculateTypeTokenRatio = exports.calculateTypeTokenRatio = () => {
 	}
 	var pairlist=_.pairs(freqs);
 	var vocabSize=pairlist.length;
+	textStats.vocabSize = vocabSize;
 	var textRich=vocabSize/len;
-	textRich=textRich.toFixed(2);
-	mainWindow.webContents.send('text-richness', textRich);
+	textStats.textRich=textRich.toFixed(2);
+	return(textStats);
+}
+
+const calculateTypeTokenRatio = exports.calculateTypeTokenRatio = () => {
+	var docpath = app.getPath('documents');
+	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	var booktext = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	var textStats=getTTR(booktext);
+	mainWindow.webContents.send('text-richness', textStats.textRich);
 }
 
 const getWordFrequencies = exports.getWordFrequencies = () => {

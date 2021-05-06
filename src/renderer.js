@@ -312,7 +312,7 @@ ipcRenderer.on('make-toolbar-buttons', (event, language) => {
 			var win = BrowserWindow.getFocusedWindow();
 			var wc = win.webContents;
 			thismenuitem.click(event, win, wc);
-		}
+		}							
 		var tbar = document.getElementById('toolbar');
 		tbar.appendChild(btn);
 	}	
@@ -406,7 +406,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	 })
 			.then(function(locations){
 				mainProcess.saveLocations(booktitle, locations);
-				require('electron').remote.getGlobal('sharedObject').firstLocation = locations[0];
 				require('electron').remote.getGlobal('sharedObject').lastLocation = locations[locations.length - 1];
 				controls.style.display = "block";
 				slider.setAttribute("type", "range");
@@ -446,7 +445,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				localStorage.setItem(book.key()+'-locations', book.locations.save());
 				locations=book.locations;
 				require('electron').remote.getGlobal('sharedObject').locations = locations;
-
+				
 		});
 
     var title = document.getElementById("title");
@@ -476,6 +475,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
       }
 		setUpContextMenu();
 		configureToolbarButtons();
+
     });
 
     rendition.on("relocated", function(location){
@@ -505,20 +505,19 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		lastLocation=rendition.currentLocation().start.cfi;
 		mainProcess.updateConfigLocation(url, lastLocation);
 		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
-		
 		let spineItem = book.spine.get(lastLocation);
-		console.log("spineitem is " + spineItem.idref, spineItem.index, spineItem.href, spineItem.url, spineItem.canonical, spineItem.properties);
+		// console.log("spineitem is " + spineItem.idref, spineItem.index, spineItem.href, spineItem.url, spineItem.canonical, spineItem.properties);
 		// console.log(book.navigation.get(spineItem)); TypeError 
         let navItem = book.navigation.get(spineItem.href);
-		console.log("navItem is " + navItem);
+		// console.log("navItem is " + navItem);
 		if(navItem && navItem.id) {
-			console.log(navItem.id);	
+			//console.log(navItem.id);	
 			var navpoint = navItem.id.split('-')[1].trim(); // doesn't work for navpoint without -
 			document.getElementById('toc').selectedIndex = navpoint - 1;
 		}
 		
 		// put lemmatization here
-		
+		getVisibleText();
 		
     });
 	
@@ -645,6 +644,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	//});
 
 	
+});
+
+ipcRenderer.on('get-session-stats', () => {
+	var stats = {};
+	stats.readingTime = document.getElementById("clock").textContent;
+	ipcRenderer.sendSync('session-stats', stats);
 });
 
 ipcRenderer.on('clear-book', () => {
@@ -794,43 +799,15 @@ function configureToolbarButtons() {
 	});
 }
 
-const makeRangeCfi = (a, b) => {
-	// from johnfactotum
-    const CFI = new ePub.CFI()
-    const start = CFI.parse(a), end = CFI.parse(b)
-    const cfi = {
-        range: true,
-        base: start.base,
-        path: {
-            steps: [],
-            terminal: null
-        },
-        start: start.path,
-        end: end.path
-    }
-    const len = cfi.start.steps.length
-    for (let i = 0; i < len; i++) {
-        if (CFI.equalStep(cfi.start.steps[i], cfi.end.steps[i])) {
-            if (i == len - 1) {
-                // Last step is equal, check terminals
-                if (cfi.start.terminal === cfi.end.terminal) {
-                    // CFI's are equal
-                    cfi.path.steps.push(cfi.start.steps[i])
-                    // Not a range
-                    cfi.range = false
-                }
-            } else cfi.path.steps.push(cfi.start.steps[i])
-        } else break
-    }
-    cfi.start.steps = cfi.start.steps.slice(cfi.path.steps.length)
-    cfi.end.steps = cfi.end.steps.slice(cfi.path.steps.length)
-
-    return 'epubcfi(' + CFI.segmentString(cfi.base)
-        + '!' + CFI.segmentString(cfi.path)
-        + ',' + CFI.segmentString(cfi.start)
-        + ',' + CFI.segmentString(cfi.end)
-        + ')'
-}
+ipcRenderer.on('get-range-contents', (a, b) => {
+	console.log("getting range contents");
+	var range = rendition.getRange(a);
+	var endRange = rendition.getRange(b);
+	range.setEnd(endRange.startContainer, endRange.startOffset);
+	
+	console.log("range text is " + range.toString());
+	ipcRenderer.sendSync('got-text', range.toString());
+});
 
 ipcRenderer.on('get-book-contents', () => {
 	var docpath = remote.app.getPath('documents');
@@ -1042,4 +1019,11 @@ function parshToc(book) {
 
   createTree(toc, tocTree);
   console.log(tocTree);
+}
+
+function getVisibleText() {
+	var range = rendition.getRange(rendition.currentLocation().start.cfi);
+    var endRange = rendition.getRange(rendition.currentLocation().end.cfi);
+    range.setEnd(endRange.startContainer, endRange.startOffset);
+	require('electron').remote.getGlobal('sharedObject').textRead += range.toString();
 }

@@ -1367,6 +1367,13 @@ module.exports = function(mainWindow){
 		mainProcess.editDatabase('passages');
        	 }		 
     },
+	
+	  {
+		  label: "Save session stats",
+		  click: () => {
+			  mainProcess.saveSessionStats();
+		  }
+	  },
 	  
 	   {
 		  label: "Show bookmarks/annotations",
