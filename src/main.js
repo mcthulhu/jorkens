@@ -876,9 +876,9 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 	var output = [];
 	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
 	if(process.platform == 'win32') {
-		var myPythonPath = path.join('C:', 'Python38', 'python.exe');
-	} else if(process.platform == 'linux') {
-		var myPythonPath = '/usr/bin/python3';
+		var myPythonPath = 'python';
+	} else {
+		var myPythonPath = 'python3';
 	}
 	
 	// add check for Stanza here
@@ -935,7 +935,7 @@ const processStanza = exports.processStanza = (results) => {
 		var pieces = results[i].split('\t');
 		lemmas[pieces[0]] = pieces[1];
 	}
-	// mainWindow.webContents.send('show-notification', 'lemmatization complete');
+	console.log('lemmatization complete');
 }
      
 const treeTagger = exports.treeTagger = () => {
@@ -2449,9 +2449,9 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 	}
 	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
 	if(process.platform == 'win32') {
-		var myPythonPath = path.join('C:', 'Python38', 'python.exe');
-	} else if(process.platform == 'linux') {
-		var myPythonPath = '/usr/bin/python3';
+		var myPythonPath = 'python';
+	} else {
+		var myPythonPath = 'python3';
 	}
 
 	let options = {
