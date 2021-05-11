@@ -88,6 +88,14 @@ try {
 	fs.mkdirSync(path.join(docpath, 'Jorkens', 'Python'));
 }
 
+try {
+	fs.accessSync(path.join(docpath, 'Jorkens', 'Python', 'stanza-lemmatizer.py'));
+} catch (e) {
+	fetchLemmatizerScript();
+}
+
+
+;
 // to do - maybe test for stanza-lemmatizer.py here
 
 const dbPath = path.join(docpath, 'Jorkens', 'db', 'jorkens.db');
@@ -868,6 +876,20 @@ function AWSCredentialsExist() {
 	} else {
 		return false;
 	}
+}
+
+function fetchLemmatizerScript() {
+	var lemmScriptPath = path.join(docpath, 'Jorkens', 'Python', 'stanza-lemmatizer.py');
+	var url = 'https://raw.githubusercontent.com/wiki/mcthulhu/jorkens/files/stanza-lemmatizer.py';
+	fetch(url) 
+     .then((resp) => resp.text())
+     .then(function(text) {
+		 fs.writeFileSync(lemmScriptPath, text);
+		 console.log("installed stanza-lemmatizer.py");
+	 })
+	 .catch(function(error) {
+		console.log(error);
+	}); 
 }
 
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
