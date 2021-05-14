@@ -3,11 +3,13 @@ Jorkens is a desktop epub reader (an Electron application) based on epub.js and 
 
 A binary installer can be downloaded from the releases page. The source code is likely to be more current, however, and can be run as described below.
 
+Don't forget to look at the Wiki, which among other things has tips on sources of dictionary data, as well as a couple of sample Python plugins. 
+
 ## Prequisites (Important) ##
 
-Jorkens relies on the Stanza NLP library for lemmatization, so it expects to find Python 3.8 and Stanza installed. You also need to install the Stanza data for the language you're reading, and the Python script for lemmatization (see below under Lemmatization). For a few languages, TreeTagger may need to be installed instead of Stanza. 
+Jorkens relies on the Stanza NLP library for lemmatization, so it expects to find Python and Stanza installed. (Python 3.8 is no longer required; the latest Python should be fine.) You also need to install the Stanza data for the language you're reading. Jorkens itself will download the Python script for lemmatization (see below under Lemmatization). For a few languages, TreeTagger may need to be installed instead of Stanza. 
 
-As noted above, you should install Calibre for ebook format conversion (if needed - if you are only reading epubs, this is not necessary). 
+As noted above, you should install Calibre for ebook format conversion (if needed - if you are only reading existing epubs, this is not necessary). 
 
 ## Screen Shots (single and parallel books) ##
 
@@ -31,7 +33,7 @@ Jorkens can also search Google Images for highlighted words; image search result
 
 Jorkens currently supports text-to-speech (TTS) using a number of Windows TTS voices (as long as the user has installed the ones needed), as well as Amazon Polly for more limited passages (note that Amazon Polly voices can also be downloaded and installed locally). Jorkens can also search Forvo for individual word pronunciations. 
 
-So far Jorkens supports machine translation through Amazon Translate; some support for Google Translate has been added. 
+So far Jorkens supports machine translation through Amazon Translate; some support for Google Translate has been added. You may need to have AWS credentials on your machine in order for Amazon Translate and Amazon Polly to work correctly. 
 
 Jorkens has an internal flashcard database and basic flashcard review, with cards presented in random order so you can test whether you know a card or not, with a score kept for the current review session. This is not a spaced repetition system (SRS), though that may come later. Jorkens' flashcards can be exported to text files to be imported into Anki, a very good SRS program, however. Anki can also be opened from the Jorkens menu.
 
@@ -47,7 +49,7 @@ The name Jorkens is from the storyteller character in the short story collection
 
 ## Lemmatization ##
 
-Lemmatization, converting inflected forms of words to their dictionary forms (lemmas), greatly improves dictionary lookup functions, e.g. highlighting the Italian word "tuffamo" will show results for the infinitive form "tuffare." Jorkens is now using Stanford NLP's Python library Stanza for lemmatization as the default for most languages, and TreeTagger support may be dropped in the future. Stanza supports 66 languages; see https://stanfordnlp.github.io/stanza/available_models.html for details. Users will need to have Python 38 and Stanza installed (pip install stanza), in addition to downloading the models for the languages they need (e.g. "import stanza" and then "stanza.download('es')." They will also need to place the stanza-lemmatizer.py script on the Python scripts page in the Wiki in the Jorkens/Python folder under their Documents folder. (This is only working on Windows at the moment.)
+Lemmatization, converting inflected forms of words to their dictionary forms (lemmas), greatly improves dictionary lookup functions, e.g. highlighting the Italian word "tuffamo" will show results for the infinitive form "tuffare." Jorkens is now using Stanford NLP's Python library Stanza for lemmatization as the default for most languages, and TreeTagger support may be dropped in the future. Stanza supports 66 languages; see https://stanfordnlp.github.io/stanza/available_models.html for details. Users will need to have Python and Stanza installed (pip install stanza), in addition to downloading the models for the languages they need (e.g. "import stanza" and then "stanza.download('es')." Jorkens will place the stanza-lemmatizer.py script from the Python scripts page in the Wiki in the Jorkens/Python folder under the Documents folder. 
 
 Jorkens is also using TreeTagger from https://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/ for some languages. Users who wish to take advantage of this should install the Windows version per the instructions at that link, as well as the parameter files for the foreign languages they need to use. The graphical interface mentioned there is not necessary. The languages supported by TreeTagger include German, English, French, Italian, Danish, Swedish, Norwegian, Dutch, Spanish, Bulgarian, Russian, Portuguese, Galician, Greek, Chinese, Swahili, Slovak, Slovenian, Latin, Estonian, Polish, Romanian, and Czech. 
 

@@ -281,6 +281,10 @@ function simplifyUnknowns() {
 	return(simpler);
 }
 
+const showStats = exports.showStats = () => {
+	
+}
+
 const saveSessionStats = exports.saveSessionStats = () => {
 	console.log("saving session statistics");
 	// 		db.run('CREATE TABLE IF NOT EXISTS sessionstats(date DATETIME DEFAULT CURRENT_TIMESTAMP, lang TEXT, minutes INTEGER DEFAULT 0, words_read INTEGER DEFAULT 0, words_searched TEXT, new_gloss INTEGER DEFAULT 0, new_flashcards INTEGER DEFAULT 0, flashcards_right REAL, vocab_size INTEGER DEFAULT 0, sent_length INTEGER DEFAULT 0, ttr REAL)');

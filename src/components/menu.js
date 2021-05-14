@@ -1369,9 +1369,10 @@ module.exports = function(mainWindow){
     },
 	
 	  {
-		  label: "Save session stats",
+		  label: "Show statistics",
+		  enabled: true,
 		  click: () => {
-			  mainProcess.saveSessionStats();
+			  mainProcess.showStats();
 		  }
 	  },
 	  
