@@ -393,6 +393,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 	   mainProcess.addToRecent(booktitle, author, url, language);
       mainProcess.updateDBCounts();
 	  mainProcess.applyPassages();
+	  mainProcess.showStats();
 	   timer=setInterval(updateTimer, 1000);
 	   
 		 var key = book.key()+'-locations';

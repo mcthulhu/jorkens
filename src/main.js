@@ -176,6 +176,7 @@ const createWindow = () => {
 	  storage.set('config', config);
 	  chooseBook();
   }
+  
 });
 	
 	
@@ -183,6 +184,7 @@ const createWindow = () => {
 
 Menu.setApplicationMenu(menu(mainWindow));
   // mainWindow.webContents.openDevTools();
+  
 
 mainWindow.on('close', () => {
 	saveCurrentLocation(global.sharedObject.booktitle, global.sharedObject.lastLocation);
@@ -282,7 +284,48 @@ function simplifyUnknowns() {
 }
 
 const showStats = exports.showStats = () => {
-	
+	var customParseFormat = require('dayjs/plugin/customParseFormat');
+	dayjs.extend(customParseFormat);
+	var lang = global.sharedObject.language;
+	var dates = [];
+	db.each("SELECT date FROM sessionstats WHERE lang = ?", [lang],
+		function (err, row) {
+			dates.push(row.date);
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+		if(len > 0) {
+			checkConsecutive(dates);
+		}
+	});
+}
+
+function simplifyDate(date) {
+	return date.split(' ')[0];
+}
+
+function checkConsecutive(dates) {
+	dates = dates.reverse();
+	dates = dates.map(simplifyDate);
+	dates = _.uniq(dates);
+	//console.log(dates);
+	var count = 0;
+	for(var i=0;i<dates.length-1;i++) {
+		var d1 = dayjs(dates[i], 'YYYY-MM-DD');
+		var d2 = dayjs(dates[i+1], 'YYYY-MM-DD');
+		//console.log("comparing " + dates[i] + " with " + dates[i+1]);
+		var dayBefore = d1.subtract(1, 'days');
+		//console.log("day before " + dates[i] + " or " + d1.format() + " is " + dayBefore.format());
+		if(dayBefore.format() == d2.format()) {
+			// console.log("one day difference");
+			count++;
+		} else {
+			break;
+		}
+	}
+	mainWindow.webContents.send('show-notification', count + " day streak");
 }
 
 const saveSessionStats = exports.saveSessionStats = () => {
