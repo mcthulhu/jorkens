@@ -300,6 +300,34 @@ const showStats = exports.showStats = () => {
 			checkConsecutive(dates);
 		}
 	});
+	/* db.get('SELECT SUM(minutes) AS min, SUM(words_read) AS wr FROM sessionstats WHERE lang = ?', [lang],
+		function(err, row) {
+			if(err) return console.log(err);
+			var t = row.min/60;
+			t = t.toFixed(2);
+			console.log("a total of " + t + " hours spent reading " + lang);
+			console.log("a total of " + row.wr + " words read in " + lang);
+			var reading_speed = row.wr/t;
+			reading_speed = reading_speed.toFixed(2);
+			console.log(" with a reading speed of " + reading_speed + " words per hour");
+		}
+	); */
+	db.each("SELECT SUM(minutes) AS min, SUM(words_read) AS wr, AVG(minutes) AS avg, AVG(words_read) AS awr, lang FROM sessionstats GROUP BY lang", [],
+		function (err, row) {
+			if(err) return console.log(err);
+			var t = row.min/60;
+			t = t.toFixed(2);
+			var reading_speed = row.wr/row.min;
+			reading_speed = reading_speed.toFixed(2);
+			console.log(row.lang + ": " + t + " total hours reading " + row.wr + " words, at " + reading_speed + " words per minute, with " + (row.avg).toFixed(2) + " average minutes and " + (row.awr).toFixed(2) + " average words read per session");
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+
+	});
+	
 }
 
 function simplifyDate(date) {
@@ -310,16 +338,12 @@ function checkConsecutive(dates) {
 	dates = dates.reverse();
 	dates = dates.map(simplifyDate);
 	dates = _.uniq(dates);
-	//console.log(dates);
 	var count = 0;
 	for(var i=0;i<dates.length-1;i++) {
 		var d1 = dayjs(dates[i], 'YYYY-MM-DD');
 		var d2 = dayjs(dates[i+1], 'YYYY-MM-DD');
-		//console.log("comparing " + dates[i] + " with " + dates[i+1]);
 		var dayBefore = d1.subtract(1, 'days');
-		//console.log("day before " + dates[i] + " or " + d1.format() + " is " + dayBefore.format());
 		if(dayBefore.format() == d2.format()) {
-			// console.log("one day difference");
 			count++;
 		} else {
 			break;
