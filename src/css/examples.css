@@ -543,20 +543,18 @@ h3 input.search-input {
 	background: url('../img/anki.png') no-repeat;
 }
 
-#unknownbutton {
-	background: url('../img/tag_blue.png') no-repeat;
-}
-
-#unsurebutton {
-	background: url('../img/tag_yellow.png') no-repeat;
-}
-
-#knownbutton {
-	background: url('../img/tag_green.png') no-repeat;
-}
-
-
-
 .hidden {
 	display: none;
+}
+
+span.unknown {
+	background-color: #FF7575;
+}
+
+span.unsure {
+	background-color: #FFFF84;
+}
+
+span.known {
+	background-color: #72FE95;
 }

@@ -296,7 +296,9 @@ ipcRenderer.on('replace-words', (event, replacements) => {
 		var re = new RegExp(" " + replacements[i][0] + " ", "gi");
 		html=html.replace(re, " " + replacements[i][1] + " ");
 	}
-	iframe.contentDocument.documentElement.innerHTML = html;		
+	// console.log(html);
+	iframe.contentDocument.documentElement.innerHTML = html;	
+	console.log(iframe.contentDocument.documentElement.innerHTML);
 })
 
 ipcRenderer.on('make-toolbar-buttons', (event, language) => {
@@ -708,19 +710,28 @@ function setUpContextMenu() {
 	cmenu.append(mainmenu.getMenuItemById(language));
 	cmenu.append(new MenuItem({ type: 'separator' }));
 	cmenu.append(new MenuItem({ 
-		label: 'Mark word\'s status (not working yet)', 
+		label: 'Mark word\'s status)', 
 		submenu: [
 			{
 				label: 'unknown',
-				click() { console.log('word is unknown') } 
+				click() { 
+					console.log('word is unknown'); 
+					mainProcess.saveWordStatus(0);
+				} 
 			},
 			{
 				label: 'unsure',
-				click() { console.log('word is unsure') } 
+				click() { 
+					console.log('word is unsure');
+					mainProcess.saveWordStatus(1);
+				} 
 			},
 			{
 				label: 'known',
-				click() { console.log('word is known') } 
+				click() { 
+					console.log('word is known');	
+					mainProcess.saveWordStatus(2);					
+				} 
 			},	
 		]
 	}));
@@ -751,14 +762,11 @@ function setUpContextMenu() {
 				//Return the word under the mouse cursor
 				var hoverword = data.substring(begin, end);
 				console.log("right click on " + hoverword);
+				hoverword = hoverword.trim().toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
+				// need to normalize here
 				require('electron').remote.getGlobal('sharedObject').selection = hoverword;
 			
 		cmenu.popup(remote.getCurrentWindow())}, false);
-}
-
-function saveWordStatus(level) {
-	var word = require('electron').remote.getGlobal('sharedObject').selection;
-	
 }
 
 function configureToolbarButtons() {

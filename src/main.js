@@ -112,11 +112,13 @@ function createTables() {
 		db.run('CREATE TABLE IF NOT EXISTS locations (title TEXT PRIMARY KEY UNIQUE, locations TEXT, current_location TEXT)');
 		db.run('CREATE TABLE IF NOT EXISTS passages (title TEXT, passage TEXT, cfiRange TEXT, type TEXT, notes TEXT, style TEXT, tags TEXT, date DATETIME DEFAULT CURRENT_TIMESTAMP)');
 		db.run('CREATE TABLE IF NOT EXISTS parallels (title1 TEXT PRIMARY KEY UNIQUE, location2 TEXT, cfi2 TEXT)');
+		db.run('CREATE TABLE IF NOT EXISTS wordstatus (lang TEXT, lemma TEXT, status INTEGER)');
 		db.run('CREATE TABLE IF NOT EXISTS sessionstats(date DATETIME DEFAULT CURRENT_TIMESTAMP, lang TEXT, minutes INTEGER DEFAULT 0, words_read INTEGER DEFAULT 0, words_searched TEXT, new_gloss INTEGER DEFAULT 0, new_flashcards INTEGER DEFAULT 0, flashcards_right REAL, vocab_size INTEGER DEFAULT 0, sent_length INTEGER DEFAULT 0, ttr REAL)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS words ON dictionary(lang, term)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS segments ON tm(srclang, source)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS recents ON library(location)');
 		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS fcindex ON flashcards(term, language)');	
+		 db.run('CREATE UNIQUE INDEX IF NOT EXISTS statuses ON wordstatus(lang, lemma)');
 		 db.all("PRAGMA table_info('library')", (err, rows) => {
 			 if (err) throw err;
 			 if(JSON.stringify(rows).indexOf('secret') < 0) {
@@ -284,6 +286,7 @@ function simplifyUnknowns() {
 }
 
 const showStats = exports.showStats = () => {
+	var Chart = require('chart.js');
 	var customParseFormat = require('dayjs/plugin/customParseFormat');
 	dayjs.extend(customParseFormat);
 	var lang = global.sharedObject.language;
@@ -1029,6 +1032,7 @@ const processStanza = exports.processStanza = (results) => {
 		lemmas[pieces[0]] = pieces[1];
 	}
 	console.log('lemmatization complete');
+	queryWordStatus();
 }
      
 const treeTagger = exports.treeTagger = () => {
@@ -2526,6 +2530,80 @@ const WindowsTTS = exports.WindowsTTS = () => {
 	ssWindow.on('closed', () => {
 		ssWindow = null;
     });
+	
+}
+
+const saveWordStatus = exports.saveWordStatus = (status) => {
+	var word = global.sharedObject.selection;
+	if(lemmas[word]) {
+		word = lemmas[word];
+	}
+	var lang = global.sharedObject.language;
+	db.run("INSERT OR IGNORE INTO wordstatus(lang, lemma, status) VALUES (?,?,?)", [lang, word, status],
+		function(err) {
+			console.log("*" + err);
+		});
+	db.run("UPDATE wordstatus SET status = ? WHERE lemma = ? AND lang = ?", [status, word, lang],
+		function(err) {
+			console.log("*" + err);
+		});
+}
+
+const queryWordStatus = exports.queryWordStatus = () => {
+	var fn = path.join(docpath, 'Jorkens', 'tokens.txt');
+	var data = fs.readFileSync(fn, {encoding:'utf8', flag:'r'});
+	var tokens = data.trim().split(/[\r\n]+/);
+	var language = global.sharedObject.language;
+	var results = [];
+	db.each('SELECT * FROM wordstatus WHERE lang = ?', [language],
+		function (err, row) {
+			//console.log(row.lemma, row.status);
+			if(tokens.indexOf(row.lemma)) {		
+				results.push(toArray(row));
+			}			
+		}, 
+		function(err, len) {
+			if(err) {
+				return console.log(err);
+			}
+			if(len > 0) {
+				processWordStatusResults(results);
+			}
+					
+		}
+	);	
+}
+
+function processWordStatusResults(results) {
+	var replacements = [];
+	var len = results.length;
+	for(var i=0;i<len;i++) {
+		var item =[];
+		var word = results[i][1];
+		item.push(word);
+		switch(results[i][2]) {
+			case 0: {
+				item.push("<span style='background-color: #FF7575;' class='unknown' title='unknown'>" + word + '</span>');
+				break;
+			}
+			case 1: {
+				item.push("<span style='background-color: #FFFF84;' class='unsure' title='unsure'>" + word + '</span>');
+				break;
+			}
+			case 2: {
+				item.push("<span style='background-color: #72FE95;' class='known' title='known'>" + word + '</span>');
+				break;
+			}
+			default: {
+				
+			}
+		}
+		replacements.push(item);
+	}
+	if(replacements.length>0) {
+		console.log(replacements);
+		mainWindow.webContents.send('replace-words', replacements);
+	}	
 	
 }
 
