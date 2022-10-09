@@ -83,7 +83,7 @@
     "node-xml-stream": "^1.0.2",
     "nodepub": "^3.0.1",
     "python-shell": "^2.0.2",
-    "sqlite3": "^5.0.0",
+    "sqlite3": "^5.0.3",
     "ssri": "^8.0.1",
     "stopword": "^1.0.3",
     "sweetalert2": "^10.8.1",
