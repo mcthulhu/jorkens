@@ -1416,7 +1416,7 @@ module.exports = function(mainWindow){
 	  },
 	  
 	  {
-		  label: "Open parallel GlobaL Voices articles",
+		  label: "Open parallel Global Voices articles",
 		  click: () => {
 			  mainProcess.getGlobalVoicesURL();
 		  }

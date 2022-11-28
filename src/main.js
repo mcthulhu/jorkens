@@ -10,9 +10,74 @@ const _ = require('underscore');
 const {PythonShell} = require('python-shell');
 const home = app.getPath('home');
 const nlp = require('natural') ;
-const fetch = require("node-fetch");
+const fetch = import("node-fetch");
 const ipc = require('electron').ipcMain
 const dayjs = require('dayjs');
+
+app.disableHardwareAcceleration();
+
+ipc.on('show-context-menu', (event) => {
+	var language = global.sharedObject.language;
+	const cmenu = new Menu()
+	// todo: add option to get current selection, search dictionary
+	// let rightClickPosition = null;
+	cmenu.append(new MenuItem({ 
+		label: 'Google Translate', 
+		click: () => {
+			createSearchWindow('google-translate');
+       	 }
+	}));
+	cmenu.append(new MenuItem({ 
+		label: 'Glosbe', 
+		click: () => {
+          	createSearchWindow('gl');
+       	 }
+	}));
+	cmenu.append(new MenuItem({ 
+		label: 'Add to glossary', 
+		click: () => {
+			createGlossWindow();
+       	 }
+	}));
+	cmenu.append(new MenuItem({ type: 'separator' }));
+	var mainmenu = Menu.getApplicationMenu();
+	cmenu.append(mainmenu.getMenuItemById(language));
+	cmenu.append(new MenuItem({ type: 'separator' }));
+	cmenu.append(new MenuItem({ 
+		label: 'Mark word\'s status)', 
+		submenu: [
+			{
+				label: 'unknown',
+				click() { 
+					saveWordStatus(0);
+				} 
+			},
+			{
+				label: 'unsure',
+				click() { 
+					saveWordStatus(1);
+				} 
+			},
+			{
+				label: 'known',
+				click() { 
+					saveWordStatus(2);				
+				} 
+			},	
+		]
+	}));
+		
+  /* const template = [
+    {
+      label: 'Menu Item 1',
+      click: () => { event.sender.send('context-menu-command', 'menu-item-1') }
+    },
+    { type: 'separator' },
+    { label: 'Menu Item 2', type: 'checkbox', checked: true }
+  ]
+  const menu = Menu.buildFromTemplate(template) */
+  cmenu.popup(BrowserWindow.fromWebContents(event.sender))
+})
 
 var lemmas = [];
 var unknowns = [];
@@ -60,6 +125,162 @@ global.sharedObject = {
 	vocabSize: 0
 }
 
+ipc.on('update-booktitle', (event, booktitle) => {
+	global.sharedObject.booktitle = booktitle;
+});
+
+ipc.on('update-flash-right', (event, score) => {
+	global.sharedObject.flashRight = score;
+});
+
+ipc.on('update-language', (event, language) => {
+	global.sharedObject.language = language;
+});
+
+ipc.on('update-selection', (event, text) => {
+	global.sharedObject.selection = text;
+});
+
+ipc.on('update-context-sentence', (event, sentence) => {
+	global.sharedObject.contextSentence = sentence;
+});
+
+ipc.on('update-cfi-range', (event, cfiRange) => {
+	global.sharedObject.cfiRange = cfiRange;
+});
+
+ipc.on('update-last-location', (event, lastlocation) => {
+	global.sharedObject.lastLocation = lastlocation;
+});
+
+ipc.on('glossary-search', (event, text) => {
+	glossarySearch(text);
+});
+
+ipc.on('choose-book', (event) => {
+	chooseBook();
+});
+
+ipc.on('search-glosbe-dictionary', (event) => {
+	searchGlosbeDictionary();
+});
+
+ipc.on('windows-tts', (event) => {
+	WindowsTTS();
+});
+
+ipc.on('load-parallel-book', (event) => {
+	loadParallelBook();
+});
+
+ipc.on('run-anki', (event) => {
+	runAnki();
+});
+
+ipc.on('stanza-lemmatizer', (event) => {
+	stanzaLemmatizer();
+});
+
+ipc.on('tree-tagger', (event) => {
+	treeTagger();
+});
+
+ipc.on('get-search-term', (event) => {
+	getSearchTerm();
+});
+
+ipc.on('save-word-status', (event, status) => {
+	saveWordStatus(status);
+});
+
+ipc.on('save-native-language', (event, newlanguage) => {
+	saveNativeLanguage(newlanguage);
+});
+
+ipc.on('display-search-results', (event, result) => {
+	displaySearchResults(result);
+});
+
+ipc.on('update-text-read', (event, amount) => {
+	global.sharedObject.textRead += amount;
+});
+
+ipc.on('save-email-address', (event, emailaddress) => {
+	saveEmailAddress(emailaddress);
+});
+
+ipc.on('global-voices', (event, url) => {
+	globalVoices(url);
+});
+
+ipc.on('save-foreign-language', (event, forlanguage) => {
+	saveForeignLanguage(forlanguage);
+});
+
+ipc.on('enable-dictionaries', (event) => {
+	enableDictionaries();
+});
+
+ipc.on('update-parallel-book-location', (event, file, cfi2) => {
+	updateParallelBookLocation(file, cfi2);
+});
+
+ipc.on('create-search-window', (event, text) => {
+	createSearchWindow(text);
+});
+
+ipc.on('create-gloss-window', (event) => {
+	createGlossWindow();
+});
+
+ipc.on('save-locations', (event, booktitle, locations) => {
+	saveLocations(booktitle, locations);
+});
+
+ipc.on('update-config-location', (event, url, lastLocation) => {
+	updateConfigLocation(url, lastLocation);
+});
+
+ipc.on('add-flashcard', (event, term, def, context, language, tags) => {
+	addFlashcard(term, def, context, language, tags);
+});
+
+ipc.on('add-to-passages', (event, passage, notes) => {
+	addToPassages(passage, notes);
+});
+
+ipc.on('jump-to-search-result', (event, location) => {
+	jumpToSearchResult(location);
+});
+
+ipc.on('get-theme', (event) => {
+	event.returnValue = global.sharedObject.theme;
+});
+
+ipc.on('get-context', (event) => {
+	event.returnValue = global.sharedObject.contextSentence;
+});
+
+ipc.on('get-native', (event) => {
+	event.returnValue = global.sharedObject.native;
+});
+
+ipc.on('get-docpath', (event) => {
+	event.returnValue = app.getPath('documents');
+});
+
+ipc.on('get-language', (event) => {
+	event.returnValue = global.sharedObject.language;
+});
+
+ipc.on('finish-setup', (event, booktitle, author, url, language) => {
+	enableDictionaries();
+	buildPythonMenu();
+	addToRecent(booktitle, author, url, language);
+    updateDBCounts();
+	applyPassages();
+	showStats();
+});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -145,7 +366,8 @@ const createWindow = () => {
 	webPreferences: {
         nodeIntegration: true,
 		nativeWindowOpen: true,
-		enableRemoteModule: true
+		enableRemoteModule: true,
+		contextIsolation: false,
     }, 
 	icon: __dirname + '/book_open.png'	
   });
@@ -185,7 +407,7 @@ const createWindow = () => {
   });
 
 Menu.setApplicationMenu(menu(mainWindow));
-  // mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   
 
 mainWindow.on('close', () => {
@@ -224,7 +446,7 @@ mainWindow.on('close', () => {
 };
 
 process.on('SIGINT', () => {
-	console.log("closing database");
+	//console.log("closing database");
 	try {
 		db.close();
 	} catch(e) {
@@ -356,7 +578,7 @@ function checkConsecutive(dates) {
 }
 
 const saveSessionStats = exports.saveSessionStats = () => {
-	console.log("saving session statistics");
+	//console.log("saving session statistics");
 	// 		db.run('CREATE TABLE IF NOT EXISTS sessionstats(date DATETIME DEFAULT CURRENT_TIMESTAMP, lang TEXT, minutes INTEGER DEFAULT 0, words_read INTEGER DEFAULT 0, words_searched TEXT, new_gloss INTEGER DEFAULT 0, new_flashcards INTEGER DEFAULT 0, flashcards_right REAL, vocab_size INTEGER DEFAULT 0, sent_length INTEGER DEFAULT 0, ttr REAL)');
 
 	var tr= global.sharedObject.textRead;
@@ -394,6 +616,10 @@ const saveSessionStats = exports.saveSessionStats = () => {
 	mainWindow.webContents.send('get-session-stats');	
 }
 
+ipc.on('get-book-contents', (event) => {
+	getBookContents();
+});
+
 const createGlossWindow = exports.createGlossWindow = () => {
 	var term = global.sharedObject.selection;
 	term=term.trim().toLowerCase();
@@ -406,7 +632,8 @@ const createGlossWindow = exports.createGlossWindow = () => {
     height: 400,
 	frame: false,
 	webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+		contextIsolation: false,
     }
 	});
 	glossWindow.loadFile(path.join(__dirname, 'gloss.html'));
@@ -432,7 +659,8 @@ const createAnnotationWindow = exports.createAnnotationWindow = () => {
     height: 400,
 	frame: false,
 	webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+		contextIsolation: false,
     }
 	});
 	annotationWindow.loadFile(path.join(__dirname, 'annotation.html'));
@@ -456,13 +684,15 @@ const createTMWindow = exports.createTMWindow = () => {
 		height: 400,
 		frame: false,
 		webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+		contextIsolation: false,
     }
 	});
 	tmWindow.loadFile(path.join(__dirname, 'tm_add.html'));
 	
 	tmWindow.once('ready-to-show', () => {
 		tmWindow.show();
+		//tmWindow.openDevTools();
 		tmWindow.webContents.insertText(source);
 		tmWindow.webContents.executeJavaScript('document.getElementById("target").focus()');
 	});
@@ -480,7 +710,8 @@ const createFlashcardWindow = exports.createFlashcardWindow = () => {
     height: 400,
 	frame: false,
 	webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+		contextIsolation: false,
     }
 	});
 	flashWindow.loadFile(path.join(__dirname, 'flash.html'));
@@ -510,7 +741,8 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		width: 600,
 		height: 400,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 	
@@ -647,7 +879,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 	if(mode == 'tatoeba') {
 		var url="https://tatoeba.org/eng/sentences/search?query=" + term;
 		url+="&from="+ getISOLanguageCodeTrigraph(language) + "&to=eng";
-		console.log(url);
+		//console.log(url);
 	}
 	
 	if(mode == 'af-glosbe') {
@@ -903,7 +1135,7 @@ const createSearchWindow = exports.createSearchWindow = (mode) => {
 		var nat = getISOLanguageCodeTrigraph(native);
 		var url="https://glosbe.com/gapi/tm?from=" + lang;
 		url += "&dest=" + nat + "&format=json&phrase=" + term + "&page=1&pretty=true";
-		console.log(url);
+		//console.log(url);
 		/* (async () => {
 			const response = await fetch(url);
 			const json = await response.json();
@@ -967,7 +1199,6 @@ function fetchLemmatizerScript() {
 }
 
 const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
-	//console.time('stanzaTimer');
 	var language = global.sharedObject.language;
 	var output = [];
 	var pythonScriptPath = path.join(docpath, 'Jorkens', 'Python');
@@ -1003,7 +1234,6 @@ const stanzaLemmatizer = exports.stanzaLemmatizer = () => {
 		if (err) throw err;
 		processStanza(output);
 		output = null;
-		// console.timeEnd('stanzaTimer');
 	});	
 }
 
@@ -1065,6 +1295,7 @@ const treeTagger = exports.treeTagger = () => {
 }
 
 const chooseBook = exports.chooseBook = () => {
+	//console.log("chooseBook function");
 	const files = dialog.showOpenDialogSync(mainWindow, {
 		properties: ['openFile'],
 		filters: [
@@ -1108,6 +1339,10 @@ const chooseBook = exports.chooseBook = () => {
 
 	if (files) { openFile(files[0], position) } // removed config.chapter argument
 };
+
+ipc.on('open-file', (event, fn, position) => {
+	openFile(fn, position);
+});
 
 const openFile = exports.openFile = (file, position) => { // removed chapter argument
   clearBook();
@@ -1207,6 +1442,10 @@ const clearBook = exports.clearBook = () => {
 	mainWindow.webContents.send('clear-book');	
 }
 
+ipc.on('add-to-dictionary', (event, term, def, context, lang, addflashcard) => {
+	addToDictionary(term, def, context, lang, addflashcard);
+});
+
 const addToDictionary = exports.addToDictionary = (term, def, context, lang, addflashcard) => {
 	if(term && def && lang) {
 		db.run('INSERT OR REPLACE INTO dictionary(lang, term, def, context) VALUES(?,?,?,?)', [lang, term, def, context]);
@@ -1238,7 +1477,6 @@ const applyPassages = exports.applyPassages = () => {
 			if(err) {
 				return console.log(err);
 			}
-			// console.log(len + " passages found");
 		}
 	);
 	
@@ -1262,7 +1500,8 @@ const listAnnotations = exports.listAnnotations = () => {
 		frame: false,
 		alwaysOnTop: true,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 	notewin.loadFile(path.join(__dirname, 'annotationlist.html'));
@@ -1277,6 +1516,10 @@ const listAnnotations = exports.listAnnotations = () => {
     });
 	});
 }
+
+ipc.on('add-pair-to-TM', (source, target, srclang) => {
+	addPairToTM(source, target, srclang);
+});
 
 const addPairToTM = exports.addPairToTM = (source, target, srclang) => {
 	var tgtlang = global.sharedObject.native;
@@ -1337,7 +1580,6 @@ const exportForAnki = exports.exportForAnki = () => {
 				if(err) {
 					return console.log(err);
 				}
-				console.log("File saved successfully with " + len + " rows written");
 			});
 	});	
 }
@@ -1389,7 +1631,8 @@ const displaySearchResults = exports.displaySearchResults = (results) => {
 		alwaysOnTop: true,
 		webPreferences: {
 			nodeIntegration: true,
-			enableRemoteModule: true
+			enableRemoteModule: true,
+			contextIsolation: false
 		}
 	});
 	searchresultswin.movable = true;
@@ -1423,7 +1666,8 @@ const showLibary = exports.showLibrary = () => {
 		frame: false,
 		alwaysOnTop: true,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 	libwin.loadFile(path.join(__dirname, 'library.html'));
@@ -1625,7 +1869,6 @@ const wordNetLookup = exports.wordNetLookup = () => {
 	var filter = sw.en;
 	words = sw.removeStopwords(words, filter);
 	words = words.filter(function(e){return e}); // remove empty elements
-	console.log(words);
 	var len = words.length;
 	for(var i = 0; i<len; i++) {
 		wordpos.lookup(words[i],  function(result) {
@@ -1636,7 +1879,6 @@ const wordNetLookup = exports.wordNetLookup = () => {
 				//}				
 			}
 			if(i === len) {
-				console.log(output);
 				if(output.length > 0) {
 					mainWindow.webContents.send('got-translation', output.join('\r\n'));
 				}
@@ -1667,7 +1909,6 @@ const importKoboDictionary = exports.importKoboDictionary = () => {
 			for(i=0; i< files.length; i++) {
 				let thisfile = files[i];
 				if(thisfile.endsWith('html')) {
-					console.log(thisfile);
 					zip.file(files[i]).async("arraybuffer").then(function (data) {
 						var html=zlib.gunzipSync(new Buffer.from(data)).toString();
 						parseKoboDictionaryHTML(html, thisfile);
@@ -1690,7 +1931,6 @@ function parseKoboDictionaryHTML(html, fn) {
 	if(wlen==0) {
 		return;
 	}
-	// console.log(wlen + " entries found in Kobo file " + fn);
 	db.run("BEGIN TRANSACTION");
 	for(var i=0;i<wlen;i++) {
 		try {
@@ -1701,7 +1941,6 @@ function parseKoboDictionaryHTML(html, fn) {
 			console.log(e);
 		}
 				
-		// console.log(term + " = " + def + "\n\n");
 		db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", language,  term, def);
 	}
 	db.run("COMMIT");
@@ -1740,7 +1979,6 @@ const importMigakuDictionary = exports.importMigakuDictionary = () => {
 		db.run("BEGIN TRANSACTION");
 		var len=entries.length;
 		for(var i=0;i<len;i++) {
-			// console.log(entries[i].term + ' = ' + entries[i].definition);
 			db.run("INSERT OR REPLACE INTO dictionary(lang, term, def) VALUES(?,?,?)", lang,  entries[i].term, entries[i].definition);
 		}
 		db.run("COMMIT");
@@ -1758,9 +1996,7 @@ const importYomichanDictionary = exports.importYomichanDictionary = () => {
 		files = Object.keys(zip.files);
 		for(i=0; i< files.length; i++) {
 		  let thisfile = files[i];
-		  console.log(thisfile);
 		  if(thisfile.startsWith('index') || thisfile.startsWith('tag')) {
-			  console.log("skipping " + thisfile);
 			  continue;
 		  }
 		   zip.file(files[i]).async("string").then(function (data) {
@@ -1769,7 +2005,6 @@ const importYomichanDictionary = exports.importYomichanDictionary = () => {
 			   if(jsondata && jsondata.length) {
 				
 				   var len = jsondata.length;
-				   console.log(len + " entries found in " + thisfile);
 				   for(var j=0;j<len;j++) {
 					   var term = jsondata[j][0];
 					   if(thisfile.startsWith('term')) {
@@ -1862,8 +2097,15 @@ const importDictionary = exports.importDictionary = () => {
 const enableDictionaries = exports.enableDictionaries = () => {
 	var language = global.sharedObject.language;
 	var myMenu=Menu.getApplicationMenu();	
-	myMenu.items[3].submenu.getMenuItemById(language).visible = true;	
-	mainWindow.webContents.send('make-toolbar-buttons', language);
+	myMenu.items[3].submenu.getMenuItemById(language).visible = true;
+	var langmenu=myMenu.items[3].submenu.getMenuItemById(language);
+	var items= langmenu.submenu.items;
+	let newitems = items.map((item) => {
+		return{
+			label: item.label		};
+	});
+
+	mainWindow.webContents.send('make-toolbar-buttons', newitems);
 	if(!AWSCredentialsExist()) {
 		myMenu.items[5].submenu.items[2].enabled=false;
 		myMenu.items[8].submenu.items[1].enabled=false;
@@ -1872,6 +2114,19 @@ const enableDictionaries = exports.enableDictionaries = () => {
 		myMenu.items[5].submenu.items[1].enabled=false;
 	}
 }
+
+ipc.on('get-create-search-window', (e, label) => {
+	var language = global.sharedObject.language;
+	var myMenu=Menu.getApplicationMenu();	
+	var langmenu=myMenu.items[3].submenu.getMenuItemById(language);
+	var items= langmenu.submenu.items;
+	for(var i=0;i<items.length;i++) {
+		if(items[i].label == label) {
+			items[i].click();
+			break;
+		}
+	}
+});
 
 const importTM = exports.importTM = () => {
 	var DOMParser = require('xmldom').DOMParser;
@@ -2138,7 +2393,6 @@ const googleTranslate = exports.googleTranslate = () => {
 	async function translateText() {
 		let [translations] = await translate.translate(text, target);
 		translations = Array.isArray(translations) ? translations : [translations];
-		console.log('Translations:');
 		translations.forEach((translation, i) => {
 			console.log(`${text[i]} => (${target}) ${translation}`);
 		});
@@ -2162,25 +2416,32 @@ function getKnownWords() {
 	
 }
 
+ipc.on('update-db-row', (e, table, newValue, rowValues) => {
+	updateDBRow(table, newValue, rowValues);
+});
+
 const updateDBRow = exports.updateDBRow = (table, newValue, rowValues) => {
 	var language = global.sharedObject.language;
-	// console.log(rowValues.term);
+	var newValue = newValue.replace(/\'/g, "\'\'");
 	var changedField = "";
 	Object.entries(rowValues).forEach(([key, value]) => {
-		// console.log(`${key}: ${value}`);
-		if(value ==  newValue) {
+		//console.log(`${key}: ${value}`);
+		if(String(value).replace(/\'/g, "\'\'") ==  newValue) {
 			changedField = key;
 		}
 	});
 	if(table == 'flashcards') {
+		rowValues.term = rowValues.term.replace(/\'/g, "\'\'");
 		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
 		sql += " WHERE language = '" + language + "' AND term = '" + rowValues.term + "'";		
 	}
 	if(table == 'dictionary') {
+		rowValues.term = rowValues.term.replace(/\'/g, "\'\'");
 		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
 		sql += " WHERE lang = '" + language + "' AND term = '" + rowValues.term + "'";		
 	}
 	if(table == 'tm') {
+		rowValues.source = rowValues.source.replace(/\'/g, "\'\'");
 		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
 		sql += " WHERE srclang = '" + language + "' AND source = '" + rowValues.source + "'";		
 	}
@@ -2189,7 +2450,6 @@ const updateDBRow = exports.updateDBRow = (table, newValue, rowValues) => {
 		var sql = 'UPDATE ' + table + ' SET ' + changedField + " = '" + newValue + "'";
 		sql += " WHERE title = '" + rowValues.title + "' AND passage = '" + rowValues.passage + "'";		
 	}
-	
 	db.run(sql, [], 
 		function(err) {
 			console.log(err);
@@ -2204,7 +2464,6 @@ const editDatabase = exports.editDatabase = (table) => {
 		if (err) throw err;
 
 		rows.forEach((row)=>collist.push(row.name));
-		// console.log("collist is " + collist);
 	 });
 	if(table == 'dictionary') {
 		var sql = "SELECT * from " + table + " WHERE lang = '" + language + "' LIMIT 100000";
@@ -2214,7 +2473,6 @@ const editDatabase = exports.editDatabase = (table) => {
 		var sql = "SELECT * from " + table + " LIMIT 100000";
 	}
 	
-	
 	db.each(sql, [],
 		function (err, row) {
 			results.push(toArray(row));
@@ -2223,17 +2481,16 @@ const editDatabase = exports.editDatabase = (table) => {
 			if(err) {
 				return console.log(err);
 			}
-			// console.log(len + " results from database");
 			if(len > 0) {
 					var databasewin = new BrowserWindow({
 						show: false,
 						width: 800,
 						height: 600,
 						frame: false,
-						alwaysOnTop: true,
+						alwaysOnTop: false,
 						webPreferences: {
 							nodeIntegration: true,
-							enableRemoteModule: true
+							contextIsolation: false,
 						}
 					});
 					databasewin.movable = true;
@@ -2269,7 +2526,6 @@ const globalVoices = exports.globalVoices = (url) => {
 	const dom = new JSDOM(text);
 	var doc = dom.window.document;
 	var lang=doc.querySelector('html').getAttribute('lang');
-	console.log("lang is " + lang);
 	var title= doc.querySelector('title').textContent;
 	var postdate = doc.querySelector('span.post-date a').textContent;
 	var datepieces=postdate.split('/');
@@ -2282,7 +2538,6 @@ const globalVoices = exports.globalVoices = (url) => {
 		authors=_.uniq(authors);
 	}
 	var author=authors.join(', ');
-	console.log("author is " + author);
 	var single=doc.getElementById('single');
 	var paras1 = single.querySelectorAll('p:not([dir])');
 	var sourceparas = Array.from(paras1).filter(function(p) {
@@ -2291,7 +2546,6 @@ const globalVoices = exports.globalVoices = (url) => {
 		}
 		return true;
 	});
-	console.log(paras1.length + " paragraphs in " + url);
 	
 	var results = doc.querySelectorAll('span.post-translation-' + native);
 	var span=results[0];
@@ -2310,7 +2564,6 @@ const globalVoices = exports.globalVoices = (url) => {
 			}
 			return true;
 		});
-		console.log(paras2.length + " paragraphs in " + url2);
 		generateGlobalVoicesBook(lang, title, author, pubdate, url, url2, sourceparas, targetparas);
 	 })
 	 .catch(function(error2) {
@@ -2383,7 +2636,6 @@ function generateEpub(title, author, cover, lang, content) {
 	verbose: true
 	};
 	new epub(options).promise.then(() => {
-		console.log(output + ' generated');
 		openFile(output, 0);
 	});
 	
@@ -2396,7 +2648,6 @@ const myMemory = exports.myMemory = () => {
 /* 	if(preferences.email) {
 		url+="&de=" + preferences.email;
 	} */
-	console.log(url);
 	fetch(url) 
      .then((resp) => resp.json())
      .then(function(json) {
@@ -2503,7 +2754,9 @@ const getWordFrequencies = exports.getWordFrequencies = () => {
 }
 
 const getBookContents = exports.getBookContents = () => {
-	mainWindow.webContents.send('get-book-contents');	
+	var docpath = app.getPath('documents');
+	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+	mainWindow.webContents.send('get-book-contents', fn);	
 }
 
 const WindowsTTS = exports.WindowsTTS = () => {
@@ -2514,7 +2767,8 @@ const WindowsTTS = exports.WindowsTTS = () => {
 		width: 600,
 		height: 400,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 	ssWindow.loadURL(path.join(__dirname, 'speech-synthesis.html'));
@@ -2557,7 +2811,6 @@ const queryWordStatus = exports.queryWordStatus = () => {
 	var results = [];
 	db.each('SELECT * FROM wordstatus WHERE lang = ?', [language],
 		function (err, row) {
-			//console.log(row.lemma, row.status);
 			if(tokens.indexOf(row.lemma)) {		
 				results.push(toArray(row));
 			}			
@@ -2601,7 +2854,6 @@ function processWordStatusResults(results) {
 		replacements.push(item);
 	}
 	if(replacements.length>0) {
-		console.log(replacements);
 		mainWindow.webContents.send('replace-words', replacements);
 	}	
 	
@@ -2657,10 +2909,6 @@ const buildPythonMenu = exports.buildPythonMenu = () => {
 						if(file == 'stanza-lemmatizer.py') {
 							processStanza(output);
 						}
-						
-/* 						console.log('The exit code was: ' + code);
-						console.log('The exit signal was: ' + signal);
-						console.log('finished'); */
 					});
 				}
 			}))
@@ -2689,7 +2937,8 @@ const playAudio = exports.playAudio = () => {
 		width: 600,
 		height: 300,
 		webPreferences: {
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 	audioWindow.loadURL(path.join(__dirname, 'audioplayer.html'));
@@ -2749,7 +2998,6 @@ const runAnki = exports.runAnki = () => {
 		return;
 		}
  
-		console.log(data.toString());
 	});
 }
 

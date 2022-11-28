@@ -1,8 +1,6 @@
-const { app, BrowserWindow, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-const mainProcess = remote.require('./main.js');
+const { app, BrowserWindow, dialog, globalShortcut, ipcRenderer } = require('electron');
 
 ipcRenderer.on('play-audio', (event, fn) => {
-	// console.log(fn);
 	wavesurfer.load(fn);
 });
 

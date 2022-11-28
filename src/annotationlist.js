@@ -1,6 +1,4 @@
-const { app, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-const { BrowserWindow } = require('electron').remote;
-const mainProcess = remote.require('./main.js');
+const { app, dialog, globalShortcut, ipcRenderer } = require('electron');
 const fs = require("fs");
 const path = require('path');
 const storage = require('electron-json-storage');
@@ -23,7 +21,7 @@ ipcRenderer.on('annotation-data', (event, data) => {
 			newcell.textContent=fields[j];
 			newrow.addEventListener('click', function () {
 				var location = this.getElementsByTagName("td")[3].textContent;
-				mainProcess.jumpToSearchResult(location); 
+				ipcRenderer.send('jump-to-search-result', location); 
 				window.close();
 			});
 			newrow.appendChild(newcell);

@@ -1,6 +1,4 @@
-const { app, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-const { BrowserWindow } = require('electron').remote;
-const mainProcess = remote.require('./main.js');
+const { app, dialog, globalShortcut, ipcRenderer } = require('electron');
 const fs = require("fs");
 const path = require('path');
 var fcanswer="";
@@ -60,6 +58,6 @@ function processFlashcard(resp) {
 	getEl("fcright").textContent=total_known + "/" + total_asked;
 	var score = total_known/total_asked;
 	score = score.toFixed(2);
-	require('electron').remote.getGlobal('sharedObject').flashRight = score;
+	ipcRenderer.send('update-flash-right', score);
 	getNextFlashcard();
 }

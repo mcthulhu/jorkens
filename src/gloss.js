@@ -1,8 +1,6 @@
-const { app, BrowserWindow, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-// { process } = require('electron').remote;
-const mainProcess = remote.require('./main.js');
+const { app, BrowserWindow, dialog, globalShortcut, ipcRenderer } = require('electron');
 document.getElementById('term').focus();
-document.getElementById('context').value = require('electron').remote.getGlobal('sharedObject').contextSentence;
+document.getElementById('context').value = ipcRenderer.sendSync('get-context');
 document.getElementById("cancel-btn").addEventListener("click", (e) => {
     window.close();
 });
@@ -14,8 +12,7 @@ document.getElementById("ok-btn").addEventListener("click", (e) => {
 	var def=document.getElementById('def').value;
 	var context=document.getElementById('context').value || '';
 	var addflashcard = document.getElementById('addflashcard').checked;
-	
-	var lang= require('electron').remote.getGlobal('sharedObject').language;
-	mainProcess.addToDictionary(term, def, context, lang, addflashcard);
-                    window.close();
-                });
+	var lang= ipcRenderer.sendSync('get-language');
+	ipcRenderer.send('add-to-dictionary', term, def, context, lang, addflashcard);
+    window.close();
+ });

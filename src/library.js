@@ -1,6 +1,4 @@
-const { app, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-const { BrowserWindow } = require('electron').remote;
-const mainProcess = remote.require('./main.js');
+const { app, dialog, globalShortcut, ipcRenderer } = require('electron');
 const fs = require("fs");
 const path = require('path');
 const storage = require('electron-json-storage');
@@ -27,9 +25,7 @@ ipcRenderer.on('library-data', (event, data) => {
 			langrow.appendChild(langcell);
 			langrow.addEventListener('click', function (event) {
 				var lang=this.textContent;
-				console.log('button for ' + lang + ' was clicked');
 				var theserows=document.getElementsByClassName('child-' + lang);
-				console.log(theserows.length + " child rows");
 				for(var i=0;i<theserows.length;i++) {
 					theserows[i].classList.toggle('hidden');
 				}
@@ -44,11 +40,6 @@ ipcRenderer.on('library-data', (event, data) => {
 		for(var j=0;j<flen-1;j++) {
 			var newcell=document.createElement("td");
 			newcell.textContent=fields[j];
-			newrow.addEventListener('click', function () {
-				// removed chapter argument, still need to get last position instead of 0
-				mainProcess.openFile(this.getElementsByTagName("td")[4].textContent, 0); 
-				window.close();
-			});
 			
 			newrow.appendChild(newcell);
 			
@@ -56,7 +47,12 @@ ipcRenderer.on('library-data', (event, data) => {
 		if(!newrow.className) {
 				newrow.className='child-' + lastlang;
 			}
-			
+		newrow.addEventListener('click', function () {
+				// removed chapter argument, still need to get last position instead of 0
+				ipcRenderer.send('open-file', this.getElementsByTagName("td")[4].textContent, 0); 
+				window.close();
+			});
+				
 		newrow.classList.add('hidden');
 		tbody.appendChild(newrow);
 	}

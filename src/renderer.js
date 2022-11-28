@@ -1,10 +1,7 @@
-const { app, dialog, globalShortcut, remote, ipcRenderer } = require('electron');
-const { BrowserWindow } = require('electron').remote;
-const mainProcess = remote.require('./main.js');
+const { app, dialog, globalShortcut, ipcRenderer, Menu, MenuItem, BrowserWindow } = require('electron');
 const fs = require("fs");
 const path = require('path');
 const qs = require("querystring");
-const { Menu, MenuItem } = remote
 const storage = require('electron-json-storage');
 const Swal = require('sweetalert2')
 const _ = require('underscore');
@@ -20,8 +17,15 @@ url = null;
 locations=[];
 language = "";
 booktitle = "";
+slider = null;
 
 setUpMousetrapShortcuts();
+
+window.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  ipcRenderer.send('show-context-menu');
+})
+
 
 function tokenizeWords(s) {
 	s=s.trim();
@@ -70,7 +74,6 @@ ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 })
 
 ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {	
-	console.log("opening parallel book: " + file, cfi2);
 	book2 = ePub(file, { encoding: "binary"});
 	book2.open(content, "binary");
 	rendition2 = book2.renderTo('viewer2', {
@@ -95,7 +98,7 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 		var language2=book2.package.metadata.language;
 		language2=language2.substring(0, 2);
 		if(language2 == 'UN') {
-			language2 = require('electron').remote.getGlobal('sharedObject').native;
+			language2 = ipcRenderer.sendSync('get-native');
 		}
 		document.getElementById("title2").textContent=author2 + " - " + booktitle2 + " (" + language2 + ")";
 		var next2 = document.getElementById("next2");
@@ -114,7 +117,6 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 	});
 	book2.loaded.navigation.then(function(toc){
 
-		// console.log(toc);
 			var $select2 = document.getElementById("toc2"),
 					docfrag = document.createDocumentFragment();
 
@@ -140,7 +142,7 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
 	rendition2.on("relocated", function(){
 		var currentLocation2 = rendition2.currentLocation();
 		var cfi2 = currentLocation2.start.cfi;
-		mainProcess.updateParallelBookLocation(file, cfi2);
+		ipcRenderer.send('update-parallel-book-location', file, cfi2);
 	});
 
 	 rendition2.themes.default({
@@ -152,11 +154,8 @@ ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {
         "margin": '10px'
       }
     });
-	if(require('electron').remote.getGlobal('sharedObject').theme) {
-		rendition2.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
-	} else {
-		rendition2.themes.select("sepia");
-	}
+	let currentTheme = ipcRenderer.sendSync('get-theme');
+	rendition2.themes.select(currentTheme);
     
     rendition2.themes.fontSize("120%");
 })
@@ -225,7 +224,7 @@ ipcRenderer.on('get-native-language', async (event, oldlanguage) => {
 		showCancelButton: true
 	})
 	if (newlanguage) {
-      mainProcess.saveNativeLanguage(newlanguage);
+	  ipcRenderer.send('save-native-language', newlanguage);
     }
 });
 
@@ -237,11 +236,11 @@ ipcRenderer.on('get-foreign-language', async (event, oldlanguage) => {
 		showCancelButton: true
 	})
 	if (forlanguage) {	
-      mainProcess.saveForeignLanguage(forlanguage);
+      ipcRenderer.send('save-foreign-language', forlanguage);
 	  var title = document.getElementById("title").textContent;
 	  language = forlanguage;
 	  document.getElementById("title").textContent =title.replace(/\([a-z][a-z]\)/, "(" + forlanguage + ")");
-	  mainProcess.enableDictionaries();
+	  ipcRenderer.send('enable-dictionaries');
     }
 });
 
@@ -254,7 +253,7 @@ ipcRenderer.on('get-user-email', async (event, oldaddress) => {
 		showCancelButton: true
 })
 	if (emailaddress) {
-      mainProcess.saveEmailAddress(emailaddress);
+	  ipcRenderer.send('save-email-address', emailaddress);
     }
 });
 
@@ -264,7 +263,7 @@ ipcRenderer.on('get-global-voices-url', async(event) => {
 		input: 'text',
 		showCancelButton: true
 	})
-	mainProcess.globalVoices(url);
+	ipcRenderer.send('global-voices', url);
 });
 
 ipcRenderer.on('get-search-term', async (event) => {
@@ -284,7 +283,7 @@ ipcRenderer.on('get-search-term', async (event) => {
 			}
 		}
 		
-		mainProcess.displaySearchResults(result);
+		ipcRenderer.send('display-search-results', result);
 	})
 });
 
@@ -296,45 +295,50 @@ ipcRenderer.on('replace-words', (event, replacements) => {
 		var re = new RegExp(" " + replacements[i][0] + " ", "gi");
 		html=html.replace(re, " " + replacements[i][1] + " ");
 	}
-	// console.log(html);
 	iframe.contentDocument.documentElement.innerHTML = html;	
-	console.log(iframe.contentDocument.documentElement.innerHTML);
 })
 
-ipcRenderer.on('make-toolbar-buttons', (event, language) => {
-	var myMenu=Menu.getApplicationMenu();
-	var langmenu=myMenu.items[3].submenu.getMenuItemById(language);
-	var items= langmenu.submenu.items;
+ipcRenderer.on('make-toolbar-buttons', (event, items) => {
+	items = JSON.parse(JSON.stringify(items));
 	for(let i=0;i<items.length;i++) {
 		let thismenuitem = items[i];
 		var btn=document.createElement('button');
 		btn.title = items[i].label;
 		btn.textContent=(i+1).toString();
 		btn.onclick = function() {
-			var win = BrowserWindow.getFocusedWindow();
-			var wc = win.webContents;
-			thismenuitem.click(event, win, wc);
+			ipcRenderer.send('get-create-search-window', items[i].label);
 		}							
 		var tbar = document.getElementById('toolbar');
 		tbar.appendChild(btn);
 	}	
 });
 
-ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
-	// console.log('ipc file-opened, position = ' + position);
-  if(file.endsWith('epub')) {
-	  // console.log("this is an epub"); -- works
-  }
-  var controls = document.getElementById("controls");
+function setUpControls() {
+	var controls = document.getElementById("controls");
    var currentPage = document.getElementById("current-percent");
    var sliders = document.getElementsByTagName("input");
    if(sliders.length == 1) {
-	    var slider = document.createElement("input");
+	    slider = document.createElement("input");
    }
 	var slide = function(){
 		var cfi = book.locations.cfiFromPercentage(slider.value / 100);
 		rendition.display(cfi);
 	};
+					controls.style.display = "block";
+				slider.setAttribute("type", "range");
+				slider.setAttribute("min", 0);
+				slider.setAttribute("max", 100);
+				slider.setAttribute("step", 1);
+				slider.setAttribute("value", 0);
+
+				slider.addEventListener("change", slide, false);
+				slider.addEventListener("mousedown", function(){
+						mouseDown = true;
+				}, false);
+				slider.addEventListener("mouseup", function(){
+						mouseDown = false;
+				}, false);
+
    var mouseDown = false;
    var next = document.getElementById("next");
 
@@ -361,69 +365,67 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
           book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
         }
 	  };
-   
+	 document.addEventListener("keyup", keyListener, false);
+
+}
+
+const getCircularReplacer = () => {
+      const seen = new WeakSet();
+      return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+          if (seen.has(value)) {
+            return;
+          }
+          seen.add(value);
+        }
+        return value;
+      };
+    };
+	
+ipcRenderer.on('file-opened', (event, file, content, position) => { // removed chapter argument
+  setUpControls();
+  var currentPage = document.getElementById("current-percent");
   url = file;
+  book=null;
   book=ePub(file, { encoding: "binary"});
+ 
   book.open(content, "binary");
-  
   rendition = book.renderTo("viewer", {
       width: "100%",
       height: 650,
 	  spread: "auto"
     });
-
     var displayed = rendition.display(position);
-	rendition.on("keyup", keyListener); // not defined??
-    document.addEventListener("keyup", keyListener, false);
-	var bookdata="";
 
+	//rendition.on("keyup", keyListener); 
+	
+	var bookdata="";
+	
 	 book.ready.then(() => {
 		 book.spine.hooks.serialize.register((output, section) => {
 			 bookdata+=output;
-			 //console.log(bookdata);
 		 });
 		 booktitle=book.package.metadata.title;
-		 require('electron').remote.getGlobal('sharedObject').booktitle = booktitle;
+		 ipcRenderer.send('update-booktitle', booktitle);
 		 var author = book.package.metadata.creator;
 		var language=book.package.metadata.language;
 		language=language.substring(0, 2);
 		document.getElementById("title").textContent=author + " - " + booktitle + " (" + language + ")";
 		// document.getElementById("toc").selectedIndex = chapter;
-		require('electron').remote.getGlobal('sharedObject').language=language;
-		mainProcess.enableDictionaries();
-		mainProcess.buildPythonMenu();
-	   mainProcess.addToRecent(booktitle, author, url, language);
-      mainProcess.updateDBCounts();
-	  mainProcess.applyPassages();
-	  mainProcess.showStats();
+		 ipcRenderer.send('update-language', language);
+		 ipcRenderer.send('finish-setup', booktitle, author, url, language);
 	   timer=setInterval(updateTimer, 1000);
-	   
 		 var key = book.key()+'-locations';
 			var stored = localStorage.getItem(key);
 			if (stored && stored.length > 3) {
 				return book.locations.load(stored);			
 			} else {
-				console.log("generating book locations");
 				return book.locations.generate(1024)
 			}
 	 })
 			.then(function(locations){
-				mainProcess.saveLocations(booktitle, locations);
-				require('electron').remote.getGlobal('sharedObject').lastLocation = locations[locations.length - 1];
-				controls.style.display = "block";
-				slider.setAttribute("type", "range");
-				slider.setAttribute("min", 0);
-				slider.setAttribute("max", 100);
-				slider.setAttribute("step", 1);
-				slider.setAttribute("value", 0);
-
-				slider.addEventListener("change", slide, false);
-				slider.addEventListener("mousedown", function(){
-						mouseDown = true;
-				}, false);
-				slider.addEventListener("mouseup", function(){
-						mouseDown = false;
-				}, false);
+				ipcRenderer.send('save-locations', booktitle, locations);
+				ipcRenderer.send('update-last-location', locations[locations.length - 1]);
 
 				// Wait for book to be rendered to get current page
 				displayed.then(function(){
@@ -447,16 +449,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				// Save out the generated locations to JSON
 				localStorage.setItem(book.key()+'-locations', book.locations.save());
 				locations=book.locations;
-				require('electron').remote.getGlobal('sharedObject').locations = locations;
-				
+				ipcRenderer.send('save-locations', booktitle, locations);
 		});
 
     var title = document.getElementById("title");
-	mainProcess.getBookContents();
-	
+	ipcRenderer.send('get-book-contents');
     rendition.on("rendered", function(section){
 		var currentChapter= rendition.getContents()[0].content.textContent;
-		// console.log("about to call lemmatize from on rendered");
 		lemmatize(currentChapter);
       var current = book.navigation && book.navigation.get(section.href);
 	  
@@ -478,17 +477,16 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
       }
 		setUpContextMenu();
 		configureToolbarButtons();
-
     });
 
     rendition.on("relocated", function(location){
 		// Listen for location changed event, get percentage from CFI
 		var percent = book.locations.percentageFromCfi(location.start.cfi);
 		var percentage = Math.floor(percent * 100);
-		if(!mouseDown) {
+		//if(!mouseDown) {
 			// follow line produces Linux error - slider is null
 			slider.value = percentage;
-		}
+		//}
 		currentPage.value = percentage;
 				
       var next = book.package.metadata.direction === "rtl" ?  document.getElementById("prev") : document.getElementById("next");
@@ -506,29 +504,27 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
         prev.style.visibility = "visible";
       }
 		lastLocation=rendition.currentLocation().start.cfi;
-		mainProcess.updateConfigLocation(url, lastLocation);
-		require('electron').remote.getGlobal('sharedObject').lastLocation = lastLocation;
+		ipcRenderer.send('update-config-location', url, lastLocation);
+		ipcRenderer.send('update-last-location', lastLocation);
 		let spineItem = book.spine.get(lastLocation);
-		// console.log("spineitem is " + spineItem.idref, spineItem.index, spineItem.href, spineItem.url, spineItem.canonical, spineItem.properties);
-		// console.log(book.navigation.get(spineItem)); TypeError 
         let navItem = book.navigation.get(spineItem.href);
-		// console.log("navItem is " + navItem);
 		if(navItem && navItem.id) {
-			//console.log(navItem.id);	
-			var navpoint = navItem.id.split('-')[1].trim(); // doesn't work for navpoint without -
-			document.getElementById('toc').selectedIndex = navpoint - 1;
+			var navpoint = navItem.id.split('-')[1];
+			if(navpoint) {
+				navpoint=navpoint.trim(); // doesn't work for navpoint without -
+				document.getElementById('toc').selectedIndex = navpoint - 1;
+			}
 		}
 		
 		// put lemmatization here
 		getVisibleText();
-		
     });
 	
-	book.spine.hooks.serialize.register((output, section) => {
+	//book.spine.hooks.serialize.register((output, section) => {
 		// section.output = output.replace("Los", "LosLos"); // test
 		//console.log("serialize hook: about to call lemmatize");
 		//lemmatize(section.output);
-	});
+	//});
 	
     rendition.on("layout", function(layout) {
       let viewer = document.getElementById("viewer");
@@ -546,8 +542,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		book.getRange(cfiRange).then((range) => {
                 if (range) {
                     let text = range.toString();
-					// console.log("selected text is " + text);
-					require('electron').remote.getGlobal('sharedObject').selection = text;
+					ipcRenderer.send('update-selection', text);
                     let paragraph = range.startContainer.data;
 					var regexp = /[^\.\!\?。、「」『』〜・？！（）【】]*[\.\!\?。、「」『』〜・？！（）【】]/g;
 					var sentences = paragraph.match(regexp);
@@ -555,13 +550,13 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 						var senlen = sentences.length;
 						for(var i=0;i<senlen;i++) {
 							if(sentences[i].includes(text)) {
-								require('electron').remote.getGlobal('sharedObject').contextSentence = sentences[i];
+								ipcRenderer.send('update-context-sentence', sentences[i]);
 							}
 						}
 					}					
 					
-					require('electron').remote.getGlobal('sharedObject').cfiRange = cfiRange;
-					var docpath = remote.app.getPath('documents');
+					ipcRenderer.send('update-cfi-range', cfiRange);
+					var docpath = ipcRenderer.sendSync('get-docpath');
 					var fn = path.join(docpath, 'Jorkens', 'selection.txt');
 					fs.writeFile(fn, text, function(err) {
 						if(err) {
@@ -569,8 +564,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 						} 				
 					});
 					
-					mainProcess.glossarySearch(text);	
-					
+					ipcRenderer.send('glossary-search', text);
 				}
 			});
 	}
@@ -580,7 +574,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
     window.addEventListener("unload", function () {
       this.book.destroy();
     });
-
     book.loaded.navigation.then(function(toc){
 				parshToc(book);
 			var $select = document.getElementById("toc"),
@@ -590,7 +583,6 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 				var option = document.createElement("option");
 				option.textContent = chapter.label;
 				option.setAttribute("ref", chapter.href);
-				console.log(option);
 				docfrag.appendChild(option);
 			});
 
@@ -599,15 +591,12 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 					var index = $select.selectedIndex,
 							url = $select.options[index].getAttribute("ref");
 					// save current chapter location to config
-					// mainProcess.updateConfigChapter(index);
 					rendition.display(url);
 					return false;
 			};
 
 		});
-   		
 	rendition.hooks.content.register(function(contents, view) {
-		// console.log("running content.register for " + contents.content.textContent.substr(0,100));
 		rendition.themes.register("dark", "css/themes.css");
 		rendition.themes.register("light", "css/themes.css");
 		rendition.themes.register("sepia", "css/themes.css");
@@ -626,28 +615,25 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 			"margin": '10px'
 		}
 		});
-	if(require('electron').remote.getGlobal('sharedObject').theme) {
-		rendition.themes.select(require('electron').remote.getGlobal('sharedObject').theme);
-	} else {
-		rendition.themes.select("sepia");
-	}
+	
+		let currentTheme = ipcRenderer.sendSync('get-theme');
+		rendition.themes.select(currentTheme);
+	});
     
     rendition.themes.fontSize("120%");
-	
 	
 
 			
 		
-			const el2 = document.querySelector("div div div div iframe");
+			//const el2 = document.querySelector("div div div div iframe");
 			// el2.contentWindow.oncontextmenu = checkRightClick;
-			
 			
 		});	
 	 
 	//});
 
 	
-});
+//});
 
 ipcRenderer.on('get-session-stats', () => {
 	var stats = {};
@@ -669,7 +655,7 @@ ipcRenderer.on('clear-book', () => {
 	}
 	var $select = document.getElementById("toc");
 	$select.options.length = 0;
-	book = ePub();
+	//book = ePub();
 	book2 = null;
 	rendition = null;
 	rendition2 = null;
@@ -683,63 +669,8 @@ ipcRenderer.on('clear-book', () => {
 });
 
 function setUpContextMenu() {
-	var language = require('electron').remote.getGlobal('sharedObject').language;
-	const cmenu = new Menu()
-	// todo: add option to get current selection, search dictionary
-	// let rightClickPosition = null;
-	cmenu.append(new MenuItem({ 
-		label: 'Google Translate', 
-		click: () => {
-          	mainProcess.createSearchWindow('google-translate');
-       	 }
-	}));
-	cmenu.append(new MenuItem({ 
-		label: 'Glosbe', 
-		click: () => {
-          	mainProcess.createSearchWindow('gl');
-       	 }
-	}));
-	cmenu.append(new MenuItem({ 
-		label: 'Add to glossary', 
-		click: () => {
-          	mainProcess.createGlossWindow();
-       	 }
-	}));
-	cmenu.append(new MenuItem({ type: 'separator' }));
-	var mainmenu = Menu.getApplicationMenu();
-	cmenu.append(mainmenu.getMenuItemById(language));
-	cmenu.append(new MenuItem({ type: 'separator' }));
-	cmenu.append(new MenuItem({ 
-		label: 'Mark word\'s status)', 
-		submenu: [
-			{
-				label: 'unknown',
-				click() { 
-					console.log('word is unknown'); 
-					mainProcess.saveWordStatus(0);
-				} 
-			},
-			{
-				label: 'unsure',
-				click() { 
-					console.log('word is unsure');
-					mainProcess.saveWordStatus(1);
-				} 
-			},
-			{
-				label: 'known',
-				click() { 
-					console.log('word is known');	
-					mainProcess.saveWordStatus(2);					
-				} 
-			},	
-		]
-	}));
-		
-	
-	// cmenu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
-	var iframe = document.querySelector("div div div div iframe");
-	
+	//var language = ipcRenderer.sendSync('get-language');
+	var iframe = document.querySelector("div div div div iframe");	
 	iframe.contentDocument.addEventListener('contextmenu', (e) => {
 		e.preventDefault();
 		var range, textNode, offset;
@@ -761,66 +692,61 @@ function setUpContextMenu() {
 				end = i;
 				//Return the word under the mouse cursor
 				var hoverword = data.substring(begin, end);
-				console.log("right click on " + hoverword);
 				hoverword = hoverword.trim().toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '');
 				// need to normalize here
-				require('electron').remote.getGlobal('sharedObject').selection = hoverword;
+				ipcRenderer.send('update-selection', hoverword);
 			
-		cmenu.popup(remote.getCurrentWindow())}, false);
+		ipcRenderer.send('show-context-menu');
+		}, false);
 }
 
 function configureToolbarButtons() {
 	document.getElementById('wfbutton').addEventListener("click", function() {
-		mainProcess.createSearchWindow('wf');
+		ipcRenderer.send('create-search-window', 'wf');;
 	});
 	document.getElementById('addbutton').addEventListener("click", function() {
-		mainProcess.createGlossWindow();
+		ipcRenderer.send('create-gloss-window');
 	});
 	document.getElementById('openbutton').addEventListener("click", function() {
-		mainProcess.chooseBook();
+		ipcRenderer.send('choose-book');
 	});
 	document.getElementById('findbutton').addEventListener("click", function() {
-		mainProcess.getSearchTerm();
+		ipcRenderer.send('get-search-term');
 	});
 	document.getElementById('glbutton').addEventListener("click", function() {
-		mainProcess.searchGlosbeDictionary();
+		ipcRenderer.send('search-glosbe-dictionary');
 	});
 	document.getElementById('gtbutton').addEventListener("click", function() {
-		mainProcess.createSearchWindow('google-translate');
+		ipcRenderer.send('create-search-window', 'google-translate');
 	});
 	document.getElementById('forvobutton').addEventListener("click", function() {
-		mainProcess.createSearchWindow('forvo');
+		ipcRenderer.send('create-search-window', 'forvo');
 	});
 	document.getElementById('ttsbutton').addEventListener("click", function() {
-		mainProcess.WindowsTTS();
+		ipcRenderer.send('windows-tts');
 	});
 	document.getElementById('verbixbutton').addEventListener("click", function() {
-		 mainProcess.createSearchWindow('verbix');
+		 ipcRenderer.send('create-search-window', 'verbix');
 	});
 	document.getElementById('wiktbutton').addEventListener("click", function() {
-		mainProcess.createSearchWindow('wik');
+		ipcRenderer.send('create-search-window', 'wik');
 	});
 	document.getElementById('parbutton').addEventListener("click", function() {
-		mainProcess.loadParallelBook();
+		ipcRenderer.send('load-parallel-book');
 	});
 	document.getElementById('ankibutton').addEventListener("click", function() {
-		mainProcess.runAnki();
+		ipcRenderer.send('run-anki');
 	});
 }
 
 ipcRenderer.on('get-range-contents', (a, b) => {
-	console.log("getting range contents");
 	var range = rendition.getRange(a);
 	var endRange = rendition.getRange(b);
 	range.setEnd(endRange.startContainer, endRange.startOffset);
-	
-	console.log("range text is " + range.toString());
 	ipcRenderer.sendSync('got-text', range.toString());
 });
 
-ipcRenderer.on('get-book-contents', () => {
-	var docpath = remote.app.getPath('documents');
-	var fn = path.join(docpath, 'Jorkens', 'bookText.txt');
+ipcRenderer.on('get-book-contents', (event, fn) => {
 	book.loaded.spine.then((spine) => {
 		spine.each((item) => {
 			const thisitem = book.spine.get(item.href);
@@ -851,9 +777,8 @@ ipcRenderer.on('get-book-contents', () => {
 });
 
 function setUpMousetrapShortcuts() {
-//	console.log("mousetrap");
 	Mousetrap.bind(['command+shift+w', 'ctrl+shift+w'], function() {
-		mainProcess.createSearchWindow('wf');
+		ipcRenderer.send('create-search-window', 'wf');
 		return false;
 	});
 		
@@ -894,9 +819,8 @@ function doSearch(q) {
 }
 
 function lemmatize(currentChapter) {
-			var language = require('electron').remote.getGlobal('sharedObject').language;
+			var language = ipcRenderer.sendSync('get-language');
 			// var currentChapter=contents.content.textContent;
-			// console.log("about to start lemmatization for " + currentChapter.length + " characters");
 
 			var tokens = tokenizeWords(currentChapter);
 			tokens = _.uniq(tokens);
@@ -910,7 +834,7 @@ function lemmatize(currentChapter) {
 				var tokens = tokens.join('\n');
 			}
 			
-			var docpath = remote.app.getPath('documents');
+			var docpath = ipcRenderer.sendSync('get-docpath');
 			var fn = path.join(docpath, 'Jorkens', 'currentChapter.txt');
 			fs.writeFile(fn, currentChapter, function(err) {
 				if(err) {
@@ -924,9 +848,9 @@ function lemmatize(currentChapter) {
 				} else {
 					var stanzalanguages = ['ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'la', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sl', 'sr', 'sv', 'tr', 'ur', 'vi', 'zh-hans'];
 					if(stanzalanguages.includes(language)) {
-						mainProcess.stanzaLemmatizer();
+						ipcRenderer.send('stanza-lemmatizer'); 
 					} else {
-						mainProcess.treeTagger();
+						ipcRenderer.send('tree-tagger'); 
 					}
 
 				}				
@@ -935,7 +859,6 @@ function lemmatize(currentChapter) {
 
 // function from https://github.com/Janglee123/eplee/blob/93797e87de7fc9f25d2b3c97e77ac4d3b2e90219/src/shared/dbUtilis.js#L54
 function parshToc(book) {  
-  console.log("parshToc");
   const { toc } = book.navigation;
   const { spine } = book;
   
@@ -1027,12 +950,11 @@ function parshToc(book) {
   };
 
   createTree(toc, tocTree);
-  console.log(tocTree);
 }
 
 function getVisibleText() {
 	var range = rendition.getRange(rendition.currentLocation().start.cfi);
     var endRange = rendition.getRange(rendition.currentLocation().end.cfi);
     range.setEnd(endRange.startContainer, endRange.startOffset);
-	require('electron').remote.getGlobal('sharedObject').textRead += range.toString();
+	ipcRenderer.send('update-text-read', range.toString());
 }
