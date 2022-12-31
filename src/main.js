@@ -173,6 +173,10 @@ ipc.on('load-parallel-book', (event) => {
 	loadParallelBook();
 });
 
+ipc.on('close-parallel-book', (event) => {
+	closeParallelBook();
+});
+
 ipc.on('run-anki', (event) => {
 	runAnki();
 });
@@ -3038,6 +3042,12 @@ const loadParallelBook = exports.loadParallelBook = () => {
 			}
 		}
 	);	
+}
+
+const closeParallelBook = exports.closeParallelBook = () => {
+	var title1 = global.sharedObject.booktitle;
+	db.run("DELETE FROM parallels WHERE title1 = ?", [title1]);
+	mainWindow.webContents.send('parallel-book-closed'); 
 }
 
 const transliterateSelection = exports.transliterateSelection = () => {

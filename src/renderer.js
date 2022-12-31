@@ -73,6 +73,19 @@ ipcRenderer.on('apply-highlight', (event, title, passage, cfiRange, notes) => {
 	});
 })
 
+ipcRenderer.on('parallel-book-closed', () => {
+	book2.destroy();
+	rendition2 = null;
+	document.getElementById('viewer2').style.display = "none";
+	document.getElementById('tocbox2').style.display = "none";
+	document.getElementById('title2').style.display = "none";
+	document.getElementById('prev2').style.display = "none";
+	document.getElementById('next2').style.display = "none";
+	document.getElementById('viewer').style.width = "800px";
+	rendition.resize(1040);
+	document.getElementById('next').style.right = "40px";
+})
+
 ipcRenderer.on('parallel-book-opened', (event, file, content, cfi2) => {	
 	book2 = ePub(file, { encoding: "binary"});
 	book2.open(content, "binary");
@@ -627,7 +640,7 @@ ipcRenderer.on('file-opened', (event, file, content, position) => { // removed c
 		
 			//const el2 = document.querySelector("div div div div iframe");
 			// el2.contentWindow.oncontextmenu = checkRightClick;
-			
+		console.log("document.getElementById('next').style.right is " + document.getElementById('next').style.right);	
 		});	
 	 
 	//});

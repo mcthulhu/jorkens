@@ -1408,19 +1408,29 @@ module.exports = function(mainWindow){
 		  }
 	  },
 	  
-	   {
-		  label: "Open parallel book",
-		  click: () => {
-			  mainProcess.loadParallelBook();
-		  }
-	  },
-	  
-	  {
-		  label: "Open parallel Global Voices articles",
-		  click: () => {
-			  mainProcess.getGlobalVoicesURL();
-		  }
-	  },
+	{
+      label: 'Parallel book',
+      submenu: [
+      {
+          label: "Open parallel book",
+          click: () => {
+              mainProcess.loadParallelBook();
+          },
+      },
+          {
+          label: "Close parallel book",
+          click: () => {
+              mainProcess.closeParallelBook();
+          }
+        },
+            {
+          label: "Open parallel Global Voices articles",
+          click: () => {
+              mainProcess.getGlobalVoicesURL();
+          }
+      },
+          ]
+      }, 
 	  
 	  	   {
 		  label: "Transliterate selection",
